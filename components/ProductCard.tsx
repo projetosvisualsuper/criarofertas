@@ -1,6 +1,11 @@
 import React from 'react';
 import { Product, PosterTheme } from '../types';
 
+interface ProductCardProps {
+  product: Product;
+  theme: PosterTheme;
+}
+
 const defaultLayout = {
   image: { y: 0, scale: 1 },
   name: { y: 0, scale: 1 },
@@ -59,24 +64,32 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
         className="absolute bottom-[5%] left-0 right-0 flex justify-center transition-transform duration-100"
         style={{ transform: `translateY(${layout.price.y}px) scale(${layout.price.scale})` }}
       >
-        <div 
-          className="relative rounded-xl shadow-lg border-2 border-gray-100 flex flex-col items-center justify-center overflow-hidden py-0.5 px-1"
-          style={{ background: `linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)` }}
-        >
+        <div className="flex items-end justify-center gap-2">
+          {/* Old Price (Left) */}
           {oldPriceFormatted && (
-            <span className="text-xs text-gray-500 line-through decoration-red-500 font-medium mb-0.5">
-              De R$ {oldPriceFormatted}
-            </span>
+            <div className="pb-1 text-gray-500 text-center">
+              <span className="text-xs block leading-none font-semibold">DE</span>
+              <span className="text-lg font-bold line-through decoration-red-500">
+                R${oldPriceFormatted}
+              </span>
+            </div>
           )}
-          <div className="flex items-start justify-center leading-none select-none" style={{ color: theme.primaryColor }}>
-             <span className="font-bold mt-[0.2em] mr-1 opacity-80 text-base">R$</span>
-             <span className="font-display font-black tracking-tighter mx-0 drop-shadow-sm leading-[0.85]" style={{ fontSize: '2.5rem' }}>
-               {priceInt}
-             </span>
-             <div className="flex flex-col items-start mt-[0.3em]">
-                <span className="font-black tracking-tighter leading-[0.8]" style={{ fontSize: '1.25rem' }}>,{priceDec}</span>
-                <span className="font-bold text-gray-400 uppercase mt-1 ml-0.5 tracking-wider text-xs">{product.unit}</span>
-             </div>
+
+          {/* New Price (Right) */}
+          <div 
+            className="relative rounded-xl shadow-lg border-2 border-gray-100 flex flex-col items-center justify-center overflow-hidden py-0.5 px-1"
+            style={{ background: `linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)` }}
+          >
+            <div className="flex items-start justify-center leading-none select-none" style={{ color: theme.primaryColor }}>
+               <span className="font-bold mt-[0.2em] mr-1 opacity-80 text-base">R$</span>
+               <span className="font-display font-black tracking-tighter mx-0 drop-shadow-sm leading-[0.85]" style={{ fontSize: '2.5rem' }}>
+                 {priceInt}
+               </span>
+               <div className="flex flex-col items-start mt-[0.3em]">
+                  <span className="font-black tracking-tighter leading-[0.8]" style={{ fontSize: '1.25rem' }}>,{priceDec}</span>
+                  <span className="font-bold text-gray-400 uppercase mt-1 ml-0.5 tracking-wider text-xs">{product.unit}</span>
+               </div>
+            </div>
           </div>
         </div>
       </div>
