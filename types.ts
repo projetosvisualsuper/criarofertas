@@ -34,6 +34,12 @@ export interface PosterTheme {
   backgroundImage?: string;
   layoutCols: number;
   format: PosterFormat;
+  logo?: {
+    src: string;
+    x: number;
+    y: number;
+    scale: number;
+  }
 }
 
 export interface AIGeneratedImage {

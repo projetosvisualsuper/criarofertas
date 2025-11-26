@@ -115,6 +115,16 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                 minHeight: isStory ? '15%' : 'auto' 
               }}
             >
+               {theme.logo && (
+                 <div 
+                   className="absolute top-1/2 left-1/2 w-32 h-16 z-30"
+                   style={{
+                     transform: `translateX(calc(-50% + ${theme.logo.x}px)) translateY(calc(-50% + ${theme.logo.y}px)) scale(${theme.logo.scale})`
+                   }}
+                 >
+                   <img src={theme.logo.src} className="w-full h-full object-contain drop-shadow-lg" />
+                 </div>
+               )}
                <h1 className="font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white text-center"
                   style={{ 
                     textShadow: '4px 4px 0px rgba(0,0,0,0.2)',

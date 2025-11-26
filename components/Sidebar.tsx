@@ -49,6 +49,25 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     }
   };
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTheme(prev => ({
+          ...prev,
+          logo: {
+            src: reader.result as string,
+            x: 0,
+            y: 0,
+            scale: 1,
+          }
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleGenerateHeadline = async () => {
     setIsGenerating(true);
     const headline = await generateMarketingCopy(theme.headerSubtitle || "ofertas");
@@ -222,6 +241,27 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
               <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" value={theme.headerTitle} onChange={(e) => setTheme({ ...theme, headerTitle: e.target.value })} placeholder="Título Principal"/>
               <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" value={theme.headerSubtitle} onChange={(e) => setTheme({ ...theme, headerSubtitle: e.target.value })} placeholder="Subtítulo"/>
               <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" value={theme.footerText} onChange={(e) => setTheme({ ...theme, footerText: e.target.value })} placeholder="Texto do Rodapé"/>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Logotipo</label>
+              {!theme.logo ? (
+                <div className="relative border-2 border-dashed rounded-lg p-4 bg-gray-50 hover:bg-white transition-colors cursor-pointer text-center">
+                   <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleLogoUpload}/>
+                   <span className="text-xs text-gray-500 flex items-center justify-center gap-2"><ImageIcon size={14}/> Enviar Logo</span>
+                </div>
+              ) : (
+                <div className="bg-gray-50 p-2 rounded-lg border space-y-2">
+                  <div className="flex items-center gap-2">
+                    <img src={theme.logo.src} className="w-12 h-12 object-contain rounded bg-white border p-1" />
+                    <button onClick={() => setTheme({...theme, logo: undefined})} className="ml-auto text-xs text-red-500 hover:underline">Remover</button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    <div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho</label><span className="font-mono text-gray-500">{(theme.logo.scale).toFixed(1)}x</span></div><input type="range" min="0.2" max="3" step="0.1" value={theme.logo.scale} onChange={(e) => setTheme({...theme, logo: {...theme.logo!, scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                    <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{theme.logo.x}px</span></div><input type="range" min="-200" max="200" value={theme.logo.x} onChange={(e) => setTheme({...theme, logo: {...theme.logo!, x: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                    <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{theme.logo.y}px</span></div><input type="range" min="-100" max="100" value={theme.logo.y} onChange={(e) => setTheme({...theme, logo: {...theme.logo!, y: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">Cores</label>
