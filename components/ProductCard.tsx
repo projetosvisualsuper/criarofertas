@@ -7,6 +7,12 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
+  
+  // Prepare price parts
+  const priceFormatted = parseFloat(product.price).toFixed(2);
+  const [priceInt, priceDec] = priceFormatted.split('.');
+  const oldPriceFormatted = product.oldPrice ? parseFloat(product.oldPrice).toFixed(2).replace('.', ',') : null;
+
   return (
     <div 
       className="relative flex flex-col items-center justify-between p-3 rounded-xl shadow-sm border overflow-hidden h-full bg-white/95 backdrop-blur-sm transition-all"
@@ -38,21 +44,36 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
           {product.name}
         </h3>
         
-        <div className="flex flex-col items-center justify-center bg-gray-50/50 rounded-lg py-1">
-          {product.oldPrice && (
-            <span className="text-xs text-gray-500 line-through decoration-red-500 font-medium">
-              R$ {parseFloat(product.oldPrice).toFixed(2).replace('.', ',')}
+        {/* NEW PRICE BLOCK - Styled like Hero mode */}
+        <div 
+          className="relative rounded-xl shadow-lg border-2 border-gray-100 flex flex-col items-center justify-center overflow-hidden mx-auto p-1"
+          style={{
+             background: `linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)`,
+             minHeight: '6rem' 
+          }}
+        >
+          {/* Old Price */}
+          {oldPriceFormatted && (
+            <span className="text-xs text-gray-500 line-through decoration-red-500 font-medium mb-1">
+              De R$ {oldPriceFormatted}
             </span>
           )}
-          <div className="flex items-baseline justify-center gap-0.5" style={{ color: theme.primaryColor }}>
-            <span className="text-xs font-bold self-start mt-1">R$</span>
-            <span className="text-3xl md:text-4xl font-display font-black tracking-tighter leading-none">
-              {parseFloat(product.price).toFixed(2).replace('.', ',').split(',')[0]}
-            </span>
-            <div className="flex flex-col items-start leading-none self-end mb-1">
-              <span className="text-sm font-bold">,{parseFloat(product.price).toFixed(2).split('.')[1]}</span>
-              <span className="text-[9px] text-gray-500 uppercase font-semibold tracking-wide ml-0.5">{product.unit}</span>
-            </div>
+
+          <div className="flex items-start justify-center leading-none select-none" style={{ color: theme.primaryColor }}>
+             {/* R$ Symbol */}
+             <span className="font-bold mt-[0.2em] mr-1 opacity-80 text-lg">R$</span>
+             
+             {/* Integer Price */}
+             <span className="font-display font-black tracking-tighter mx-0 drop-shadow-sm leading-[0.85]" style={{ fontSize: '4rem' }}>
+               {priceInt}
+             </span>
+             
+             <div className="flex flex-col items-start mt-[0.3em]">
+                {/* Decimal Price */}
+                <span className="font-black tracking-tighter leading-[0.8]" style={{ fontSize: '2rem' }}>,{priceDec}</span>
+                {/* Unit */}
+                <span className="font-bold text-gray-400 uppercase mt-1 ml-0.5 tracking-wider text-xs">{product.unit}</span>
+             </div>
           </div>
         </div>
       </div>
