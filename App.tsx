@@ -20,15 +20,18 @@ const INITIAL_THEME: PosterTheme = {
   footerText: 'Ofertas válidas enquanto durarem os estoques',
   layoutCols: 2,
   format: POSTER_FORMATS[2], // Default to A4
-  productNameSize: 1, // Default font size multiplier (1rem)
-  priceCardSize: 1, // Default scale (100%)
-  imageRatio: 65, // Default image height percentage (65%)
+};
+
+const defaultLayout = {
+  image: { y: 0, scale: 1 },
+  name: { y: 0, scale: 1 },
+  price: { y: 0, scale: 1 },
 };
 
 const INITIAL_PRODUCTS: Product[] = [
-  { id: '1', name: 'Leite Integral 1L', price: '4.99', oldPrice: '6.50', unit: 'un' },
-  { id: '2', name: 'Arroz Branco 5kg', price: '22.90', unit: 'un' },
-  { id: '3', name: 'Café Tradicional 500g', price: '14.50', oldPrice: '18.90', unit: 'un' },
+  { id: '1', name: 'Leite Integral 1L', price: '4.99', oldPrice: '6.50', unit: 'un', layout: defaultLayout },
+  { id: '2', name: 'Arroz Branco 5kg', price: '22.90', unit: 'un', layout: defaultLayout },
+  { id: '3', name: 'Café Tradicional 500g', price: '14.50', oldPrice: '18.90', unit: 'un', layout: defaultLayout },
 ];
 
 export default function App() {
@@ -37,8 +40,6 @@ export default function App() {
   const [isDownloading, setIsDownloading] = useState(false);
 
   // FIX FOR HTML-TO-IMAGE CORS ERROR
-  // Instead of using <link> in HTML, we fetch the CSS text and inject it as a <style> tag.
-  // This treats the styles as local, allowing html-to-image to read cssRules without blocking.
   useEffect(() => {
     const loadFonts = async () => {
       try {

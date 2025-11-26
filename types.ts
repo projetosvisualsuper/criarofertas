@@ -5,6 +5,12 @@ export interface Product {
   oldPrice?: string;
   unit: string;
   image?: string;
+  // NEW: Individual layout controls
+  layout?: {
+    image: { y: number; scale: number };
+    name: { y: number; scale: number };
+    price: { y: number; scale: number };
+  }
 }
 
 export interface PosterFormat {
@@ -28,10 +34,10 @@ export interface PosterTheme {
   backgroundImage?: string;
   layoutCols: number;
   format: PosterFormat;
-  // New properties for fine-tuning
-  productNameSize?: number;
-  priceCardSize?: number;
-  imageRatio?: number; // Percentage of card height for the image
+  // REMOVED: Obsolete global controls
+  // productNameSize?: number;
+  // priceCardSize?: number;
+  // imageRatio?: number;
 }
 
 export interface AIGeneratedImage {
