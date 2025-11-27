@@ -68,7 +68,8 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
   );
 
   const HeaderContent = () => {
-    if (isHeroImageMode) return null; // Oculta conteúdo se for modo Hero Image
+    // Oculta conteúdo se for modo Hero Image
+    if (isHeroImageMode) return null; 
 
     switch (effectiveHeaderLayout) {
       case 'logo-left':
@@ -83,26 +84,13 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
     }
   };
 
-  const renderHeaderArt = () => {
-    // Se estiver no modo Background, a arte é renderizada por cima da imagem de fundo
-    if (isBackgroundMode) {
-      return (
-        <div className="absolute inset-0 z-10 pointer-events-none">
-          {/* Renderiza a arte do cabeçalho (formas geométricas) */}
-          {renderGeometricArt()}
-        </div>
-      );
-    }
-    
-    // Se não houver imagem de fundo, renderiza a arte geométrica como fundo principal
-    if (!theme.headerImage) {
-      return renderGeometricArt();
-    }
-
-    return null; // Se for modo Hero, não renderiza arte geométrica
-  };
-
   const renderGeometricArt = () => {
+    // Se houver uma imagem de cabeçalho (em qualquer modo), não renderizamos a arte geométrica de cor primária.
+    if (theme.headerImage) {
+      return null;
+    }
+
+    // Renderiza a arte geométrica apenas se não houver imagem de cabeçalho.
     switch (theme.headerArtStyleId) {
       case 'slash':
         return (
@@ -159,7 +147,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
     if (!theme.headerImage) return null;
 
     const opacity = theme.headerImageMode === 'background' ? theme.headerImageOpacity : 1;
-    const zIndex = theme.headerImageMode === 'background' ? 0 : 10;
+    const zIndex = theme.headerImageMode === 'background' ? 10 : 20; // A imagem de fundo deve estar abaixo do conteúdo (z-20)
 
     return (
       <div 
@@ -185,23 +173,20 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
       className="relative z-10 w-full flex-shrink-0"
       style={{ 
         minHeight: isLandscape ? '25%' : '20%',
-        // Define a cor primária como fallback se não houver imagem de fundo
+        // Se houver imagem de cabeçalho, o fundo do header é transparente. Caso contrário, usa a cor primária como fallback.
         backgroundColor: theme.headerImage ? 'transparent' : theme.primaryColor,
       }}
     >
+      {/* 1. Renderiza a arte geométrica (só se não houver imagem de cabeçalho) */}
+      {renderGeometricArt()}
+      
+      {/* 2. Renderiza a imagem do cabeçalho (Hero ou Background) */}
       {renderHeaderImage()}
-      {renderHeaderArt()}
       
-      {/* Se for modo Background, o conteúdo do cabeçalho é renderizado por cima da arte geométrica */}
-      {isBackgroundMode && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center p-8">
-          <HeaderContent />
-        </div>
-      )}
-      
-      {/* Se não houver imagem, o conteúdo é renderizado dentro da arte geométrica (já tratado em renderGeometricArt) */}
-      {!theme.headerImage && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center p-8">
+      {/* 3. Renderiza o conteúdo do cabeçalho (Texto/Logo) por cima de tudo, exceto no modo Hero */}
+      {/* No modo Background, o conteúdo deve estar no z-index mais alto (z-30) */}
+      {!isHeroImageMode && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
           <HeaderContent />
         </div>
       )}
