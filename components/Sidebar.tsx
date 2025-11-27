@@ -33,15 +33,44 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     setProducts(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p));
   };
 
+  const createNewProduct = (index: number): Product => ({
+    id: crypto.randomUUID(), 
+    name: `Produto ${index + 1}`, 
+    description: '', 
+    price: '0.00', 
+    unit: 'un', 
+    layout: defaultLayout
+  });
+
   const addProduct = () => {
     setProducts(prev => [
       ...prev,
-      { id: crypto.randomUUID(), name: 'Novo Produto', description: '', price: '0.00', unit: 'un', layout: defaultLayout }
+      createNewProduct(prev.length)
     ]);
   };
 
   const removeProduct = (id: string) => {
     setProducts(prev => prev.filter(p => p.id !== id));
+  };
+
+  const handleProductCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newCount = parseInt(e.target.value, 10);
+    if (isNaN(newCount) || newCount < 0) return;
+
+    setProducts(prevProducts => {
+      const currentCount = prevProducts.length;
+      if (newCount > currentCount) {
+        // Add new products
+        const productsToAdd = Array.from({ length: newCount - currentCount }, (_, i) => 
+          createNewProduct(currentCount + i)
+        );
+        return [...prevProducts, ...productsToAdd];
+      } else if (newCount < currentCount) {
+        // Remove products from the end
+        return prevProducts.slice(0, newCount);
+      }
+      return prevProducts;
+    });
   };
 
   const handleImageUpload = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -179,7 +208,23 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         
         {activeTab === 'products' && (
           <div className="space-y-4">
-            {products.map((product) => (
+            <div className="flex items-end gap-2 p-3 bg-gray-50 rounded-lg border">
+              <div className="flex-1">
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Quantidade de Produtos</label>
+                <input 
+                  type="number"
+                  min="0"
+                  value={products.length}
+                  onChange={handleProductCountChange}
+                  className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+              </div>
+              <button onClick={addProduct} className="py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm font-medium flex items-center justify-center gap-1 transition-colors">
+                <Plus size={16} /> Adicionar 1
+              </button>
+            </div>
+
+            {products.map((product, index) => (
               <details key={product.id} className="bg-gray-50 border rounded-lg shadow-sm hover:shadow-md transition-shadow group" open>
                 <summary className="p-3 flex gap-3 items-start cursor-pointer">
                    <div className="w-20 h-20 bg-white border border-dashed border-gray-300 rounded flex items-center justify-center shrink-0 overflow-hidden cursor-pointer relative hover:border-indigo-400 transition-colors">
@@ -282,9 +327,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                 </div>
               </details>
             ))}
-            <button onClick={addProduct} className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-500 hover:text-indigo-500 flex items-center justify-center gap-2 font-medium transition-colors">
-              <Plus size={18} /> Adicionar Produto
-            </button>
           </div>
         )}
 
