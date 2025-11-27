@@ -100,7 +100,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
         style={{ flexGrow: 1 }}
       >
         {/* Top part: Title & Description */}
-        <div className="text-center flex-1 flex flex-col justify-start min-h-0">
+        {/* Removido flex-1 daqui para que ocupe apenas o espaço do conteúdo */}
+        <div className="text-center flex flex-col justify-start min-h-0">
           {/* Name Container */}
           <div
             className="w-full"
