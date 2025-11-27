@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import { PosterTheme, Product } from '../types';
 import ProductCard from './ProductCard';
 import { toPng } from 'html-to-image';
@@ -19,6 +19,7 @@ const defaultLayout = {
 
 const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownloadStart, onDownloadEnd }) => {
   const posterRef = useRef<HTMLDivElement>(null);
+  const subtitleRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = async () => {
     if (posterRef.current) {
@@ -75,6 +76,32 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
   const fontScale = isStory ? 1.2 : (isLandscape ? 0.9 : 1);
   const totalRows = Math.max(1, Math.ceil(products.length / theme.layoutCols));
 
+  useLayoutEffect(() => {
+    const subtitleElement = subtitleRef.current;
+    if (!subtitleElement || !subtitleElement.parentElement) return;
+
+    // Reset styles to measure accurately
+    subtitleElement.style.transform = 'rotate(-1deg)';
+    subtitleElement.style.whiteSpace = 'nowrap';
+
+    const parentWidth = subtitleElement.parentElement.clientWidth;
+    const subtitleWidth = subtitleElement.scrollWidth;
+    
+    const availableWidth = parentWidth * 0.98; // 2% buffer
+
+    if (subtitleWidth > availableWidth) {
+      const scale = availableWidth / subtitleWidth;
+      const transformOrigin = theme.logo ? 'right center' : 'center';
+      subtitleElement.style.transformOrigin = transformOrigin;
+      subtitleElement.style.transform = `scale(${scale}) rotate(-1deg)`;
+    } else {
+      // Reset if it fits
+      const transformOrigin = theme.logo ? 'right center' : 'center';
+      subtitleElement.style.transformOrigin = transformOrigin;
+      subtitleElement.style.transform = 'rotate(-1deg)';
+    }
+  }, [theme.headerSubtitle, theme.logo, theme.format, fontScale]);
+
   return (
     <div className="flex flex-col items-center justify-center w-full h-full bg-gray-200 p-4 md:p-8 overflow-auto">
       <div className="relative flex-shrink-0 origin-center transition-all duration-300">
@@ -125,7 +152,8 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                    {theme.headerTitle}
                  </h1>
                  <div 
-                   className="inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg transform -rotate-1 border-2 border-white/20 relative z-20"
+                   ref={subtitleRef}
+                   className="inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg border-2 border-white/20 relative z-20"
                    style={{ 
                      backgroundColor: theme.secondaryColor, 
                      color: theme.primaryColor,
