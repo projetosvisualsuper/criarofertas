@@ -47,7 +47,7 @@ export const THEME_PRESETS: ThemePreset[] = [
       secondaryColor: '#facc15', // yellow-400
       backgroundColor: '#f3f4f6', // gray-200
       textColor: '#000000',
-      headerTextColor: '#000000',
+      headerTextColor: '#facc15', // Changed from black to yellow for contrast
       priceCardStyle: 'pill',
       priceCardBackgroundColor: '#000000',
       priceCardTextColor: '#facc15',
