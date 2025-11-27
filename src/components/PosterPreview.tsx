@@ -1,10 +1,9 @@
 import React, { useRef, useLayoutEffect } from 'react';
 import { PosterTheme, Product } from '../types';
 import ProductCard from './ProductCard';
-import PriceDisplay from './PriceDisplay';
-import PosterHeader from './PosterHeader';
 import { toPng } from 'html-to-image';
 import { Download } from 'lucide-react';
+import PosterHeader from './PosterHeader';
 
 interface PosterPreviewProps {
   theme: PosterTheme;
