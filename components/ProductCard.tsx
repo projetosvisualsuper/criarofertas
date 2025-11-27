@@ -89,7 +89,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
       {/* Text Content Container */}
       <div 
         className={`flex-shrink-0 w-full flex flex-col justify-between ${isStory ? 'p-3 pt-2 pb-3' : 'p-3'}`}
-        style={{ height: isStory ? '50%' : '45%' }}
       >
         {/* Top part: Title & Description */}
         <div className="text-center">
