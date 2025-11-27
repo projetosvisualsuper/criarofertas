@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import PosterPreview from '../components/PosterPreview';
-import { Product, PosterTheme, PosterFormat } from '../types';
+import { Product, PosterTheme, PosterFormat } from '../../types';
 import { POSTER_FORMATS } from '../state/initialState';
 
 interface PosterBuilderPageProps {

@@ -23,7 +23,7 @@ export default function App() {
       case 'signage':
         return <DigitalSignagePage {...commonProps} />;
       case 'social':
-        return <SocialMediaPage />;
+        return <SocialMediaPage {...commonProps} />;
       case 'ads':
         return <AudioVideoAdPage />;
       case 'settings':
