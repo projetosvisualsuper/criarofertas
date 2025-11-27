@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode } from '../types';
 import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower } from 'lucide-react';
-import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../services/geminiService';
+import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/geminiService';
 import { LAYOUT_PRESETS } from '../config/layoutPresets';
 import { THEME_PRESETS } from '../config/themePresets';
 import { HEADER_LAYOUT_PRESETS } from '../config/headerLayoutPresets';
