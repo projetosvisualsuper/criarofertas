@@ -15,7 +15,6 @@ const defaultLayout = {
   image: { x: 0, y: 0, scale: 1 },
   name: { x: 0, y: 0, scale: 1 },
   price: { x: 0, y: 0, scale: 1 },
-  description: { x: 0, y: 0, scale: 1 },
 };
 
 const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownloadStart, onDownloadEnd }) => {
@@ -91,14 +90,16 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
 
         const parentWidth = titleElement.parentElement.clientWidth;
         const titleWidth = titleElement.scrollWidth;
-        const availableWidth = parentWidth * 0.98; // 2% buffer
+        const availableWidth = parentWidth * 0.98;
 
         if (titleWidth > availableWidth) {
             const scale = availableWidth / titleWidth;
-            titleElement.style.transformOrigin = theme.logo ? 'left center' : 'center';
+            const transformOrigin = theme.logo ? 'left center' : 'center';
+            titleElement.style.transformOrigin = transformOrigin;
             titleElement.style.transform = `scale(${scale})`;
         } else {
-            titleElement.style.transformOrigin = theme.logo ? 'left center' : 'center';
+            const transformOrigin = theme.logo ? 'left center' : 'center';
+            titleElement.style.transformOrigin = transformOrigin;
             titleElement.style.transform = 'scale(1)';
         }
     }
@@ -110,14 +111,16 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
 
         const parentWidth = subtitleElement.parentElement.clientWidth;
         const subtitleWidth = subtitleElement.scrollWidth;
-        const availableWidth = parentWidth * 0.98; // 2% buffer
+        const availableWidth = parentWidth * 0.98;
 
         if (subtitleWidth > availableWidth) {
             const scale = availableWidth / subtitleWidth;
-            subtitleElement.style.transformOrigin = theme.logo ? 'left center' : 'center';
+            const transformOrigin = theme.logo ? 'left center' : 'center';
+            subtitleElement.style.transformOrigin = transformOrigin;
             subtitleElement.style.transform = `scale(${scale}) rotate(-1deg)`;
         } else {
-            subtitleElement.style.transformOrigin = theme.logo ? 'left center' : 'center';
+            const transformOrigin = theme.logo ? 'left center' : 'center';
+            subtitleElement.style.transformOrigin = transformOrigin;
             subtitleElement.style.transform = 'rotate(-1deg)';
         }
     }
@@ -179,31 +182,31 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               />
 
             <header 
-              className="relative z-10 w-full flex-shrink-0 transition-all flex items-center"
+              className={`relative z-10 w-full flex-shrink-0 transition-all flex ${theme.logo ? 'flex-row justify-between items-center' : 'flex-col items-center justify-center'}`}
               style={{ 
                 background: `linear-gradient(to bottom, ${theme.primaryColor}, ${theme.primaryColor}CC, transparent)`,
                 padding: isLandscape ? '1.5rem 2rem' : '2rem 1.5rem 0.5rem',
                 minHeight: isStory ? '15%' : 'auto' 
               }}
             >
-               <div className={`flex flex-col flex-1 ${theme.logo ? 'items-start' : 'items-center text-center'}`}>
+               <div className={`flex flex-col ${theme.logo ? 'w-3/4' : 'items-center w-full'}`}>
                  <h1 
                     ref={titleRef}
-                    className="font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white"
+                    className={`font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white ${theme.logo ? 'text-left' : 'text-center'}`}
                     style={{ 
                       textShadow: '4px 4px 0px rgba(0,0,0,0.2)',
-                      fontSize: (isLandscape ? 4 : 3.5) * fontScale + 'rem'
+                      fontSize: (isLandscape ? 4 : 3.5) * fontScale * (theme.logo ? 0.8 : 1) + 'rem'
                     }}
                  >
                    {theme.headerTitle}
                  </h1>
                  <div 
                    ref={subtitleRef}
-                   className="inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg border-2 border-white/20 relative z-20"
+                   className={`inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg border-2 border-white/20 relative z-20 ${theme.logo ? 'self-center' : ''}`}
                    style={{ 
                      backgroundColor: theme.secondaryColor, 
                      color: theme.primaryColor,
-                     fontSize: 1.25 * fontScale + 'rem'
+                     fontSize: 1.25 * fontScale * (theme.logo ? 0.9 : 1) + 'rem'
                    }}
                  >
                    {theme.headerSubtitle}
@@ -211,7 +214,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                </div>
                {theme.logo && (
                  <div 
-                   className="flex-shrink-0 ml-4"
+                   className="w-1/4 h-full flex items-center justify-end"
                    style={{
                      transform: `scale(${theme.logo.scale})`,
                      transformOrigin: 'right center'
