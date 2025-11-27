@@ -89,12 +89,13 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ product, theme }) => {
           </div>
           
           {/* Coluna Direita: Informações e Preço */}
-          <div className="w-1/2 h-full relative flex flex-col items-center justify-center text-center p-4">
+          <div className="w-1/2 h-full relative flex flex-col items-center justify-center text-center p-4 space-y-4">
             
             {/* Nome */}
             <div 
-              className="w-full transition-transform duration-100 mb-4"
+              className="w-full transition-transform duration-100"
               style={{
+                // Mantendo apenas a translação X e Y para ajustes finos, mas removendo o posicionamento absoluto
                 transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})`
               }}
             >
@@ -103,7 +104,7 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ product, theme }) => {
                 style={{ 
                   fontFamily: slideTheme.fontFamilyDisplay,
                   color: slideTheme.textColor,
-                  fontSize: 3 * fontScale + 'rem',
+                  fontSize: 2.2 * fontScale + 'rem', // Reduzido de 3rem para 2.2rem
                   padding: '0.25rem 1rem'
                 }}
               >
@@ -114,7 +115,7 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ product, theme }) => {
             {/* Description */}
             {product.description && (
               <div
-                  className="w-full px-4 transition-transform duration-100 mb-8"
+                  className="w-full px-4 transition-transform duration-100"
                   style={{
                       transform: `translateX(${layout.description?.x || 0}px) translateY(${layout.description?.y || 0}px) scale(${layout.description?.scale || 1})`
                   }}
@@ -124,7 +125,7 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ product, theme }) => {
                       style={{
                           color: slideTheme.textColor,
                           opacity: 0.8,
-                          fontSize: 1.5 * fontScale + 'rem',
+                          fontSize: 1.2 * fontScale + 'rem', // Reduzido de 1.5rem para 1.2rem
                       }}
                   >
                       {product.description}
@@ -134,8 +135,9 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ product, theme }) => {
             
             {/* Price */}
             <div 
-              className="transition-transform duration-100"
+              className="transition-transform duration-100 mt-8" // Adicionado margem superior para separar
               style={{
+                // Mantendo apenas a translação X e Y para ajustes finos
                 transform: `translateX(${layout.price.x}px) translateY(${layout.price.y}px) scale(${layout.price.scale})`
               }}
             >
@@ -146,7 +148,7 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ product, theme }) => {
                 theme={slideTheme}
                 isCompact={false}
                 isHero={true}
-                fontScale={fontScale * 1.2} // Aumenta um pouco o preço para dar mais destaque
+                fontScale={fontScale * 1.0} // Reduzido de 1.2 para 1.0
                 isLandscape={isLandscape}
               />
             </div>
