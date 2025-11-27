@@ -85,12 +85,11 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
   };
 
   const renderGeometricArt = () => {
-    // Se houver uma imagem de cabeçalho (em qualquer modo), não renderizamos a arte geométrica de cor primária.
+    // A arte geométrica só é renderizada se NÃO houver imagem de cabeçalho.
     if (theme.headerImage) {
       return null;
     }
 
-    // Renderiza a arte geométrica apenas se não houver imagem de cabeçalho.
     switch (theme.headerArtStyleId) {
       case 'slash':
         return (
@@ -147,7 +146,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
     if (!theme.headerImage) return null;
 
     const opacity = theme.headerImageMode === 'background' ? theme.headerImageOpacity : 1;
-    const zIndex = theme.headerImageMode === 'background' ? 10 : 20; // A imagem de fundo deve estar abaixo do conteúdo (z-20)
+    const zIndex = theme.headerImageMode === 'background' ? 10 : 20;
 
     return (
       <div 
@@ -168,12 +167,31 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
     );
   };
 
+  const renderPrimaryColorOverlay = () => {
+    if (!isBackgroundMode) return null;
+
+    // Usamos a cor primária com uma opacidade fixa para garantir que a imagem de fundo apareça.
+    // A opacidade da imagem de fundo (theme.headerImageOpacity) já controla o quão clara a imagem é.
+    // Aqui, aplicamos uma camada de cor primária semi-transparente (ex: 50% de opacidade).
+    const overlayOpacity = 0.5; 
+
+    return (
+      <div 
+        className="absolute inset-0 z-20"
+        style={{
+          backgroundColor: theme.primaryColor,
+          opacity: overlayOpacity,
+        }}
+      />
+    );
+  };
+
   return (
     <header 
       className="relative z-10 w-full flex-shrink-0"
       style={{ 
         minHeight: isLandscape ? '25%' : '20%',
-        // Se houver imagem de cabeçalho, o fundo do header é transparente. Caso contrário, usa a cor primária como fallback.
+        // Se houver imagem de cabeçalho, o fundo do header é transparente para que a imagem de fundo do poster (se houver) ou o fundo branco apareça por baixo.
         backgroundColor: theme.headerImage ? 'transparent' : theme.primaryColor,
       }}
     >
@@ -183,8 +201,10 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
       {/* 2. Renderiza a imagem do cabeçalho (Hero ou Background) */}
       {renderHeaderImage()}
       
-      {/* 3. Renderiza o conteúdo do cabeçalho (Texto/Logo) por cima de tudo, exceto no modo Hero */}
-      {/* No modo Background, o conteúdo deve estar no z-index mais alto (z-30) */}
+      {/* 3. Renderiza a camada de cor primária semi-transparente (apenas no modo background) */}
+      {renderPrimaryColorOverlay()}
+      
+      {/* 4. Renderiza o conteúdo do cabeçalho (Texto/Logo) por cima de tudo, exceto no modo Hero */}
       {!isHeroImageMode && (
         <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
           <HeaderContent />
