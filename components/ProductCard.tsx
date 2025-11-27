@@ -6,6 +6,7 @@ interface ProductCardProps {
   product: Product;
   theme: PosterTheme;
   layoutCols: number;
+  isStory?: boolean;
 }
 
 const defaultLayout = {
@@ -15,7 +16,7 @@ const defaultLayout = {
   description: { x: 0, y: 0, scale: 1 },
 };
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, isStory }) => {
   const nameRef = useRef<HTMLHeadingElement>(null);
   const priceContainerRef = useRef<HTMLDivElement>(null);
 
@@ -50,7 +51,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols })
         priceEl.style.transform = `scale(${scale})`;
       }
     }
-  }, [product.name, product.price, product.oldPrice, layoutCols, baseNameSize, theme.priceCardStyle]);
+  }, [product.name, product.price, product.oldPrice, layoutCols, baseNameSize, theme.priceCardStyle, isStory]);
 
   return (
     <div 
@@ -86,7 +87,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols })
       </div>
 
       {/* Text Content Container */}
-      <div className="flex-shrink-0 w-full flex flex-col" style={{ height: '45%' }}>
+      <div className="flex-shrink-0 w-full flex flex-col" style={{ height: isStory ? '38%' : '45%' }}>
         {/* Title & Description Area */}
         <div className="flex-1 w-full flex flex-col items-center justify-center text-center px-2 min-h-0">
           {/* Name Container */}
