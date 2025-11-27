@@ -42,10 +42,19 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, them
         {priceInt}
       </span>
       
-      {/* Adjusted Centavos and Unit Block */}
-      <div className={`flex flex-col items-start ml-2 ${isHero ? 'mt-[0.5em]' : 'mt-[0.3em]'}`}>
+      {/* Centavos e Unidade */}
+      <div className={`flex flex-col items-start ml-2 ${isHero ? 'mt-[0.5em] relative' : 'mt-[0.3em]'}`}>
         <span className="font-black tracking-tighter leading-[0.8]" style={priceDecStyle}>,{priceDec}</span>
-        <span className={`font-bold text-gray-400 uppercase tracking-wider ${isHero ? 'mt-[-0.2em]' : 'mt-1'}`} style={unitStyle}>{unit}</span>
+        {isHero ? (
+          <span 
+            className="font-bold text-gray-400 uppercase tracking-wider absolute bottom-0 right-[-1.5em]" 
+            style={{ ...unitStyle, color: theme.textColor, opacity: 0.8 }}
+          >
+            {unit}
+          </span>
+        ) : (
+          <span className={`font-bold text-gray-400 uppercase tracking-wider mt-1`} style={unitStyle}>{unit}</span>
+        )}
       </div>
     </div>
   );
