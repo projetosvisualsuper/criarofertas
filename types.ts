@@ -1,3 +1,5 @@
+import { HeaderLayoutId } from "./src/config/headerLayoutPresets";
+
 export interface Product {
   id: string;
   name: string;
@@ -51,6 +53,8 @@ export interface PosterTheme {
   priceCardStyle: 'default' | 'pill' | 'minimal';
   priceCardBackgroundColor: string;
   priceCardTextColor: string;
+  // NEW: Header layout selection
+  headerLayoutId: HeaderLayoutId;
 }
 
 export interface AIGeneratedImage {

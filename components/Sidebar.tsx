@@ -3,7 +3,8 @@ import { PosterTheme, Product, PosterFormat, HeaderElement } from '../types';
 import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../services/geminiService';
 import { LAYOUT_PRESETS } from '../src/config/layoutPresets';
-import { THEME_PRESETS, ThemePreset } from '../src/config/themePresets';
+import { THEME_PRESETS } from '../src/config/themePresets';
+import { HEADER_LAYOUT_PRESETS } from '../src/config/headerLayoutPresets';
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -62,7 +63,9 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
           logo: {
             src: reader.result as string,
             scale: 1,
-          }
+          },
+          // Automatically switch to a layout that uses the logo
+          headerLayoutId: 'logo-left',
         }));
       };
       reader.readAsDataURL(file);
@@ -105,6 +108,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         format: prev.format,
         logo: prev.logo,
         backgroundImage: prev.backgroundImage,
+        headerLayoutId: prev.headerLayoutId,
         headerTitle: mergeElement(prev.headerTitle, presetTheme.headerTitle),
         headerSubtitle: mergeElement(prev.headerSubtitle, presetTheme.headerSubtitle),
         footerText: mergeElement(prev.footerText, presetTheme.footerText),
@@ -310,6 +314,22 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                 ))}
               </div>
             </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Layout do Cabeçalho</label>
+              <div className="grid grid-cols-4 gap-2">
+                {HEADER_LAYOUT_PRESETS.map(preset => (
+                  <button 
+                    key={preset.id} 
+                    onClick={() => setTheme(prev => ({ ...prev, headerLayoutId: preset.id }))}
+                    className={`flex flex-col items-center justify-center p-2 border rounded-lg text-xs transition-all ${theme.headerLayoutId === preset.id ? 'bg-indigo-50 border-indigo-600 text-indigo-700 ring-1 ring-indigo-600' : 'bg-white text-gray-600 hover:border-gray-400'}`}
+                    title={preset.name}
+                  >
+                    <preset.icon size={20} className="mb-1" />
+                    <span className="text-[10px] leading-tight text-center">{preset.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
               <label className="text-sm font-semibold text-gray-700">Cabeçalho e Rodapé</label>
               <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" value={theme.headerTitle.text} onChange={(e) => setTheme({ ...theme, headerTitle: {...theme.headerTitle, text: e.target.value} })} placeholder="Título Principal"/>
@@ -344,7 +364,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                 <div className="bg-gray-50 p-2 rounded-lg border space-y-2">
                   <div className="flex items-center gap-2">
                     <img src={theme.logo.src} className="w-12 h-12 object-contain rounded bg-white border p-1" />
-                    <button onClick={() => setTheme({...theme, logo: undefined})} className="ml-auto text-xs text-red-500 hover:underline">Remover</button>
+                    <button onClick={() => setTheme({...theme, logo: undefined, headerLayoutId: 'text-only'})} className="ml-auto text-xs text-red-500 hover:underline">Remover</button>
                   </div>
                   <div className="grid grid-cols-1 gap-x-4 gap-y-2">
                     <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho</label><span className="font-mono text-gray-500">{(theme.logo.scale).toFixed(1)}x</span></div><input type="range" min="0.2" max="3" step="0.1" value={theme.logo.scale} onChange={(e) => setTheme({...theme, logo: {...theme.logo!, scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>

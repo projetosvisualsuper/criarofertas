@@ -72,6 +72,11 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
   const fontScale = isStory ? 1.2 : (isLandscape ? 0.9 : 1);
   const totalRows = Math.max(1, Math.ceil(products.length / theme.layoutCols));
 
+  // Determine effective header layout. If a layout requiring a logo is selected but no logo exists, fall back to 'text-only'.
+  const effectiveHeaderLayout = (theme.logo || theme.headerLayoutId === 'text-only') 
+    ? theme.headerLayoutId 
+    : 'text-only';
+
   useLayoutEffect(() => {
     const footerElement = footerRef.current;
 
@@ -98,6 +103,55 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
         }
     }
   }, [theme.footerText, theme.format, isStory]);
+
+  const HeaderText = () => (
+    <div className={`flex flex-col ${
+      effectiveHeaderLayout === 'logo-left' ? 'items-start' : 
+      effectiveHeaderLayout === 'logo-right' ? 'items-end' : 
+      'items-center'
+    }`}>
+      <h1 
+        className={`font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white whitespace-nowrap ${
+          effectiveHeaderLayout === 'logo-left' ? 'text-left' : 
+          effectiveHeaderLayout === 'logo-right' ? 'text-right' : 
+          'text-center'
+        }`}
+        style={{ 
+          textShadow: '4px 4px 0px rgba(0,0,0,0.2)',
+          fontSize: (isLandscape ? 4 : 3.5) * fontScale * (theme.logo && effectiveHeaderLayout !== 'logo-top' ? 0.8 : 1) + 'rem',
+          transform: `translateX(${theme.headerTitle.x}px) translateY(${theme.headerTitle.y}px) scale(${theme.headerTitle.scale})`,
+          transformOrigin: effectiveHeaderLayout === 'logo-left' ? 'left center' : effectiveHeaderLayout === 'logo-right' ? 'right center' : 'center',
+        }}
+      >
+        {theme.headerTitle.text}
+      </h1>
+      <div 
+        className={`inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg border-2 border-white/20 relative z-20 whitespace-nowrap`}
+        style={{ 
+          backgroundColor: theme.secondaryColor, 
+          color: theme.primaryColor,
+          fontSize: 1.25 * fontScale * (theme.logo && effectiveHeaderLayout !== 'logo-top' ? 0.9 : 1) + 'rem',
+          transform: `translateX(${theme.headerSubtitle.x}px) translateY(${theme.headerSubtitle.y}px) scale(${theme.headerSubtitle.scale}) rotate(-1deg)`,
+          transformOrigin: effectiveHeaderLayout === 'logo-left' ? 'left center' : effectiveHeaderLayout === 'logo-right' ? 'right center' : 'center',
+        }}
+      >
+        {theme.headerSubtitle.text}
+      </div>
+    </div>
+  );
+
+  const HeaderLogo = () => (
+    theme.logo ? (
+      <div 
+        style={{
+          transform: `scale(${theme.logo.scale})`,
+          transformOrigin: effectiveHeaderLayout === 'logo-left' ? 'left center' : effectiveHeaderLayout === 'logo-right' ? 'right center' : 'center'
+        }}
+      >
+        <img src={theme.logo.src} className="max-w-full max-h-16 object-contain drop-shadow-lg" />
+      </div>
+    ) : null
+  );
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full bg-gray-200 p-4 md:p-8 overflow-auto">
@@ -132,49 +186,34 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               />
 
             <header 
-              className={`relative z-10 w-full flex-shrink-0 transition-all flex ${theme.logo ? 'flex-row justify-between items-center' : 'flex-col items-center justify-center'}`}
+              className="relative z-10 w-full flex-shrink-0 transition-all"
               style={{ 
                 background: `linear-gradient(to bottom, ${theme.primaryColor}, ${theme.primaryColor}CC, transparent)`,
                 padding: isLandscape ? '1.5rem 2rem' : '2rem 1.5rem 0.5rem',
                 minHeight: isStory ? '15%' : 'auto' 
               }}
             >
-               <div className={`flex flex-col ${theme.logo ? 'w-3/4' : 'items-center w-full'}`}>
-                 <h1 
-                    className={`font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white ${theme.logo ? 'text-left' : 'text-center'} whitespace-nowrap`}
-                    style={{ 
-                      textShadow: '4px 4px 0px rgba(0,0,0,0.2)',
-                      fontSize: (isLandscape ? 4 : 3.5) * fontScale * (theme.logo ? 0.8 : 1) + 'rem',
-                      transform: `translateX(${theme.headerTitle.x}px) translateY(${theme.headerTitle.y}px) scale(${theme.headerTitle.scale})`,
-                      transformOrigin: theme.logo ? 'left center' : 'center',
-                    }}
-                 >
-                   {theme.headerTitle.text}
-                 </h1>
-                 <div 
-                   className={`inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg border-2 border-white/20 relative z-20 ${theme.logo ? 'self-center' : ''} whitespace-nowrap`}
-                   style={{ 
-                     backgroundColor: theme.secondaryColor, 
-                     color: theme.primaryColor,
-                     fontSize: 1.25 * fontScale * (theme.logo ? 0.9 : 1) + 'rem',
-                     transform: `translateX(${theme.headerSubtitle.x}px) translateY(${theme.headerSubtitle.y}px) scale(${theme.headerSubtitle.scale}) rotate(-1deg)`,
-                     transformOrigin: theme.logo ? 'left center' : 'center',
-                   }}
-                 >
-                   {theme.headerSubtitle.text}
-                 </div>
-               </div>
-               {theme.logo && (
-                 <div 
-                   className="w-1/4 h-full flex items-center justify-end"
-                   style={{
-                     transform: `scale(${theme.logo.scale})`,
-                     transformOrigin: 'right center'
-                   }}
-                 >
-                   <img src={theme.logo.src} className="max-w-full max-h-16 object-contain drop-shadow-lg" />
-                 </div>
-               )}
+              {effectiveHeaderLayout === 'logo-left' && (
+                <div className="flex flex-row items-center justify-start w-full h-full">
+                  <div className="w-1/4"><HeaderLogo /></div>
+                  <div className="w-3/4"><HeaderText /></div>
+                </div>
+              )}
+              {effectiveHeaderLayout === 'logo-right' && (
+                <div className="flex flex-row items-center justify-end w-full h-full">
+                  <div className="w-3/4"><HeaderText /></div>
+                  <div className="w-1/4"><HeaderLogo /></div>
+                </div>
+              )}
+              {effectiveHeaderLayout === 'logo-top' && (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <div className="mb-4"><HeaderLogo /></div>
+                  <div><HeaderText /></div>
+                </div>
+              )}
+              {effectiveHeaderLayout === 'text-only' && (
+                <div className="w-full flex items-center justify-center"><HeaderText /></div>
+              )}
             </header>
 
             <div className="flex-1 w-full min-h-0 relative z-10 flex flex-col">

@@ -23,6 +23,7 @@ const INITIAL_THEME: PosterTheme = {
   priceCardStyle: 'default',
   priceCardBackgroundColor: '#ffffff',
   priceCardTextColor: '#dc2626',
+  headerLayoutId: 'text-only', // Default header layout
 };
 
 const defaultLayout = {
