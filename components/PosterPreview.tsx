@@ -77,7 +77,6 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
   const isLandscape = theme.format.width > theme.format.height;
   const isStory = theme.format.aspectRatio === '1080 / 1920';
   const fontScale = isStory ? 1.2 : (isLandscape ? 0.9 : 1);
-  const totalRows = Math.max(1, Math.ceil(products.length / theme.layoutCols));
 
   useLayoutEffect(() => {
     const footerElement = footerRef.current;
@@ -238,7 +237,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                       className="grid flex-1"
                       style={{ 
                         gridTemplateColumns: `repeat(${theme.layoutCols}, minmax(0, 1fr))`,
-                        gridTemplateRows: `repeat(${totalRows}, minmax(0, 1fr))`,
+                        gridAutoRows: 'minmax(0, 1fr)',
                         gap: isStory ? '2rem' : '1rem'
                       }}
                     >
