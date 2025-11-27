@@ -5,9 +5,10 @@ interface PosterHeaderProps {
   theme: PosterTheme;
   isLandscape: boolean;
   fontScale: number;
+  isStory: boolean;
 }
 
-const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontScale }) => {
+const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontScale, isStory }) => {
   const effectiveHeaderLayout = (theme.logo || theme.headerLayoutId === 'text-only') 
     ? theme.headerLayoutId 
     : 'text-only';
@@ -134,7 +135,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
     <header 
       className="relative z-10 w-full flex-shrink-0"
       style={{ 
-        minHeight: isLandscape ? '25%' : '20%',
+        minHeight: isStory ? '18%' : (isLandscape ? '25%' : '20%'),
       }}
     >
       {renderHeaderArt()}

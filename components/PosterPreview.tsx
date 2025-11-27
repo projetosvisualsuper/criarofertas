@@ -135,7 +135,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                 }}
               />
 
-            <PosterHeader theme={theme} isLandscape={isLandscape} fontScale={fontScale} />
+            <PosterHeader theme={theme} isLandscape={isLandscape} fontScale={fontScale} isStory={isStory} />
 
             <div 
               className="flex-1 w-full min-h-0 relative z-10 flex flex-col"
@@ -248,7 +248,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               className="relative z-10 w-full flex-shrink-0 text-center"
               style={{ 
                 backgroundColor: theme.primaryColor,
-                padding: isStory ? '1.5rem 1rem' : '1rem 1.5rem'
+                padding: isStory ? '1rem' : '1rem 1.5rem'
               }}
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-black/10"></div>
