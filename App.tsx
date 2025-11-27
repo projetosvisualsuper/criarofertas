@@ -25,6 +25,7 @@ const INITIAL_THEME: PosterTheme = {
   priceCardBackgroundColor: '#ffffff',
   priceCardTextColor: '#dc2626',
   headerLayoutId: 'text-only',
+  headerArtStyleId: 'block',
   fontFamilyDisplay: 'Oswald, sans-serif',
   fontFamilyBody: 'Inter, sans-serif',
 };

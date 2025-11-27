@@ -2,6 +2,7 @@ import React, { useRef, useLayoutEffect } from 'react';
 import { PosterTheme, Product } from '../types';
 import ProductCard from './ProductCard';
 import PriceDisplay from './PriceDisplay';
+import PosterHeader from './PosterHeader';
 import { toPng } from 'html-to-image';
 import { Download } from 'lucide-react';
 
@@ -72,10 +73,6 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
   const fontScale = isStory ? 1.2 : (isLandscape ? 0.9 : 1);
   const totalRows = Math.max(1, Math.ceil(products.length / theme.layoutCols));
 
-  const effectiveHeaderLayout = (theme.logo || theme.headerLayoutId === 'text-only') 
-    ? theme.headerLayoutId 
-    : 'text-only';
-
   useLayoutEffect(() => {
     const footerElement = footerRef.current;
     if (footerElement && footerElement.parentElement) {
@@ -94,57 +91,6 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
         }
     }
   }, [theme.footerText, theme.format, isStory]);
-
-  const HeaderText = () => (
-    <div className={`flex flex-col ${
-      effectiveHeaderLayout === 'logo-left' ? 'items-start' : 
-      effectiveHeaderLayout === 'logo-right' ? 'items-end' : 
-      'items-center'
-    }`}>
-      <h1 
-        className={`font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none whitespace-nowrap ${
-          effectiveHeaderLayout === 'logo-left' ? 'text-left' : 
-          effectiveHeaderLayout === 'logo-right' ? 'text-right' : 
-          'text-center'
-        }`}
-        style={{ 
-          fontFamily: theme.fontFamilyDisplay,
-          color: theme.headerTextColor,
-          textShadow: '4px 4px 0px rgba(0,0,0,0.2)',
-          fontSize: (isLandscape ? 4 : 3.5) * fontScale * (theme.logo && effectiveHeaderLayout !== 'logo-top' ? 0.8 : 1) + 'rem',
-          transform: `translateX(${theme.headerTitle.x}px) translateY(${theme.headerTitle.y}px) scale(${theme.headerTitle.scale})`,
-          transformOrigin: effectiveHeaderLayout === 'logo-left' ? 'left center' : effectiveHeaderLayout === 'logo-right' ? 'right center' : 'center',
-        }}
-      >
-        {theme.headerTitle.text}
-      </h1>
-      <div 
-        className={`inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg border-2 border-white/20 relative z-20 whitespace-nowrap`}
-        style={{ 
-          backgroundColor: theme.secondaryColor, 
-          color: theme.primaryColor,
-          fontSize: 1.25 * fontScale * (theme.logo && effectiveHeaderLayout !== 'logo-top' ? 0.9 : 1) + 'rem',
-          transform: `translateX(${theme.headerSubtitle.x}px) translateY(${theme.headerSubtitle.y}px) scale(${theme.headerSubtitle.scale}) rotate(-1deg)`,
-          transformOrigin: effectiveHeaderLayout === 'logo-left' ? 'left center' : effectiveHeaderLayout === 'logo-right' ? 'right center' : 'center',
-        }}
-      >
-        {theme.headerSubtitle.text}
-      </div>
-    </div>
-  );
-
-  const HeaderLogo = () => (
-    theme.logo ? (
-      <div 
-        style={{
-          transform: `scale(${theme.logo.scale})`,
-          transformOrigin: effectiveHeaderLayout === 'logo-left' ? 'left center' : effectiveHeaderLayout === 'logo-right' ? 'right center' : 'center'
-        }}
-      >
-        <img src={theme.logo.src} className="max-w-full max-h-16 object-contain drop-shadow-lg" />
-      </div>
-    ) : null
-  );
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full bg-gray-200 p-4 md:p-8 overflow-auto">
@@ -178,36 +124,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                 }}
               />
 
-            <header 
-              className="relative z-10 w-full flex-shrink-0 transition-all"
-              style={{ 
-                background: `linear-gradient(to bottom, ${theme.primaryColor}, ${theme.primaryColor}CC, transparent)`,
-                padding: isLandscape ? '1.5rem 2rem' : '2rem 1.5rem 0.5rem',
-                minHeight: isStory ? '15%' : 'auto' 
-              }}
-            >
-              {effectiveHeaderLayout === 'logo-left' && (
-                <div className="flex flex-row items-center w-full h-full">
-                  <div className="w-1/4"><HeaderLogo /></div>
-                  <div className="w-3/4"><HeaderText /></div>
-                </div>
-              )}
-              {effectiveHeaderLayout === 'logo-right' && (
-                <div className="flex flex-row items-center w-full h-full">
-                  <div className="w-3/4"><HeaderText /></div>
-                  <div className="w-1/4 flex justify-end"><HeaderLogo /></div>
-                </div>
-              )}
-              {effectiveHeaderLayout === 'logo-top' && (
-                <div className="flex flex-col items-center justify-center h-full">
-                  <div className="mb-4"><HeaderLogo /></div>
-                  <div><HeaderText /></div>
-                </div>
-              )}
-              {effectiveHeaderLayout === 'text-only' && (
-                <div className="w-full flex items-center justify-center"><HeaderText /></div>
-              )}
-            </header>
+            <PosterHeader theme={theme} isLandscape={isLandscape} fontScale={fontScale} />
 
             <div className="flex-1 w-full min-h-0 relative z-10 flex flex-col">
               {isHeroMode && product ? (

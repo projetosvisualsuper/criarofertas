@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { PosterTheme, Product, PosterFormat, HeaderElement } from '../types';
-import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type } from 'lucide-react';
+import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../services/geminiService';
 import { LAYOUT_PRESETS } from '../src/config/layoutPresets';
 import { THEME_PRESETS } from '../src/config/themePresets';
 import { HEADER_LAYOUT_PRESETS } from '../src/config/headerLayoutPresets';
 import { FONT_PRESETS } from '../src/config/fontPresets';
+import { HEADER_ART_PRESETS } from '../src/config/headerArtPresets';
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -311,6 +312,22 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                       </div>
                       <span className="text-xs font-semibold">{preset.name}</span>
                     </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Brush size={16}/> Estilo da Arte do Cabeçalho</label>
+              <div className="grid grid-cols-4 gap-2">
+                {HEADER_ART_PRESETS.map(preset => (
+                  <button 
+                    key={preset.id} 
+                    onClick={() => setTheme(prev => ({ ...prev, headerArtStyleId: preset.id }))}
+                    className={`flex flex-col items-center justify-center p-2 border rounded-lg text-xs transition-all ${theme.headerArtStyleId === preset.id ? 'bg-indigo-50 border-indigo-600 text-indigo-700 ring-1 ring-indigo-600' : 'bg-white text-gray-600 hover:border-gray-400'}`}
+                    title={preset.name}
+                  >
+                    <preset.icon size={20} className="mb-1" />
+                    <span className="text-[10px] leading-tight text-center">{preset.name}</span>
                   </button>
                 ))}
               </div>

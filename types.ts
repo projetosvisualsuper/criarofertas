@@ -1,4 +1,5 @@
 import { HeaderLayoutId } from "./src/config/headerLayoutPresets";
+import { HeaderArtStyleId } from "./src/config/headerArtPresets";
 
 export interface Product {
   id: string;
@@ -52,7 +53,7 @@ export interface PosterTheme {
   priceCardBackgroundColor: string;
   priceCardTextColor: string;
   headerLayoutId: HeaderLayoutId;
-  // NEW: More theme options for deeper customization
+  headerArtStyleId: HeaderArtStyleId;
   fontFamilyDisplay: string;
   fontFamilyBody: string;
   headerTextColor: string;
