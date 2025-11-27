@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { PosterTheme, Product, PosterFormat } from '../types';
 import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../services/geminiService';
+import { LAYOUT_PRESETS } from '../config/layoutPresets';
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -65,6 +66,23 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleFormatChange = (newFormat: PosterFormat) => {
+    const preset = LAYOUT_PRESETS[newFormat.id] || {};
+    setTheme(prevTheme => {
+      // Preserve existing text when applying presets
+      const updatedPreset = { ...preset };
+      if (updatedPreset.headerTitle) updatedPreset.headerTitle.text = prevTheme.headerTitle.text;
+      if (updatedPreset.headerSubtitle) updatedPreset.headerSubtitle.text = prevTheme.headerSubtitle.text;
+      if (updatedPreset.footerText) updatedPreset.footerText.text = prevTheme.footerText.text;
+
+      return {
+        ...prevTheme,
+        ...updatedPreset,
+        format: newFormat,
+      };
+    });
   };
 
   const handleGenerateHeadline = async () => {
@@ -243,7 +261,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><LayoutTemplate size={16}/> Formato do Cartaz</label>
                <div className="grid grid-cols-2 gap-2">
                   {formats.map(fmt => (
-                    <button key={fmt.id} onClick={() => setTheme({...theme, format: fmt})} className={`flex flex-col items-center justify-center p-2 border rounded-lg text-xs transition-all ${theme.format.id === fmt.id ? 'bg-indigo-50 border-indigo-600 text-indigo-700 ring-1 ring-indigo-600' : 'bg-white text-gray-600 hover:border-gray-400'}`}>
+                    <button key={fmt.id} onClick={() => handleFormatChange(fmt)} className={`flex flex-col items-center justify-center p-2 border rounded-lg text-xs transition-all ${theme.format.id === fmt.id ? 'bg-indigo-50 border-indigo-600 text-indigo-700 ring-1 ring-indigo-600' : 'bg-white text-gray-600 hover:border-gray-400'}`}>
                       <span className="text-xl mb-1">{fmt.icon}</span><span className="font-semibold">{fmt.name}</span><span className="text-[10px] opacity-70">{fmt.label}</span>
                     </button>
                   ))}
