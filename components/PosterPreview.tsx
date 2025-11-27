@@ -79,29 +79,26 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
   useLayoutEffect(() => {
     const footerElement = footerRef.current;
 
-    // Scale Footer Text
-    if (footerElement) {
-        // Reset styles to get natural dimensions
-        footerElement.style.fontSize = '';
-        footerElement.style.lineHeight = '';
-        footerElement.style.whiteSpace = 'nowrap'; // Force single line to measure
+    // Auto-fit footer text to a single line
+    if (footerElement && footerElement.parentElement) {
+        // Reset styles to begin measurement
+        footerElement.style.fontSize = isStory ? '1.1rem' : '1rem'; // Start from the base size
+        footerElement.style.whiteSpace = 'nowrap'; // Force single line
+
+        const parentStyle = window.getComputedStyle(footerElement.parentElement);
+        const parentPaddingX = parseFloat(parentStyle.paddingLeft) + parseFloat(parentStyle.paddingRight);
+        const availableWidth = footerElement.parentElement.clientWidth - parentPaddingX;
         
         const computedStyle = window.getComputedStyle(footerElement);
         let currentFontSize = parseFloat(computedStyle.fontSize);
-        const singleLineHeight = footerElement.clientHeight;
-        const maxAllowedHeight = singleLineHeight * 2.2; // Allow for 2 lines with a small buffer
-
-        // Allow text to wrap again
-        footerElement.style.whiteSpace = 'normal';
-
-        // Check if the wrapped text overflows the 2-line height limit
-        // Use a while loop to decrement font size until it fits
-        while (footerElement.scrollHeight > maxAllowedHeight && currentFontSize > 8) { // Minimum font size of 8px
-            currentFontSize -= 0.5; // Decrement by 0.5px for smoother scaling
+        
+        // Reduce font size until it fits within the available width
+        while (footerElement.scrollWidth > availableWidth && currentFontSize > 8) { // Minimum font size of 8px
+            currentFontSize -= 0.5; // Decrement by 0.5px
             footerElement.style.fontSize = `${currentFontSize}px`;
         }
     }
-  }, [theme.footerText, theme.format, fontScale]);
+  }, [theme.footerText, theme.format, isStory]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full bg-gray-200 p-4 md:p-8 overflow-auto">
@@ -294,7 +291,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
             </div>
 
             <footer 
-              className="relative z-10 w-full flex-shrink-0 text-center bg-white"
+              className="relative z-10 w-full flex-shrink-0 text-center"
               style={{ 
                 backgroundColor: theme.primaryColor,
                 padding: isStory ? '1.5rem 1rem' : '1rem 1.5rem'
