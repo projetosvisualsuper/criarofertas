@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import SidebarNav from './src/components/SidebarNav';
-import PosterBuilderPage from './pages/PosterBuilderPage';
-import DigitalSignagePage from './pages/DigitalSignagePage';
-import SocialMediaPage from './pages/SocialMediaPage';
-import AudioVideoAdPage from './pages/AudioVideoAdPage';
-import SettingsPage from './pages/SettingsPage';
+import PosterBuilderPage from './src/pages/PosterBuilderPage';
+import DigitalSignagePage from './src/pages/DigitalSignagePage';
+import SocialMediaPage from './src/pages/SocialMediaPage';
+import AudioVideoAdPage from './src/pages/AudioVideoAdPage';
+import SettingsPage from './src/pages/SettingsPage';
 
 export default function App() {
   const [activeModule, setActiveModule] = useState('poster');
