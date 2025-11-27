@@ -79,23 +79,26 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
   useLayoutEffect(() => {
     const footerElement = footerRef.current;
 
-    // Auto-fit footer text to a single line
+    // Auto-fit footer text to a single line by scaling its font size.
     if (footerElement && footerElement.parentElement) {
-        // Reset styles to begin measurement
-        footerElement.style.fontSize = isStory ? '1.1rem' : '1rem'; // Start from the base size
-        footerElement.style.whiteSpace = 'nowrap'; // Force single line
+        // Reset styles to begin measurement from a known state
+        footerElement.style.fontSize = isStory ? '1.1rem' : '1rem';
+        footerElement.style.whiteSpace = 'nowrap'; // Force single line to measure its true width
 
-        const parentStyle = window.getComputedStyle(footerElement.parentElement);
+        const parentElement = footerElement.parentElement;
+        const parentStyle = window.getComputedStyle(parentElement);
         const parentPaddingX = parseFloat(parentStyle.paddingLeft) + parseFloat(parentStyle.paddingRight);
-        const availableWidth = footerElement.parentElement.clientWidth - parentPaddingX;
+        const availableWidth = parentElement.clientWidth - parentPaddingX;
         
-        const computedStyle = window.getComputedStyle(footerElement);
-        let currentFontSize = parseFloat(computedStyle.fontSize);
-        
-        // Reduce font size until it fits within the available width
-        while (footerElement.scrollWidth > availableWidth && currentFontSize > 8) { // Minimum font size of 8px
-            currentFontSize -= 0.5; // Decrement by 0.5px
-            footerElement.style.fontSize = `${currentFontSize}px`;
+        const currentScrollWidth = footerElement.scrollWidth;
+
+        // If the text overflows, calculate and apply the new font size
+        if (currentScrollWidth > availableWidth) {
+            const scaleFactor = availableWidth / currentScrollWidth;
+            const currentFontSize = parseFloat(window.getComputedStyle(footerElement).fontSize);
+            // Apply a small buffer (98%) to avoid floating point inaccuracies
+            const newFontSize = Math.max(8, currentFontSize * scaleFactor * 0.98); 
+            footerElement.style.fontSize = `${newFontSize}px`;
         }
     }
   }, [theme.footerText, theme.format, isStory]);
