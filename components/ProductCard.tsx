@@ -1,5 +1,6 @@
 import React, { useRef, useLayoutEffect } from 'react';
 import { Product, PosterTheme } from '../types';
+import PriceDisplay from './PriceDisplay';
 
 interface ProductCardProps {
   product: Product;
@@ -17,10 +18,6 @@ const defaultLayout = {
 const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols }) => {
   const nameRef = useRef<HTMLHeadingElement>(null);
   const priceContainerRef = useRef<HTMLDivElement>(null);
-
-  const priceFormatted = parseFloat(product.price).toFixed(2);
-  const [priceInt, priceDec] = priceFormatted.split('.');
-  const oldPriceFormatted = product.oldPrice ? parseFloat(product.oldPrice).toFixed(2).replace('.', ',') : null;
 
   const layout = product.layout || defaultLayout;
   const isCompact = layoutCols >= 3;
@@ -53,14 +50,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols })
         priceEl.style.transform = `scale(${scale})`;
       }
     }
-  }, [product.name, product.price, product.oldPrice, layoutCols, baseNameSize]);
-
-  // Define dynamic styles based on the number of columns
-  const oldPriceStyle = { fontSize: isCompact ? '0.9rem' : '1.125rem' };
-  const rsStyle = { fontSize: isCompact ? '0.8rem' : '1rem' };
-  const priceIntStyle = { fontSize: isCompact ? '2rem' : '2.5rem' };
-  const priceDecStyle = { fontSize: isCompact ? '1rem' : '1.25rem' };
-  const unitStyle = { fontSize: isCompact ? '0.65rem' : '0.75rem' };
+  }, [product.name, product.price, product.oldPrice, layoutCols, baseNameSize, theme.priceCardStyle]);
 
   return (
     <div 
@@ -128,29 +118,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols })
           style={{ transform: `translateX(${layout.price.x}px) translateY(${layout.price.y}px) scale(${layout.price.scale})` }}
         >
           <div ref={priceContainerRef} className="flex items-end justify-center gap-1 origin-center">
-            {oldPriceFormatted && (
-              <div className="pb-1 text-gray-500 text-center">
-                <span className="text-xs block leading-none font-semibold">DE</span>
-                <span className="font-bold line-through decoration-red-500 whitespace-nowrap" style={oldPriceStyle}>
-                  R${oldPriceFormatted}
-                </span>
-              </div>
-            )}
-            <div 
-              className="relative rounded-xl shadow-lg border-2 border-gray-100 flex flex-col items-center justify-center overflow-hidden py-0.5 px-1"
-              style={{ background: `linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)` }}
-            >
-              <div className="flex items-start justify-center leading-none select-none" style={{ color: theme.primaryColor }}>
-                 <span className="font-bold mt-[0.2em] mr-1 opacity-80" style={rsStyle}>R$</span>
-                 <span className="font-display font-black tracking-tighter mx-0 drop-shadow-sm leading-[0.85]" style={priceIntStyle}>
-                   {priceInt}
-                 </span>
-                 <div className="flex flex-col items-start mt-[0.3em]">
-                    <span className="font-black tracking-tighter leading-[0.8]" style={priceDecStyle}>,{priceDec}</span>
-                    <span className="font-bold text-gray-400 uppercase mt-1 ml-0.5 tracking-wider" style={unitStyle}>{product.unit}</span>
-                 </div>
-              </div>
-            </div>
+            <PriceDisplay
+              price={product.price}
+              oldPrice={product.oldPrice}
+              unit={product.unit}
+              theme={theme}
+              isCompact={isCompact}
+              isHero={false}
+            />
           </div>
         </div>
       </div>

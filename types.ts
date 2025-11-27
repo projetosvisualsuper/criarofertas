@@ -47,6 +47,10 @@ export interface PosterTheme {
     src: string;
     scale: number;
   }
+  // NEW: Price card styling
+  priceCardStyle: 'default' | 'pill' | 'minimal';
+  priceCardBackgroundColor: string;
+  priceCardTextColor: string;
 }
 
 export interface AIGeneratedImage {

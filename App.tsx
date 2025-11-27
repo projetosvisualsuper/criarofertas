@@ -20,6 +20,9 @@ const INITIAL_THEME: PosterTheme = {
   footerText: 'Ofertas válidas enquanto durarem os estoques',
   layoutCols: 2,
   format: POSTER_FORMATS[2], // Default to A4
+  priceCardStyle: 'default',
+  priceCardBackgroundColor: '#ffffff',
+  priceCardTextColor: '#dc2626',
 };
 
 const defaultLayout = {

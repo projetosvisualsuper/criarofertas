@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PosterTheme, Product, PosterFormat } from '../types';
-import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal } from 'lucide-react';
+import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../services/geminiService';
 
 interface SidebarProps {
@@ -293,6 +293,18 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                 <div><label className="text-xs text-gray-500 mb-1 block">Secundária</label><div className="flex items-center gap-2 border rounded p-1"><input type="color" value={theme.secondaryColor} onChange={(e) => setTheme({ ...theme, secondaryColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-none"/><span className="text-xs font-mono">{theme.secondaryColor}</span></div></div>
                 <div><label className="text-xs text-gray-500 mb-1 block">Fundo</label><div className="flex items-center gap-2 border rounded p-1"><input type="color" value={theme.backgroundColor} onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-none"/><span className="text-xs font-mono">{theme.backgroundColor}</span></div></div>
                 <div><label className="text-xs text-gray-500 mb-1 block">Cor Texto</label><div className="flex items-center gap-2 border rounded p-1"><input type="color" value={theme.textColor} onChange={(e) => setTheme({ ...theme, textColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-none"/><span className="text-xs font-mono">{theme.textColor}</span></div></div>
+              </div>
+            </div>
+            <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
+              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Tag size={16}/> Estilo do Preço</label>
+              <div className="grid grid-cols-3 gap-2">
+                <button onClick={() => setTheme({ ...theme, priceCardStyle: 'default' })} className={`py-2 border rounded text-xs font-medium transition-colors ${theme.priceCardStyle === 'default' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>Caixa</button>
+                <button onClick={() => setTheme({ ...theme, priceCardStyle: 'pill' })} className={`py-2 border rounded text-xs font-medium transition-colors ${theme.priceCardStyle === 'pill' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>Pílula</button>
+                <button onClick={() => setTheme({ ...theme, priceCardStyle: 'minimal' })} className={`py-2 border rounded text-xs font-medium transition-colors ${theme.priceCardStyle === 'minimal' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>Mínimo</button>
+              </div>
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div><label className="text-xs text-gray-500 mb-1 block">Fundo Preço</label><div className="flex items-center gap-2 border rounded p-1"><input type="color" value={theme.priceCardBackgroundColor} onChange={(e) => setTheme({ ...theme, priceCardBackgroundColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-none"/><span className="text-xs font-mono">{theme.priceCardBackgroundColor}</span></div></div>
+                <div><label className="text-xs text-gray-500 mb-1 block">Cor Preço</label><div className="flex items-center gap-2 border rounded p-1"><input type="color" value={theme.priceCardTextColor} onChange={(e) => setTheme({ ...theme, priceCardTextColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-none"/><span className="text-xs font-mono">{theme.priceCardTextColor}</span></div></div>
               </div>
             </div>
             {products.length > 1 && (

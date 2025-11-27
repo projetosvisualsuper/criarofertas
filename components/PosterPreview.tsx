@@ -1,6 +1,7 @@
 import React, { useRef, useLayoutEffect } from 'react';
 import { PosterTheme, Product } from '../types';
 import ProductCard from './ProductCard';
+import PriceDisplay from './PriceDisplay';
 import { toPng } from 'html-to-image';
 import { Download } from 'lucide-react';
 
@@ -65,11 +66,6 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
   const isHeroMode = products.length === 1;
   const product = products[0];
   const layout = product?.layout || defaultLayout;
-
-  const priceParts = product ? product.price.split('.') : ['0', '00'];
-  const priceInt = priceParts[0];
-  const priceDec = priceParts[1] || '00';
-  const oldPrice = product?.oldPrice ? parseFloat(product.oldPrice).toFixed(2).replace('.', ',') : null;
 
   const isLandscape = theme.format.width > theme.format.height;
   const isStory = theme.format.aspectRatio === '1080 / 1920';
@@ -233,33 +229,16 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                        transform: `translateX(calc(-50% + ${layout.price.x}px)) translateY(calc(75% + ${layout.price.y}px)) scale(${layout.price.scale})`
                      }}
                    >
-                      <div 
-                        className="relative bg-white rounded-[2.5rem] shadow-2xl border-2 border-gray-50 flex items-center justify-center overflow-hidden transform transition-transform pointer-events-auto mx-auto"
-                        style={{
-                           padding: isLandscape ? '2rem 4rem' : '1rem 3rem',
-                           background: `linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)`,
-                        }}
-                      >
-                          <div className="absolute top-0 left-0 w-full h-4 opacity-30" style={{backgroundColor: theme.primaryColor}}></div>
-                          <div className="flex items-start justify-center leading-none select-none" style={{ color: theme.primaryColor }}>
-                             {oldPrice && (
-                               <div className="pb-2 mr-4 text-gray-500 text-center">
-                                 <span className="text-lg block leading-none font-semibold">DE</span>
-                                 <span className="text-3xl font-bold line-through decoration-red-500">
-                                   R${oldPrice}
-                                 </span>
-                               </div>
-                             )}
-                             <span className="font-bold mt-[0.2em] mr-2 opacity-80" style={{ fontSize: (isLandscape ? 2.5 : 2) * fontScale + 'rem' }}>R$</span>
-                             <span className="font-display font-black tracking-tighter mx-1 drop-shadow-sm leading-[0.85]" style={{ fontSize: (isLandscape ? 9 : 7) * fontScale + 'rem' }}>
-                               {priceInt}
-                             </span>
-                             <div className="flex flex-col items-start mt-[0.3em]">
-                                <span className="font-black tracking-tighter leading-[0.8]" style={{ fontSize: (isLandscape ? 4.5 : 3.5) * fontScale + 'rem' }}>,{priceDec}</span>
-                                <span className="font-bold text-gray-400 uppercase mt-2 ml-1 tracking-wider text-xl">{product.unit}</span>
-                             </div>
-                          </div>
-                      </div>
+                      <PriceDisplay
+                        price={product.price}
+                        oldPrice={product.oldPrice}
+                        unit={product.unit}
+                        theme={theme}
+                        isCompact={false}
+                        isHero={true}
+                        fontScale={fontScale}
+                        isLandscape={isLandscape}
+                      />
                    </div>
                 </div>
               ) : (
