@@ -30,25 +30,14 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
         const element = posterRef.current;
         const targetWidth = theme.format.width;
         const targetHeight = theme.format.height;
-        const scale = targetWidth / element.offsetWidth;
 
         const dataUrl = await toPng(element, { 
           cacheBust: true, 
           quality: 1.0,
-          pixelRatio: 1, 
+          pixelRatio: 1,
           width: targetWidth,
           height: targetHeight,
           backgroundColor: theme.backgroundColor,
-          style: {
-             transform: `scale(${scale})`,
-             transformOrigin: 'top left',
-             width: `${element.offsetWidth}px`,
-             height: `${element.offsetHeight}px`,
-             maxWidth: 'none',
-             maxHeight: 'none',
-             margin: '0',
-             boxShadow: 'none',
-          }
         });
 
         const link = document.createElement('a');
