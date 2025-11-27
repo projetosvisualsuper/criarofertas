@@ -21,10 +21,10 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, them
   const landscape = isLandscape || false;
 
   // Dynamic styles based on context
-  const oldPriceStyle = { fontSize: isHero ? '1.875rem' : (isCompact ? '0.9rem' : '1.125rem') };
-  const rsStyle = { fontSize: isHero ? (landscape ? 2.5 : 2) * scale + 'rem' : (isCompact ? '0.8rem' : '1rem') };
-  const priceIntStyle = { fontSize: isHero ? (landscape ? 9 : 7) * scale + 'rem' : (isCompact ? '2rem' : '2.5rem') };
-  const priceDecStyle = { fontSize: isHero ? (landscape ? 4.5 : 3.5) * scale + 'rem' : (isCompact ? '1rem' : '1.25rem') };
+  const oldPriceStyle = { fontSize: isHero ? '1.5rem' : (isCompact ? '0.9rem' : '1.125rem') }; // Reduced from 1.875rem
+  const rsStyle = { fontSize: isHero ? (landscape ? 2 : 2) * scale + 'rem' : (isCompact ? '0.8rem' : '1rem') }; // Reduced from 2.5rem
+  const priceIntStyle = { fontSize: isHero ? (landscape ? 6 : 7) * scale + 'rem' : (isCompact ? '2rem' : '2.5rem') }; // Reduced from 9rem/7rem to 6rem/7rem
+  const priceDecStyle = { fontSize: isHero ? (landscape ? 3 : 3.5) * scale + 'rem' : (isCompact ? '1rem' : '1.25rem') }; // Reduced from 4.5rem/3.5rem to 3rem/3.5rem
   const unitStyle = { fontSize: isHero ? '1.25rem' : (isCompact ? '0.65rem' : '0.75rem') };
 
   const priceContent = (
