@@ -25,7 +25,8 @@ export default function App() {
       case 'social':
         return <SocialMediaPage {...commonProps} />;
       case 'ads':
-        return <AudioVideoAdPage />;
+        // Pass only necessary props (theme and products)
+        return <AudioVideoAdPage theme={theme} products={products} />;
       case 'settings':
         return <SettingsPage />;
       default:
