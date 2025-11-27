@@ -26,6 +26,7 @@ const defaultLayout = {
   image: { x: 0, y: 0, scale: 1 },
   name: { x: 0, y: 0, scale: 1 },
   price: { x: 0, y: 0, scale: 1 },
+  description: { x: 0, y: 0, scale: 1 },
 };
 
 const INITIAL_PRODUCTS: Product[] = [

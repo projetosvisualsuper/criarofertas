@@ -11,6 +11,7 @@ const defaultLayout = {
   image: { x: 0, y: 0, scale: 1 },
   name: { x: 0, y: 0, scale: 1 },
   price: { x: 0, y: 0, scale: 1 },
+  description: { x: 0, y: 0, scale: 1 },
 };
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols }) => {
@@ -96,18 +97,28 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols })
 
       {/* Text Content Container */}
       <div className="flex-shrink-0 w-full flex flex-col" style={{ height: '45%' }}>
-        {/* Title & Description */}
-        <div 
-          className="flex-1 w-full flex flex-col items-center justify-center text-center px-2 min-h-0"
-          style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}
-        >
-          <h3 ref={nameRef} className="font-bold leading-tight text-gray-800 line-clamp-2" style={{ color: theme.textColor, fontSize: `${baseNameSize}rem` }}>
-            {product.name}
-          </h3>
+        {/* Title & Description Area */}
+        <div className="flex-1 w-full flex flex-col items-center justify-center text-center px-2 min-h-0">
+          {/* Name Container */}
+          <div
+            className="w-full"
+            style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}
+          >
+            <h3 ref={nameRef} className="font-bold leading-tight text-gray-800 line-clamp-2" style={{ color: theme.textColor, fontSize: `${baseNameSize}rem` }}>
+              {product.name}
+            </h3>
+          </div>
+          
+          {/* Description Container */}
           {product.description && (
-            <p className="text-xs text-gray-600 mt-1 line-clamp-2" style={{ color: theme.textColor, opacity: 0.8 }}>
-              {product.description}
-            </p>
+            <div
+              className="w-full"
+              style={{ transform: `translateX(${layout.description?.x || 0}px) translateY(${layout.description?.y || 0}px) scale(${layout.description?.scale || 1})` }}
+            >
+              <p className="text-xs text-gray-600 mt-1 line-clamp-2" style={{ color: theme.textColor, opacity: 0.8 }}>
+                {product.description}
+              </p>
+            </div>
           )}
         </div>
         

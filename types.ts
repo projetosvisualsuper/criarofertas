@@ -11,6 +11,7 @@ export interface Product {
     image: { x: number; y: number; scale: number };
     name: { x: number; y: number; scale: number };
     price: { x: number; y: number; scale: number };
+    description: { x: number; y: number; scale: number };
   }
 }
 

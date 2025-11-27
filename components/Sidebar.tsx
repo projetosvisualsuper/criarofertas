@@ -15,6 +15,7 @@ const defaultLayout = {
   image: { x: 0, y: 0, scale: 1 },
   name: { x: 0, y: 0, scale: 1 },
   price: { x: 0, y: 0, scale: 1 },
+  description: { x: 0, y: 0, scale: 1 },
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProducts, formats }) => {
@@ -212,6 +213,13 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                     <div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Nome Tamanho</label><span className="font-mono text-gray-500">{(product.layout?.name.scale || 1).toFixed(1)}x</span></div><input type="range" min="0.8" max="2" step="0.1" value={product.layout?.name.scale || 1} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), name: {...(product.layout?.name || defaultLayout.name), scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
                     <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{product.layout?.name.x || 0}px</span></div><input type="range" min="-100" max="100" value={product.layout?.name.x || 0} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), name: {...(product.layout?.name || defaultLayout.name), x: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
                     <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{product.layout?.name.y || 0}px</span></div><input type="range" min="-100" max="100" value={product.layout?.name.y || 0} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), name: {...(product.layout?.name || defaultLayout.name), y: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                  </div>
+
+                  {/* Description Controls */}
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-t pt-2">
+                    <div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Descrição Tamanho</label><span className="font-mono text-gray-500">{(product.layout?.description?.scale || 1).toFixed(1)}x</span></div><input type="range" min="0.8" max="2" step="0.1" value={product.layout?.description?.scale || 1} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), description: {...(product.layout?.description || defaultLayout.description), scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                    <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{product.layout?.description?.x || 0}px</span></div><input type="range" min="-100" max="100" value={product.layout?.description?.x || 0} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), description: {...(product.layout?.description || defaultLayout.description), x: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                    <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{product.layout?.description?.y || 0}px</span></div><input type="range" min="-100" max="100" value={product.layout?.description?.y || 0} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), description: {...(product.layout?.description || defaultLayout.description), y: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
                   </div>
 
                   {/* Price Controls */}
