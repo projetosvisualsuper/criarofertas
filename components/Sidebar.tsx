@@ -432,7 +432,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                 <div><label className="text-xs text-gray-500 mb-1 block">Cor Preço</label><div className="flex items-center gap-2 border rounded p-1"><input type="color" value={theme.priceCardTextColor} onChange={(e) => setTheme({ ...theme, priceCardTextColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-none"/><span className="text-xs font-mono">{theme.priceCardTextColor}</span></div></div>
               </div>
               
-              {/* Novos Controles de Posição da Unidade */}
+              {/* Controles de Posição da Unidade */}
               <div className="space-y-2 pt-4 border-t mt-4">
                 <label className="text-xs font-semibold text-gray-700 block">Posição da Unidade (Modo Hero)</label>
                 <div className="grid grid-cols-2 gap-4">
@@ -471,10 +471,39 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                 </div>
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
               <label className="text-sm font-semibold text-gray-700">Opções de Layout</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => setTheme({ ...theme, hasFrame: !theme.hasFrame })} className={`py-2 border rounded text-sm font-medium transition-colors flex items-center justify-center gap-2 ${theme.hasFrame ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}><Frame size={16}/> {theme.hasFrame ? 'Remover Moldura' : 'Adicionar Moldura'}</button>
+              <div className="space-y-3">
+                <button onClick={() => setTheme({ ...theme, hasFrame: !theme.hasFrame })} className={`w-full py-2 border rounded text-sm font-medium transition-colors flex items-center justify-center gap-2 ${theme.hasFrame ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}><Frame size={16}/> {theme.hasFrame ? 'Remover Moldura' : 'Adicionar Moldura'}</button>
+                
+                {theme.hasFrame && (
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    {/* Frame Color */}
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Cor da Moldura</label>
+                      <div className="flex items-center gap-2 border rounded p-1">
+                        <input type="color" value={theme.frameColor} onChange={(e) => setTheme({ ...theme, frameColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-none"/>
+                        <span className="text-xs font-mono">{theme.frameColor}</span>
+                      </div>
+                    </div>
+                    {/* Frame Thickness */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <label className="font-medium text-gray-600">Espessura</label>
+                        <span className="font-mono text-gray-500">{theme.frameThickness.toFixed(1)}vmin</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="0.5" 
+                        max="5" 
+                        step="0.1" 
+                        value={theme.frameThickness} 
+                        onChange={(e) => setTheme({ ...theme, frameThickness: Number(e.target.value) })} 
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             {products.length > 1 && (

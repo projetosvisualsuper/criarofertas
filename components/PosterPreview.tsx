@@ -118,8 +118,8 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                 className="absolute inset-0 z-20 pointer-events-none"
                 style={{
                   borderStyle: 'solid',
-                  borderWidth: isStory ? '2.5vmin' : '1.5vmin',
-                  borderColor: theme.secondaryColor,
+                  borderWidth: `${theme.frameThickness}vmin`,
+                  borderColor: theme.frameColor,
                   boxShadow: 'inset 0 0 15px rgba(0,0,0,0.2)',
                 }}
               />

@@ -59,6 +59,8 @@ export interface PosterTheme {
   headerTextColor: string;
   headerTitleCase: 'uppercase' | 'capitalize';
   hasFrame: boolean;
+  frameColor: string; // Nova propriedade
+  frameThickness: number; // Nova propriedade (em vmin)
   unitBottomEm: number;
   unitRightEm: number;
 }

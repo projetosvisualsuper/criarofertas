@@ -30,8 +30,10 @@ const INITIAL_THEME: PosterTheme = {
   fontFamilyBody: 'Inter, sans-serif',
   headerTitleCase: 'uppercase',
   hasFrame: false,
-  unitBottomEm: -0.5, // Novo padrão
-  unitRightEm: -1.5, // Novo padrão
+  frameColor: '#fbbf24', // Cor inicial da moldura (secundária)
+  frameThickness: 1.5, // Espessura inicial em vmin
+  unitBottomEm: -0.5, 
+  unitRightEm: -1.5, 
 };
 
 const defaultLayout = {
