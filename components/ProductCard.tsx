@@ -29,7 +29,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
     const nameEl = nameRef.current;
     const priceEl = priceContainerRef.current;
 
-    // Auto-fit product name
+    // Auto-fit product name (Keep this for text overflow handling)
     if (nameEl) {
       nameEl.style.fontSize = `${baseNameSize}rem`;
       let currentFontSize = baseNameSize;
@@ -53,6 +53,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
     }
   }, [product.name, product.price, product.oldPrice, layoutCols, baseNameSize, theme.priceCardStyle, isStory]);
 
+  // Determine the image container height based on layoutCols
+  // For 1 or 2 columns, use a larger proportion (e.g., 60% of the card height)
+  // For 3+ columns (compact), use a smaller proportion (e.g., 50%)
+  const imageContainerHeight = isCompact ? '50%' : '60%';
+
   return (
     <div 
       className="relative rounded-xl shadow-sm border overflow-hidden h-full bg-white/95 backdrop-blur-sm flex flex-col"
@@ -68,8 +73,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
          </div>
       )}
 
-      {/* Image Container */}
-      <div className="relative flex-1 w-full min-h-0">
+      {/* Image Container - Fixed height based on card size */}
+      <div 
+        className="relative w-full min-h-0"
+        style={{ height: imageContainerHeight }}
+      >
         <div 
           className="absolute inset-0 flex items-center justify-center p-2 transition-transform duration-100"
           style={{ transform: `translateX(${layout.image.x}px) translateY(${layout.image.y}px) scale(${layout.image.scale})` }}
@@ -86,12 +94,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
         </div>
       </div>
 
-      {/* Text Content Container */}
+      {/* Text Content Container - Takes remaining space */}
       <div 
         className={`flex-shrink-0 w-full flex flex-col justify-between ${isStory ? 'p-3 pt-2 pb-3' : 'p-3'}`}
+        style={{ flexGrow: 1 }}
       >
         {/* Top part: Title & Description */}
-        <div className="text-center">
+        <div className="text-center flex-1 flex flex-col justify-start min-h-0">
           {/* Name Container */}
           <div
             className="w-full"
@@ -105,10 +114,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
           {/* Description Container */}
           {product.description && (
             <div
-              className="w-full"
+              className="w-full mt-1"
               style={{ transform: `translateX(${layout.description?.x || 0}px) translateY(${layout.description?.y || 0}px) scale(${layout.description?.scale || 1})` }}
             >
-              <p className={`text-xs text-gray-600 line-clamp-2 ${isStory ? 'mt-3' : 'mt-2'}`} style={{ color: theme.textColor, opacity: 0.8 }}>
+              <p className={`text-xs text-gray-600 line-clamp-2 ${isStory ? 'mt-1' : 'mt-1'}`} style={{ color: theme.textColor, opacity: 0.8 }}>
                 {product.description}
               </p>
             </div>
@@ -117,7 +126,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
         
         {/* Bottom part: Price Block */}
         <div 
-          className="w-full flex items-start justify-center"
+          className="w-full flex items-start justify-center mt-2"
           style={{ transform: `translateX(${layout.price.x}px) translateY(${layout.price.y}px) scale(${layout.price.scale})` }}
         >
           <div ref={priceContainerRef} className="flex items-end justify-center gap-1 origin-center">
