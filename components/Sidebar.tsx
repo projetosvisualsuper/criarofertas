@@ -106,7 +106,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
       return {
         ...prev,
         ...presetTheme,
-        // Crucially, preserve user-specific content and settings
+        // Crucialmente, preserve user-specific content and settings
         format: prev.format,
         logo: prev.logo,
         backgroundImage: prev.backgroundImage,
@@ -430,6 +430,45 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <div><label className="text-xs text-gray-500 mb-1 block">Fundo Preço</label><div className="flex items-center gap-2 border rounded p-1"><input type="color" value={theme.priceCardBackgroundColor} onChange={(e) => setTheme({ ...theme, priceCardBackgroundColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-none"/><span className="text-xs font-mono">{theme.priceCardBackgroundColor}</span></div></div>
                 <div><label className="text-xs text-gray-500 mb-1 block">Cor Preço</label><div className="flex items-center gap-2 border rounded p-1"><input type="color" value={theme.priceCardTextColor} onChange={(e) => setTheme({ ...theme, priceCardTextColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-none"/><span className="text-xs font-mono">{theme.priceCardTextColor}</span></div></div>
+              </div>
+              
+              {/* Novos Controles de Posição da Unidade */}
+              <div className="space-y-2 pt-4 border-t mt-4">
+                <label className="text-xs font-semibold text-gray-700 block">Posição da Unidade (Modo Hero)</label>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Vertical (Bottom) Control */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <label className="font-medium text-gray-600">Vertical (Bottom)</label>
+                      <span className="font-mono text-gray-500">{theme.unitBottomEm.toFixed(1)}em</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="-3" 
+                      max="3" 
+                      step="0.1" 
+                      value={theme.unitBottomEm} 
+                      onChange={(e) => setTheme({ ...theme, unitBottomEm: Number(e.target.value) })} 
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                  {/* Horizontal (Right) Control */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <label className="font-medium text-gray-600">Horizontal (Right)</label>
+                      <span className="font-mono text-gray-500">{theme.unitRightEm.toFixed(1)}em</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="-3" 
+                      max="3" 
+                      step="0.1" 
+                      value={theme.unitRightEm} 
+                      onChange={(e) => setTheme({ ...theme, unitRightEm: Number(e.target.value) })} 
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
             <div className="space-y-2">

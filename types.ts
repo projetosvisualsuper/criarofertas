@@ -59,6 +59,8 @@ export interface PosterTheme {
   headerTextColor: string;
   headerTitleCase: 'uppercase' | 'capitalize';
   hasFrame: boolean;
+  unitBottomEm: number;
+  unitRightEm: number;
 }
 
 export interface AIGeneratedImage {

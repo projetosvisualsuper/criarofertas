@@ -52,9 +52,9 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, them
               ...unitStyle, 
               color: theme.textColor, 
               opacity: 0.8,
-              // Ajuste de posição para alinhar com a base do preço principal
-              bottom: '-0.5em', 
-              right: '-1.5em' 
+              // Usando as propriedades do tema para ajuste fino
+              bottom: `${theme.unitBottomEm}em`, 
+              right: `${theme.unitRightEm}em` 
             }}
           >
             {unit}
