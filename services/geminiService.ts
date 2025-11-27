@@ -34,7 +34,8 @@ export const parseProductsFromText = async (text: string): Promise<Product[]> =>
       Format:
       [
         {
-          "name": "Product Name",
+          "name": "Product Name / Title",
+          "description": "Short product description" (optional),
           "price": "9.99",
           "oldPrice": "12.99" (optional),
           "unit": "un" (or kg, g, etc - guess based on context)
@@ -48,6 +49,7 @@ export const parseProductsFromText = async (text: string): Promise<Product[]> =>
             type: Type.OBJECT,
             properties: {
               name: { type: Type.STRING },
+              description: { type: Type.STRING },
               price: { type: Type.STRING },
               oldPrice: { type: Type.STRING },
               unit: { type: Type.STRING },

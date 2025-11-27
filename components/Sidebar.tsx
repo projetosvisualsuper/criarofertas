@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   const addProduct = () => {
     setProducts(prev => [
       ...prev,
-      { id: crypto.randomUUID(), name: 'Novo Produto', price: '0.00', unit: 'un', layout: defaultLayout }
+      { id: crypto.randomUUID(), name: 'Novo Produto', description: '', price: '0.00', unit: 'un', layout: defaultLayout }
     ]);
   };
 
@@ -151,7 +151,14 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                         className="w-full border rounded px-2 py-1 text-sm font-semibold focus:ring-2 focus:ring-indigo-500 outline-none"
                         value={product.name}
                         onChange={(e) => handleProductChange(product.id, 'name', e.target.value)}
-                        placeholder="Nome do Produto"
+                        placeholder="Título do Produto"
+                      />
+                      <textarea
+                        className="w-full border rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                        value={product.description || ''}
+                        onChange={(e) => handleProductChange(product.id, 'description', e.target.value)}
+                        placeholder="Descrição (opcional)"
+                        rows={2}
                       />
                       <div className="flex gap-2">
                         <div className="flex-1">

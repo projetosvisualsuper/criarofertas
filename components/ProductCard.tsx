@@ -93,20 +93,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols })
       </div>
 
       {/* Text Content Container */}
-      <div className="flex-shrink-0 w-full" style={{ height: '45%' }}>
-        {/* Product Name */}
+      <div className="flex-shrink-0 w-full flex flex-col" style={{ height: '45%' }}>
+        {/* Title & Description */}
         <div 
-          className="h-[40%] w-full flex items-center justify-center text-center px-2"
+          className="flex-1 w-full flex flex-col items-center justify-center text-center px-2 min-h-0"
           style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}
         >
           <h3 ref={nameRef} className="font-bold leading-tight text-gray-800 line-clamp-2" style={{ color: theme.textColor, fontSize: `${baseNameSize}rem` }}>
             {product.name}
           </h3>
+          {product.description && (
+            <p className="text-xs text-gray-600 mt-1 line-clamp-2" style={{ color: theme.textColor, opacity: 0.8 }}>
+              {product.description}
+            </p>
+          )}
         </div>
         
         {/* Price Block */}
         <div 
-          className="h-[60%] w-full flex items-start justify-center pt-1"
+          className="flex-shrink-0 w-full flex items-start justify-center pt-1"
           style={{ transform: `translateX(${layout.price.x}px) translateY(${layout.price.y}px) scale(${layout.price.scale})` }}
         >
           <div ref={priceContainerRef} className="flex items-end justify-center gap-1 origin-center">
