@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { PosterTheme, Product, PosterFormat } from '../types';
+import { PosterTheme, Product, PosterFormat, HeaderElement } from '../types';
 import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../services/geminiService';
 import { LAYOUT_PRESETS } from '../src/config/layoutPresets';
+import { THEME_PRESETS, ThemePreset } from '../src/config/themePresets';
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -81,6 +82,32 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         ...prevTheme,
         ...updatedPreset,
         format: newFormat,
+      };
+    });
+  };
+
+  const handleThemePresetChange = (presetTheme: Partial<PosterTheme>) => {
+    setTheme(prev => {
+      // A helper to merge preset elements while preserving user's text and layout
+      const mergeElement = (
+        prevElement: HeaderElement, 
+        presetElement: Partial<HeaderElement> | undefined
+      ): HeaderElement => ({
+        ...prevElement,
+        ...presetElement,
+        text: prevElement.text, // Always keep user's text
+      });
+
+      return {
+        ...prev,
+        ...presetTheme,
+        // Crucially, preserve user-specific content and settings
+        format: prev.format,
+        logo: prev.logo,
+        backgroundImage: prev.backgroundImage,
+        headerTitle: mergeElement(prev.headerTitle, presetTheme.headerTitle),
+        headerSubtitle: mergeElement(prev.headerSubtitle, presetTheme.headerSubtitle),
+        footerText: mergeElement(prev.footerText, presetTheme.footerText),
       };
     });
   };
@@ -266,6 +293,22 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                     </button>
                   ))}
                </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Temas Rápidos</label>
+              <div className="grid grid-cols-2 gap-2">
+                {THEME_PRESETS.map(preset => (
+                  <button key={preset.id} onClick={() => handleThemePresetChange(preset.theme)} className="p-2 border rounded-lg text-left bg-white hover:border-indigo-500 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <div className="flex -space-x-1">
+                        <span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.primaryColor }}></span>
+                        <span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.secondaryColor }}></span>
+                      </div>
+                      <span className="text-xs font-semibold">{preset.name}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
               <label className="text-sm font-semibold text-gray-700">Cabeçalho e Rodapé</label>
