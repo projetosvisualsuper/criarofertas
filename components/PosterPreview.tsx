@@ -108,7 +108,6 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               backgroundColor: theme.backgroundColor,
               color: theme.textColor,
               aspectRatio: theme.format.aspectRatio,
-              width: isLandscape ? '800px' : '500px', 
               maxWidth: '90vw',
               maxHeight: '90vh',
               fontFamily: theme.fontFamilyBody,
