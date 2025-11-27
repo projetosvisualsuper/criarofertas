@@ -7,10 +7,12 @@ interface SocialMediaSidebarProps {
   setTheme: React.Dispatch<React.SetStateAction<PosterTheme>>;
   formats: PosterFormat[];
   handleDownload: () => void;
-  handleFormatChange: (newFormat: PosterFormat) => void; // New prop for format change
+  handleFormatChange: (newFormat: PosterFormat) => void; // Function from parent to apply presets
 }
 
 const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme, formats, handleDownload, handleFormatChange }) => {
+
+  // Removed internal handler. We use the prop handleFormatChange directly.
 
   return (
     <div className="w-full md:w-[300px] h-full bg-white border-r flex flex-col shadow-xl z-20 relative flex-shrink-0">
@@ -30,7 +32,7 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
               {formats.map(fmt => (
                 <button 
                   key={fmt.id} 
-                  onClick={() => handleFormatChange(fmt)} 
+                  onClick={() => handleFormatChange(fmt)} // <-- CORRIGIDO: Chamando a função prop
                   className={`flex flex-col items-center justify-center p-3 border rounded-lg text-xs transition-all ${theme.format.id === fmt.id ? 'bg-indigo-50 border-indigo-600 text-indigo-700 ring-1 ring-indigo-600' : 'bg-white text-gray-600 hover:border-gray-400'}`}
                 >
                   <span className="text-2xl mb-1">{fmt.icon}</span>
