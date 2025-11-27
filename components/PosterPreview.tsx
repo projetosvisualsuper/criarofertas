@@ -164,7 +164,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                 minHeight: isStory ? '15%' : 'auto' 
               }}
             >
-               <div className={`flex flex-col ${theme.logo ? 'items-start w-3/4' : 'items-center'}`}>
+               <div className={`flex flex-col ${theme.logo ? 'items-start w-3/4' : 'items-center w-full'}`}>
                  <h1 
                     ref={titleRef}
                     className={`font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white ${theme.logo ? 'text-left' : 'text-center'}`}
