@@ -216,7 +216,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                 </div>
               ) : (
                 <div 
-                  className="w-full h-full overflow-hidden"
+                  className="flex-1 w-full overflow-hidden"
                   style={{ padding: isStory ? '1rem' : (isLandscape ? '1.5rem' : '2rem') }}
                 >
                   {products.length === 0 ? (
