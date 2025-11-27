@@ -329,7 +329,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                       }}
                     >
                       {products.map(p => (
-                        <ProductCard key={p.id} product={p} theme={theme} />
+                        <ProductCard key={p.id} product={p} theme={theme} layoutCols={theme.layoutCols} />
                       ))}
                     </div>
                   )}

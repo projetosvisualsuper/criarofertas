@@ -4,6 +4,7 @@ import { Product, PosterTheme } from '../types';
 interface ProductCardProps {
   product: Product;
   theme: PosterTheme;
+  layoutCols: number;
 }
 
 const defaultLayout = {
@@ -12,13 +13,40 @@ const defaultLayout = {
   price: { x: 0, y: 0, scale: 1 },
 };
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols }) => {
   
   const priceFormatted = parseFloat(product.price).toFixed(2);
   const [priceInt, priceDec] = priceFormatted.split('.');
   const oldPriceFormatted = product.oldPrice ? parseFloat(product.oldPrice).toFixed(2).replace('.', ',') : null;
 
   const layout = product.layout || defaultLayout;
+
+  // Define dynamic styles based on the number of columns
+  const isCompact = layoutCols >= 3;
+
+  const nameStyle = {
+    fontSize: isCompact ? '0.8rem' : '1rem',
+  };
+
+  const oldPriceStyle = {
+    fontSize: isCompact ? '0.9rem' : '1.125rem', // text-lg
+  };
+
+  const rsStyle = {
+    fontSize: isCompact ? '0.8rem' : '1rem', // text-base
+  };
+
+  const priceIntStyle = {
+    fontSize: isCompact ? '2rem' : '2.5rem',
+  };
+
+  const priceDecStyle = {
+    fontSize: isCompact ? '1rem' : '1.25rem',
+  };
+
+  const unitStyle = {
+    fontSize: isCompact ? '0.65rem' : '0.75rem', // text-xs
+  };
 
   return (
     <div 
@@ -54,7 +82,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
         className="absolute bottom-[30%] left-0 right-0 text-center px-2 transition-transform duration-100"
         style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}
       >
-        <h3 className="font-bold leading-tight text-gray-800 line-clamp-2" style={{ color: theme.textColor, fontSize: '1rem' }}>
+        <h3 className="font-bold leading-tight text-gray-800 line-clamp-2" style={{ color: theme.textColor, ...nameStyle }}>
           {product.name}
         </h3>
       </div>
@@ -69,7 +97,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
           {oldPriceFormatted && (
             <div className="pb-1 text-gray-500 text-center">
               <span className="text-xs block leading-none font-semibold">DE</span>
-              <span className="text-lg font-bold line-through decoration-red-500">
+              <span className="font-bold line-through decoration-red-500" style={oldPriceStyle}>
                 R${oldPriceFormatted}
               </span>
             </div>
@@ -81,13 +109,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
             style={{ background: `linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)` }}
           >
             <div className="flex items-start justify-center leading-none select-none" style={{ color: theme.primaryColor }}>
-               <span className="font-bold mt-[0.2em] mr-1 opacity-80 text-base">R$</span>
-               <span className="font-display font-black tracking-tighter mx-0 drop-shadow-sm leading-[0.85]" style={{ fontSize: '2.5rem' }}>
+               <span className="font-bold mt-[0.2em] mr-1 opacity-80" style={rsStyle}>R$</span>
+               <span className="font-display font-black tracking-tighter mx-0 drop-shadow-sm leading-[0.85]" style={priceIntStyle}>
                  {priceInt}
                </span>
                <div className="flex flex-col items-start mt-[0.3em]">
-                  <span className="font-black tracking-tighter leading-[0.8]" style={{ fontSize: '1.25rem' }}>,{priceDec}</span>
-                  <span className="font-bold text-gray-400 uppercase mt-1 ml-0.5 tracking-wider text-xs">{product.unit}</span>
+                  <span className="font-black tracking-tighter leading-[0.8]" style={priceDecStyle}>,{priceDec}</span>
+                  <span className="font-bold text-gray-400 uppercase mt-1 ml-0.5 tracking-wider" style={unitStyle}>{product.unit}</span>
                </div>
             </div>
           </div>
