@@ -413,8 +413,9 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                         <span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.secondaryColor }}></span>
                       </div>
                       <span className="text-xs font-semibold">{preset.name}</span>
-                    </button>
-                  ))}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
 
