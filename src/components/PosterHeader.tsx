@@ -132,6 +132,34 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
             </div>
           </div>
         );
+      case 'arc':
+        return (
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 w-full h-full">
+              <svg viewBox="0 0 500 100" preserveAspectRatio="none" className="w-full h-full">
+                <path d="M0,0 L500,0 L500,60 Q250,120 0,60 Z" style={{ stroke: 'none', fill: theme.primaryColor }}></path>
+              </svg>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center p-8 pb-12">
+              <HeaderContent />
+            </div>
+          </div>
+        );
+      case 'steps':
+        return (
+          <div 
+            className="absolute inset-0" 
+            style={{ 
+              backgroundColor: theme.primaryColor, 
+              clipPath: 'polygon(0% 0%, 100% 0%, 100% 70%, 66% 70%, 66% 85%, 33% 85%, 33% 100%, 0% 100%)' 
+            }}
+          >
+            <div className="absolute w-1/3 h-1/4 bottom-0 right-0 opacity-20" style={{backgroundColor: theme.secondaryColor}}></div>
+            <div className="flex items-center justify-center h-full p-8 pb-16">
+              <HeaderContent />
+            </div>
+          </div>
+        );
       case 'block':
       default:
         return (
@@ -195,7 +223,6 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
       {renderGeometricArt()}
       {renderHeaderImage()}
       {renderPrimaryColorOverlay()}
-      {/* This is the fix: only render this content block if there's a header image in background mode */}
       {theme.headerImage && !isHeroImageMode && (
         <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
           <HeaderContent />

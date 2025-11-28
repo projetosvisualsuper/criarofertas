@@ -1,4 +1,4 @@
-import { Square, Scissors, Waves, Mountain } from 'lucide-react';
+import { Square, Scissors, Waves, Mountain, Orbit, Signal } from 'lucide-react';
 
 export const HEADER_ART_PRESETS = [
   {
@@ -21,6 +21,16 @@ export const HEADER_ART_PRESETS = [
     name: 'Pico Geométrico',
     icon: Mountain,
   },
-] as const;
+  {
+    id: 'arc',
+    name: 'Arco Inferior',
+    icon: Orbit,
+  },
+  {
+    id: 'steps',
+    name: 'Degraus',
+    icon: Signal,
+  },
+] as const; // Use "as const" for stricter typing
 
 export type HeaderArtStyleId = typeof HEADER_ART_PRESETS[number]['id'];
