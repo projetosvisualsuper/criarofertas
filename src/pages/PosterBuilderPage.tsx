@@ -42,34 +42,10 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
   const handleFormatChange = useCallback((newFormat: PosterFormat) => {
     setTheme(prevTheme => {
       const preset = LAYOUT_PRESETS[newFormat.id] || {};
-      
-      // Ensure we have a valid base to work from, falling back to initial state
-      const safeHeaderElements = prevTheme.headerElements || INITIAL_THEME.headerElements;
-      const targetFormatElements = safeHeaderElements[newFormat.id] || INITIAL_THEME.headerElements[newFormat.id];
-
-      const newHeaderElementsForFormat: HeaderAndFooterElements = {
-        headerTitle: {
-          ...targetFormatElements.headerTitle,
-          ...(preset.headerTitle || {}),
-        },
-        headerSubtitle: {
-          ...targetFormatElements.headerSubtitle,
-          ...(preset.headerSubtitle || {}),
-        },
-        footerText: {
-          ...targetFormatElements.footerText,
-          ...(preset.footerText || {}),
-        },
-      };
-
       return {
         ...prevTheme,
         format: newFormat,
         layoutCols: preset.layoutCols ?? prevTheme.layoutCols,
-        headerElements: {
-          ...safeHeaderElements,
-          [newFormat.id]: newHeaderElementsForFormat,
-        },
       };
     });
   }, [setTheme]);

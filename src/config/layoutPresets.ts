@@ -5,9 +5,6 @@ import { HeaderElement } from '../types';
 
 interface LayoutPreset {
   layoutCols: number;
-  headerTitle?: Partial<HeaderElement>;
-  headerSubtitle?: Partial<HeaderElement>;
-  footerText?: Partial<HeaderElement>;
 }
 
 export const LAYOUT_PRESETS: Record<string, LayoutPreset> = {
@@ -16,15 +13,11 @@ export const LAYOUT_PRESETS: Record<string, LayoutPreset> = {
   },
   'story': {
     layoutCols: 2,
-    headerTitle: { scale: 1.1 },
-    headerSubtitle: { scale: 1.1 },
   },
   'feed': {
     layoutCols: 2,
   },
   'tv': {
     layoutCols: 3,
-    headerTitle: { scale: 0.9 },
-    headerSubtitle: { scale: 0.9 },
   },
 };
