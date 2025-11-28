@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode, ProductLayout, HeaderAndFooterElements } from '../types';
-import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle } from 'lucide-react';
+import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/geminiService';
 import { THEME_PRESETS, ThemePreset } from '../config/themePresets';
 import { HEADER_LAYOUT_PRESETS } from '../config/headerLayoutPresets';
@@ -326,6 +326,20 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                <div className="grid grid-cols-2 gap-2">
                   {formats.map(fmt => (<button key={fmt.id} onClick={() => handleFormatChange(fmt)} className={`flex flex-col items-center justify-center p-2 border rounded-lg text-xs transition-all ${theme.format.id === fmt.id ? 'bg-indigo-50 border-indigo-600 text-indigo-700 ring-1 ring-indigo-600' : 'bg-white text-gray-600 hover:border-gray-400'}`}><span className="text-xl mb-1">{fmt.icon}</span><span className="font-semibold">{fmt.name}</span><span className="text-[10px] opacity-70">{fmt.label}</span></button>))}
                </div>
+            </div>
+            <div className="space-y-2">
+                <label htmlFor="layoutCols" className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Grid size={16}/> Colunas de Produtos</label>
+                <input 
+                    type="number" 
+                    id="layoutCols"
+                    min="1" 
+                    max="4" 
+                    value={theme.layoutCols} 
+                    onChange={(e) => setTheme(prev => ({ ...prev, layoutCols: parseInt(e.target.value, 10) || 1 }))} 
+                    className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    disabled={products.length <= 1}
+                />
+                {products.length <= 1 && <p className="text-xs text-gray-500">O layout de colunas é aplicado quando há mais de um produto.</p>}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">Temas Rápidos</label>
