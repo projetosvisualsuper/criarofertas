@@ -15,7 +15,7 @@ interface DigitalSignagePageProps {
 
 const SLIDE_INTERVAL_MS = 5000; // 5 seconds per slide
 
-const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, products, setProducts }) => {
+const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme, products, setProducts }) => {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   
@@ -104,7 +104,12 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, products
                 <button onClick={handleNext} className="p-3 bg-gray-100 rounded-full shadow-sm hover:bg-gray-200 transition-colors disabled:opacity-50" disabled={productsForSlides.length <= 1}><ChevronRight size={24} /></button>
                 <span className="text-sm text-gray-600 ml-4">Slide {currentSlideIndex + 1} de {productsForSlides.length}</span>
               </div>
-              <SlideLayoutControls product={currentProduct} onLayoutChange={handleLayoutChange} />
+              <SlideLayoutControls 
+                product={currentProduct} 
+                onLayoutChange={handleLayoutChange} 
+                theme={theme}
+                setTheme={setTheme}
+              />
             </>
           )}
         </div>

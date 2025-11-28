@@ -1,10 +1,12 @@
 import React from 'react';
-import { Product, ProductLayout } from '../../types';
+import { Product, ProductLayout, PosterTheme } from '../../types';
 import { SlidersHorizontal } from 'lucide-react';
 
 interface SlideLayoutControlsProps {
   product: Product;
   onLayoutChange: (productId: string, newLayout: ProductLayout) => void;
+  theme: PosterTheme;
+  setTheme: React.Dispatch<React.SetStateAction<PosterTheme>>;
 }
 
 const defaultLayout: ProductLayout = {
@@ -14,7 +16,7 @@ const defaultLayout: ProductLayout = {
   description: { x: 0, y: 0, scale: 1 },
 };
 
-const SlideLayoutControls: React.FC<SlideLayoutControlsProps> = ({ product, onLayoutChange }) => {
+const SlideLayoutControls: React.FC<SlideLayoutControlsProps> = ({ product, onLayoutChange, theme, setTheme }) => {
   // Agora lê o layout específico para 'tv'
   const layout = product.layouts?.['tv'] || defaultLayout;
 
@@ -27,6 +29,17 @@ const SlideLayoutControls: React.FC<SlideLayoutControlsProps> = ({ product, onLa
       },
     };
     onLayoutChange(product.id, newLayout);
+  };
+
+  const handleLogoChange = (property: 'scale' | 'x' | 'y', value: number) => {
+    if (!theme.logo) return;
+    setTheme(prevTheme => ({
+        ...prevTheme,
+        logo: {
+            ...prevTheme.logo!,
+            [property]: value,
+        }
+    }));
   };
 
   const renderControlGroup = (element: keyof ProductLayout, title: string) => (
@@ -67,6 +80,32 @@ const SlideLayoutControls: React.FC<SlideLayoutControlsProps> = ({ product, onLa
         {renderControlGroup('name', 'Nome do Produto')}
         {product.description && renderControlGroup('description', 'Descrição')}
         {renderControlGroup('price', 'Bloco de Preço')}
+        {theme.logo && (
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-t pt-3 mt-3">
+                <h4 className="col-span-2 text-xs font-bold uppercase text-gray-500">Logo</h4>
+                <div className="space-y-1 col-span-2">
+                    <div className="flex justify-between text-xs">
+                        <label className="font-medium text-gray-600">Tamanho</label>
+                        <span className="font-mono text-gray-500">{theme.logo.scale.toFixed(1)}x</span>
+                    </div>
+                    <input type="range" min="0.5" max="2" step="0.1" value={theme.logo.scale} onChange={(e) => handleLogoChange('scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+                </div>
+                <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                        <label className="font-medium text-gray-600">Posição X</label>
+                        <span className="font-mono text-gray-500">{theme.logo.x}px</span>
+                    </div>
+                    <input type="range" min="-400" max="400" value={theme.logo.x} onChange={(e) => handleLogoChange('x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+                </div>
+                <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                        <label className="font-medium text-gray-600">Posição Y</label>
+                        <span className="font-mono text-gray-500">{theme.logo.y}px</span>
+                    </div>
+                    <input type="range" min="-400" max="400" value={theme.logo.y} onChange={(e) => handleLogoChange('y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+                </div>
+            </div>
+        )}
       </div>
     </details>
   );
