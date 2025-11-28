@@ -17,6 +17,10 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
   const [isDownloading, setIsDownloading] = useState(false);
   const posterRef = useRef<PosterPreviewRef>(null);
 
+  // Filtra o formato 'tv' para que ele não apareça no Poster Builder
+  const builderFormats = formats.filter(f => f.id !== 'tv');
+  const defaultFormat = builderFormats.find(f => f.id === 'a4') || builderFormats[0];
+
   useEffect(() => {
     const loadFonts = async () => {
       try {
@@ -30,7 +34,15 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
       }
     };
     loadFonts();
-  }, []);
+    
+    // Se o formato atual for 'tv', mude para um formato padrão do builder
+    if (theme.format.id === 'tv' && defaultFormat) {
+        setTheme(prevTheme => ({
+            ...prevTheme,
+            format: defaultFormat,
+        }));
+    }
+  }, [theme.format.id, setTheme, defaultFormat]);
 
   const handleDownload = () => {
     if (posterRef.current) {
@@ -52,7 +64,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         setTheme={setTheme} 
         products={products} 
         setProducts={setProducts} 
-        formats={formats}
+        formats={builderFormats} // Usando a lista filtrada
         handleFormatChange={handleFormatChange}
       />
       
