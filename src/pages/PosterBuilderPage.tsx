@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
 import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat, HeaderElement, HeaderAndFooterElements } from '../../types';
-import { POSTER_FORMATS } from '../state/initialState';
+import { INITIAL_THEME } from '../state/initialState';
 import { Download } from 'lucide-react';
 import { LAYOUT_PRESETS } from '../config/layoutPresets';
 
@@ -42,7 +42,9 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
   const handleFormatChange = useCallback((newFormat: PosterFormat) => {
     const preset = LAYOUT_PRESETS[newFormat.id] || {};
     setTheme(prevTheme => {
-      const currentFormatElements = prevTheme.headerElements[newFormat.id];
+      // Defensive check for older state structures from localStorage
+      const safeHeaderElements = prevTheme.headerElements || INITIAL_THEME.headerElements;
+      const currentFormatElements = safeHeaderElements[newFormat.id];
 
       const mergeElement = (
         prevElement: HeaderElement, 
@@ -64,7 +66,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         format: newFormat,
         layoutCols: preset.layoutCols || prevTheme.layoutCols,
         headerElements: {
-          ...prevTheme.headerElements,
+          ...safeHeaderElements,
           [newFormat.id]: newHeaderElementsForFormat,
         },
       };
