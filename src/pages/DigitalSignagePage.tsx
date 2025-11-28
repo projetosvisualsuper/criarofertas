@@ -5,6 +5,7 @@ import SlidePreview from '../components/SlidePreview';
 import SlideLayoutControls from '../components/SlideLayoutControls';
 import { POSTER_FORMATS } from '../state/initialState';
 import { toPng } from 'html-to-image';
+import JSZip from 'jszip';
 
 interface DigitalSignagePageProps {
   theme: PosterTheme;
@@ -63,16 +64,17 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
     setIsDownloading(true);
     setDownloadProgress(0);
     const originalSlideIndex = currentSlideIndex;
+    const zip = new JSZip();
 
-    for (let i = 0; i < productsForSlides.length; i++) {
-      const product = productsForSlides[i];
-      setDownloadProgress(i + 1);
-      setCurrentSlideIndex(i);
+    try {
+      for (let i = 0; i < productsForSlides.length; i++) {
+        const product = productsForSlides[i];
+        setDownloadProgress(i + 1);
+        setCurrentSlideIndex(i);
 
-      // Wait for the DOM to update with the new slide
-      await new Promise(resolve => setTimeout(resolve, 200));
+        // Wait for the DOM to update with the new slide
+        await new Promise(resolve => setTimeout(resolve, 200));
 
-      try {
         const element = slideRef.current;
         const targetWidth = tvFormat.width;
         const targetHeight = tvFormat.height;
@@ -97,25 +99,33 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
           }
         });
 
-        const link = document.createElement('a');
-        link.download = `slide-${String(i + 1).padStart(2, '0')}-${product.name.replace(/\s+/g, '-').toLowerCase()}.png`;
-        link.href = dataUrl;
-        link.click();
-
-        // Small delay between downloads to help the browser
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-      } catch (err) {
-        console.error(`Failed to download slide ${i + 1}`, err);
-        alert(`Erro ao gerar a imagem do slide ${i + 1}. O download será interrompido.`);
-        break;
+        // Extract base64 data (remove 'data:image/png;base64,')
+        const base64Data = dataUrl.split(',')[1];
+        const fileName = `slide-${String(i + 1).padStart(2, '0')}-${product.name.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase()}.png`;
+        
+        zip.file(fileName, base64Data, { base64: true });
       }
-    }
 
-    // Restore original state
-    setCurrentSlideIndex(originalSlideIndex);
-    setIsDownloading(false);
-    setDownloadProgress(0);
+      // Generate the ZIP file
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+
+      // Trigger download
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(zipBlob);
+      link.download = `ofertaflash-slides-${Date.now()}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch (err) {
+      console.error("Failed to generate or download ZIP file", err);
+      alert("Erro ao gerar o arquivo ZIP. Tente novamente.");
+    } finally {
+      // Restore original state
+      setCurrentSlideIndex(originalSlideIndex);
+      setIsDownloading(false);
+      setDownloadProgress(0);
+    }
   };
 
   const currentProduct = productsForSlides[currentSlideIndex];
@@ -140,7 +150,7 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
         <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="bg-white p-8 rounded-lg shadow-xl flex flex-col items-center text-center">
             <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
-            <p className="text-lg font-semibold text-gray-800">Gerando e Baixando Slides...</p>
+            <p className="text-lg font-semibold text-gray-800">Gerando e Compactando Slides...</p>
             <p className="text-gray-600 mt-2">
               Progresso: {downloadProgress} de {productsForSlides.length}
             </p>
@@ -152,7 +162,7 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
         <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
           <Monitor size={32} className="text-indigo-600" />
           TV Digital (Slides)
-        </h2>
+        </h2 >
       </div>
       
       <div className="flex-1 flex flex-col lg:flex-row gap-8 items-start min-h-0">
@@ -188,7 +198,7 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
                   className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-bold shadow-lg transition-all disabled:opacity-50"
                 >
                   {isDownloading ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
-                  {isDownloading ? `Baixando ${downloadProgress}/${productsForSlides.length}...` : 'Baixar Todos os Slides'}
+                  {isDownloading ? `Compactando ${downloadProgress}/${productsForSlides.length}...` : 'Baixar Todos (ZIP)'}
                 </button>
               </div>
               <SlideLayoutControls 
