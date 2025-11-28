@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Monitor, ChevronLeft, ChevronRight, Play, Pause, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Monitor, ChevronLeft, ChevronRight, Play, Pause, Loader2, Download } from 'lucide-react';
 import { PosterTheme, Product, PosterFormat, ProductLayout } from '../types';
 import SlidePreview from '../components/SlidePreview';
 import SlideLayoutControls from '../components/SlideLayoutControls';
 import { POSTER_FORMATS } from '../state/initialState';
+import { toPng } from 'html-to-image';
 
 interface DigitalSignagePageProps {
   theme: PosterTheme;
@@ -18,6 +19,8 @@ const SLIDE_INTERVAL_MS = 5000; // 5 seconds per slide
 const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme, products, setProducts }) => {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const slideRef = useRef<HTMLDivElement>(null);
   
   const tvFormat = POSTER_FORMATS.find(f => f.id === 'tv');
   const productsForSlides = products.filter(p => p.price && p.name);
@@ -51,6 +54,47 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
         return p;
       })
     );
+  };
+
+  const handleDownload = async () => {
+    if (slideRef.current && tvFormat) {
+      setIsDownloading(true);
+      try {
+        const element = slideRef.current;
+        const targetWidth = tvFormat.width;
+        const targetHeight = tvFormat.height;
+        const scale = targetWidth / element.offsetWidth;
+        const sourceHeight = element.offsetWidth * (targetHeight / targetWidth);
+
+        const dataUrl = await toPng(element, { 
+          cacheBust: true, 
+          quality: 1.0,
+          pixelRatio: 1,
+          width: targetWidth,
+          height: targetHeight,
+          style: {
+             transform: `scale(${scale})`,
+             transformOrigin: 'top left',
+             width: `${element.offsetWidth}px`,
+             height: `${sourceHeight}px`,
+             maxWidth: 'none',
+             maxHeight: 'none',
+             margin: '0',
+             boxShadow: 'none',
+          }
+        });
+
+        const link = document.createElement('a');
+        link.download = `slide-${currentProduct.name.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`;
+        link.href = dataUrl;
+        link.click();
+      } catch (err) {
+        console.error("Failed to download slide", err);
+        alert("Erro ao gerar a imagem do slide. Tente novamente.");
+      } finally {
+        setIsDownloading(false);
+      }
+    }
   };
 
   const currentProduct = productsForSlides[currentSlideIndex];
@@ -90,7 +134,7 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
             </div>
           ) : (
             <div className="w-full max-w-4xl aspect-[16/9] shadow-2xl rounded-xl overflow-hidden relative">
-              <SlidePreview product={currentProduct} theme={theme} />
+              <SlidePreview ref={slideRef} product={currentProduct} theme={theme} />
             </div>
           )}
         </div>
@@ -103,6 +147,16 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
                 <button onClick={() => setIsPlaying(!isPlaying)} className="p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors disabled:opacity-50" disabled={productsForSlides.length <= 1}>{isPlaying ? <Pause size={24} /> : <Play size={24} />}</button>
                 <button onClick={handleNext} className="p-3 bg-gray-100 rounded-full shadow-sm hover:bg-gray-200 transition-colors disabled:opacity-50" disabled={productsForSlides.length <= 1}><ChevronRight size={24} /></button>
                 <span className="text-sm text-gray-600 ml-4">Slide {currentSlideIndex + 1} de {productsForSlides.length}</span>
+              </div>
+              <div className="mt-4">
+                <button 
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-bold shadow-lg transition-all disabled:opacity-50"
+                >
+                  {isDownloading ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
+                  {isDownloading ? 'Baixando...' : 'Baixar Slide'}
+                </button>
               </div>
               <SlideLayoutControls 
                 product={currentProduct} 

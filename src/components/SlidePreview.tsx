@@ -17,7 +17,7 @@ const defaultLayout = {
   description: { x: 0, y: 0, scale: 1 },
 };
 
-const SlidePreview: React.FC<SlidePreviewProps> = ({ product, theme }) => {
+const SlidePreview = React.forwardRef<HTMLDivElement, SlidePreviewProps>(({ product, theme }, ref) => {
   const tvFormat = POSTER_FORMATS.find(f => f.id === 'tv') || POSTER_FORMATS[0];
   const slideTheme = { ...theme, format: tvFormat };
   const layout = product.layouts?.['tv'] || defaultLayout;
@@ -31,6 +31,7 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ product, theme }) => {
 
   return (
     <div 
+      ref={ref}
       className="relative flex flex-col bg-white overflow-hidden shadow-2xl w-full h-full"
       style={{
         backgroundColor: slideTheme.backgroundColor,
@@ -74,6 +75,6 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ product, theme }) => {
       </footer>
     </div>
   );
-};
+});
 
 export default SlidePreview;
