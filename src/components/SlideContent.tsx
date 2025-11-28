@@ -20,9 +20,6 @@ const defaultLayout = {
 const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, isLandscape }) => {
   const layout = product.layouts?.[theme.format.id] || defaultLayout;
 
-  // Usamos o tema diretamente, exceto para o texto do nome do produto que precisa de alto contraste
-  const nameTextColor = theme.headerTextColor; // Usar a cor do texto do cabeçalho para o nome
-
   return (
     <div 
       className="w-full flex-1 flex"
@@ -51,15 +48,14 @@ const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, 
         {/* Nome do Produto */}
         <div className="w-full transition-transform duration-100 mb-4" style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}>
           <h2 
-            className="font-bold leading-tight uppercase tracking-tight line-clamp-3 drop-shadow-lg px-2 bg-white/80 backdrop-blur-sm rounded-lg inline-block shadow-sm" 
+            className="font-bold leading-tight tracking-tight line-clamp-3 px-2 inline-block" 
             style={{ 
               fontFamily: theme.fontFamilyDisplay, 
-              color: nameTextColor, 
+              color: theme.textColor, // Usando a cor de texto principal do tema
               fontSize: 2 * fontScale + 'rem', 
-              padding: '0.25rem 1rem',
-              // Mantendo o contorno de texto para alto contraste no nome
-              textShadow: '2px 2px 0px #000000, -2px -2px 0px #000000, 2px -2px 0px #000000, -2px 2px 0px #000000',
-              color: '#ffffff', // Cor do texto branco
+              padding: '0', // Removendo padding
+              textShadow: 'none', // Removendo contorno
+              textTransform: 'none', // Removendo uppercase
             }}
           >
             {product.name}
@@ -81,7 +77,7 @@ const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, 
             price={product.price} 
             oldPrice={product.oldPrice} 
             unit={product.unit} 
-            theme={theme} // Usando o tema original
+            theme={theme} 
             isCompact={false} 
             isHero={true} 
             fontScale={fontScale * 1.0} 
