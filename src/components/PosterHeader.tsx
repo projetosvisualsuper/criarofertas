@@ -225,7 +225,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
       className="relative z-10 w-full flex-shrink-0"
       style={{ 
         minHeight: isLandscape ? '25%' : '20%',
-        backgroundColor: theme.headerImage ? 'transparent' : theme.primaryColor,
+        backgroundColor: 'transparent',
       }}
     >
       {renderGeometricArt()}
