@@ -69,6 +69,7 @@ export const INITIAL_THEME: PosterTheme = {
   useLogoOnHero: false,
   headerImageOpacity: 0.3,
   headerElements: createInitialHeaderElements(),
+  slideTransitionId: 'slide-in', // Novo valor padrão
 };
 
 export const INITIAL_PRODUCTS: Product[] = [

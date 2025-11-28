@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Monitor, ChevronLeft, ChevronRight, Play, Pause, Loader2, Download } from 'lucide-react';
+import { Monitor, ChevronLeft, ChevronRight, Play, Pause, Loader2, Download, Zap } from 'lucide-react';
 import { PosterTheme, Product, PosterFormat, ProductLayout } from '../types';
 import SlidePreview from '../components/SlidePreview';
 import SlideLayoutControls from '../components/SlideLayoutControls';
 import { POSTER_FORMATS } from '../state/initialState';
+import { SLIDE_TRANSITION_PRESETS, SlideTransitionId } from '../config/slideTransitions';
 import { toPng } from 'html-to-image';
 import JSZip from 'jszip';
 
@@ -56,6 +57,13 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
         return p;
       })
     );
+  };
+  
+  const handleTransitionChange = (transitionId: SlideTransitionId) => {
+    setTheme(prevTheme => ({
+      ...prevTheme,
+      slideTransitionId: transitionId,
+    }));
   };
 
   const handleDownloadAllSlides = async () => {
@@ -196,6 +204,26 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
                 <button onClick={handleNext} className="p-3 bg-gray-100 rounded-full shadow-sm hover:bg-gray-200 transition-colors disabled:opacity-50" disabled={productsForSlides.length <= 1}><ChevronRight size={24} /></button>
                 <span className="text-sm text-gray-600 ml-4">Slide {currentSlideIndex + 1} de {productsForSlides.length}</span>
               </div>
+              
+              <div className="mt-4 p-4 bg-white rounded-xl shadow-sm space-y-3">
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Zap size={16}/> Transição de Slide</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {SLIDE_TRANSITION_PRESETS.map(preset => {
+                    const Icon = preset.icon;
+                    return (
+                      <button 
+                        key={preset.id} 
+                        onClick={() => handleTransitionChange(preset.id)}
+                        className={`flex items-center justify-center p-2 border rounded-lg text-xs transition-all ${theme.slideTransitionId === preset.id ? 'bg-indigo-50 border-indigo-600 text-indigo-700 ring-1 ring-indigo-600' : 'bg-white text-gray-600 hover:border-gray-400'}`}
+                      >
+                        <Icon size={16} className="mr-1" />
+                        <span className="font-semibold">{preset.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="mt-4">
                 <button 
                   onClick={handleDownloadAllSlides}

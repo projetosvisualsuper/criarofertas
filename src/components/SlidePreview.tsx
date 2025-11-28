@@ -4,6 +4,7 @@ import PosterHeader from './PosterHeader';
 import { POSTER_FORMATS } from '../state/initialState';
 import { INITIAL_THEME } from '../state/initialState';
 import SlideContent from './SlideContent';
+import { SLIDE_TRANSITION_PRESETS } from '../config/slideTransitions';
 
 interface SlidePreviewProps {
   product: Product;
@@ -20,6 +21,10 @@ const SlidePreview = React.forwardRef<HTMLDivElement, SlidePreviewProps>(({ prod
   const tvHeaderElements = (theme.headerElements && theme.headerElements['tv']) 
     ? theme.headerElements['tv'] 
     : INITIAL_THEME.headerElements['tv'];
+    
+  // Encontrar a classe de transição
+  const transitionPreset = SLIDE_TRANSITION_PRESETS.find(p => p.id === theme.slideTransitionId);
+  const transitionClass = transitionPreset ? transitionPreset.className : 'animate-slide-in';
 
   return (
     <div 
@@ -47,9 +52,9 @@ const SlidePreview = React.forwardRef<HTMLDivElement, SlidePreviewProps>(({ prod
       {/* Main Content Area with Transition */}
       <div className="flex-1 w-full min-h-0 relative z-10 flex p-8">
         <div 
-          className="w-full flex-1 flex transition-all duration-700 ease-out animate-slide-in"
-          // Adicionando keyframe animation para transição suave
-          style={{ animation: 'slideIn 0.7s ease-out forwards' }}
+          // Aplicando a classe de transição aqui
+          className={`w-full flex-1 flex transition-all duration-700 ease-out ${transitionClass}`}
+          key={product.id} // Mantendo a chave para forçar a re-renderização e a animação
         >
           <SlideContent 
             product={product} 

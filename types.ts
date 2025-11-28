@@ -1,5 +1,6 @@
 import { HeaderLayoutId } from "./src/config/headerLayoutPresets";
 import { HeaderArtStyleId } from "./src/config/headerArtPresets";
+import { SlideTransitionId } from "./src/config/slideTransitions"; // Novo Import
 
 export interface ProductLayout {
   image: { x: number; y: number; scale: number };
@@ -82,6 +83,7 @@ export interface PosterTheme {
   headerImageOpacity: number;
   // Armazena elementos de cabeçalho/rodapé por formato
   headerElements: Record<string, HeaderAndFooterElements>;
+  slideTransitionId: SlideTransitionId; // Novo campo
 }
 
 export interface AIGeneratedImage {
