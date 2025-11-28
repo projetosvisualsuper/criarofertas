@@ -81,3 +81,10 @@ export interface AIGeneratedImage {
   mimeType: string;
   data: string;
 }
+
+export interface HeaderTemplate {
+  id: string;
+  name: string;
+  thumbnail: string;
+  theme: Partial<PosterTheme>;
+}
