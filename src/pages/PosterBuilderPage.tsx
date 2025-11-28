@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
 import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
-import { Product, PosterTheme, PosterFormat, HeaderElement } from '../../types';
+import { Product, PosterTheme, PosterFormat, HeaderElement, HeaderAndFooterElements } from '../../types';
 import { POSTER_FORMATS } from '../state/initialState';
 import { Download } from 'lucide-react';
 import { LAYOUT_PRESETS } from '../config/layoutPresets';
@@ -42,26 +42,31 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
   const handleFormatChange = useCallback((newFormat: PosterFormat) => {
     const preset = LAYOUT_PRESETS[newFormat.id] || {};
     setTheme(prevTheme => {
-      // Preserve existing text when applying presets
-      const updatedPreset = { ...preset };
-      
-      // Helper to merge preset elements while preserving user's text
+      const currentFormatElements = prevTheme.headerElements[newFormat.id];
+
       const mergeElement = (
         prevElement: HeaderElement, 
         presetElement: Partial<HeaderElement> | undefined
       ): HeaderElement => ({
         ...prevElement,
         ...presetElement,
-        text: prevElement.text, // Always keep user's text
+        text: prevElement.text,
       });
+
+      const newHeaderElementsForFormat: HeaderAndFooterElements = {
+        headerTitle: mergeElement(currentFormatElements.headerTitle, preset.headerTitle),
+        headerSubtitle: mergeElement(currentFormatElements.headerSubtitle, preset.headerSubtitle),
+        footerText: mergeElement(currentFormatElements.footerText, preset.footerText),
+      };
 
       return {
         ...prevTheme,
-        ...updatedPreset,
         format: newFormat,
-        headerTitle: mergeElement(prevTheme.headerTitle, updatedPreset.headerTitle),
-        headerSubtitle: mergeElement(prevTheme.headerSubtitle, updatedPreset.headerSubtitle),
-        footerText: mergeElement(prevTheme.footerText, updatedPreset.footerText),
+        layoutCols: preset.layoutCols || prevTheme.layoutCols,
+        headerElements: {
+          ...prevTheme.headerElements,
+          [newFormat.id]: newHeaderElementsForFormat,
+        },
       };
     });
   }, [setTheme]);
@@ -74,7 +79,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         products={products} 
         setProducts={setProducts} 
         formats={formats}
-        handleFormatChange={handleFormatChange} // Pass the stable function
+        handleFormatChange={handleFormatChange}
       />
       
       <main className="flex-1 bg-gray-100 relative h-full flex flex-col">

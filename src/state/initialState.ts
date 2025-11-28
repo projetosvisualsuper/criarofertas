@@ -1,4 +1,4 @@
-import { Product, PosterTheme, PosterFormat } from '../types';
+import { Product, PosterTheme, PosterFormat, HeaderAndFooterElements } from '../types';
 
 export const POSTER_FORMATS: PosterFormat[] = [
   { id: 'story', name: 'Story / TikTok', aspectRatio: '1080 / 1920', width: 1080, height: 1920, label: '9:16', icon: '📱' },
@@ -14,12 +14,24 @@ const defaultLayout = {
   description: { x: 0, y: 0, scale: 1 },
 };
 
-// Helper para criar layouts para todos os formatos, garantindo que sejam cópias independentes
+const defaultHeaderElements: HeaderAndFooterElements = {
+  headerTitle: { text: 'SUPER OFERTAS', x: 0, y: 0, scale: 1 },
+  headerSubtitle: { text: 'SÓ HOJE', x: 0, y: 0, scale: 1 },
+  footerText: { text: 'Ofertas válidas enquanto durarem os estoques', x: 0, y: 0, scale: 1 },
+};
+
 const createInitialLayouts = () => ({
   'story': JSON.parse(JSON.stringify(defaultLayout)),
   'feed': JSON.parse(JSON.stringify(defaultLayout)),
   'a4': JSON.parse(JSON.stringify(defaultLayout)),
   'tv': JSON.parse(JSON.stringify(defaultLayout)),
+});
+
+const createInitialHeaderElements = (): Record<string, HeaderAndFooterElements> => ({
+  'story': JSON.parse(JSON.stringify(defaultHeaderElements)),
+  'feed': JSON.parse(JSON.stringify(defaultHeaderElements)),
+  'a4': JSON.parse(JSON.stringify(defaultHeaderElements)),
+  'tv': JSON.parse(JSON.stringify(defaultHeaderElements)),
 });
 
 export const INITIAL_THEME: PosterTheme = {
@@ -28,9 +40,6 @@ export const INITIAL_THEME: PosterTheme = {
   backgroundColor: '#ffffff',
   textColor: '#1a1a1a',
   headerTextColor: '#ffffff',
-  headerTitle: { text: 'SUPER OFERTAS', x: 0, y: 0, scale: 1 },
-  headerSubtitle: { text: 'SÓ HOJE', x: 0, y: 0, scale: 1 },
-  footerText: { text: 'Ofertas válidas enquanto durarem os estoques', x: 0, y: 0, scale: 1 },
   layoutCols: 2,
   format: POSTER_FORMATS[2],
   priceCardStyle: 'default',
@@ -42,14 +51,14 @@ export const INITIAL_THEME: PosterTheme = {
   fontFamilyBody: 'Inter, sans-serif',
   headerTitleCase: 'uppercase',
   hasFrame: false,
-  frameColor: '#fbbf24', // Cor inicial da moldura (secundária)
-  frameThickness: 1.5, // Espessura inicial em vmin
+  frameColor: '#fbbf24',
+  frameThickness: 1.5,
   unitBottomEm: -0.5, 
   unitRightEm: -1.5,
-  // Novas propriedades
   headerImage: undefined,
   headerImageMode: 'none',
   headerImageOpacity: 0.3,
+  headerElements: createInitialHeaderElements(),
 };
 
 export const INITIAL_PRODUCTS: Product[] = [

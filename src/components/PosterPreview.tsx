@@ -28,6 +28,8 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
   const posterRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLParagraphElement>(null);
 
+  const currentHeaderElements = theme.headerElements[theme.format.id];
+
   const handleDownload = async () => {
     if (posterRef.current) {
       onDownloadStart();
@@ -98,7 +100,7 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
             footerElement.style.fontSize = `${newFontSize}px`;
         }
     }
-  }, [theme.footerText, theme.format, isStory]);
+  }, [currentHeaderElements.footerText, theme.format, isStory]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full bg-gray-200 p-4 md:p-8 overflow-auto">
@@ -119,7 +121,14 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
             {theme.hasFrame && (<div className="absolute inset-0 z-20 pointer-events-none" style={{ borderStyle: 'solid', borderWidth: `${theme.frameThickness}vmin`, borderColor: theme.frameColor, boxShadow: 'inset 0 0 15px rgba(0,0,0,0.2)' }}/>)}
             {theme.backgroundImage && (<div className="absolute inset-0 z-0 opacity-40 bg-cover bg-center" style={{ backgroundImage: `url(${theme.backgroundImage})` }}/>)}
             <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: isHeroMode ? `radial-gradient(circle at center, transparent 0%, ${theme.backgroundColor} 100%)` : 'none' }}/>
-            <PosterHeader theme={theme} isLandscape={isLandscape} fontScale={fontScale} isStory={isStory} />
+            <PosterHeader 
+              theme={theme} 
+              headerTitle={currentHeaderElements.headerTitle}
+              headerSubtitle={currentHeaderElements.headerSubtitle}
+              isLandscape={isLandscape} 
+              fontScale={fontScale} 
+              isStory={isStory} 
+            />
             <div className="flex-1 w-full min-h-0 relative z-10 flex flex-col" style={{ padding: isHeroMode ? 0 : (isStory ? '1rem' : (isLandscape ? '1.5rem' : '2rem')) }}>
               {isHeroMode && product ? (
                 <div className="w-full flex-1 relative">
@@ -140,7 +149,7 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
             </div>
             <footer className="relative z-10 w-full flex-shrink-0 text-center" style={{ backgroundColor: theme.primaryColor, padding: isStory ? '1rem' : '1rem 1.5rem' }}>
               <div className="absolute top-0 left-0 w-full h-1 bg-black/10"></div>
-              <p ref={footerRef} className="font-bold uppercase tracking-wider opacity-95" style={{ color: theme.headerTextColor, fontSize: isStory ? '1.1rem' : '1rem', transform: `translateX(${theme.footerText.x}px) translateY(${theme.footerText.y}px) scale(${theme.footerText.scale})` }}>{theme.footerText.text}</p>
+              <p ref={footerRef} className="font-bold uppercase tracking-wider opacity-95" style={{ color: theme.headerTextColor, fontSize: isStory ? '1.1rem' : '1rem', transform: `translateX(${currentHeaderElements.footerText.x}px) translateY(${currentHeaderElements.footerText.y}px) scale(${currentHeaderElements.footerText.scale})` }}>{currentHeaderElements.footerText.text}</p>
             </footer>
          </div>
       </div>

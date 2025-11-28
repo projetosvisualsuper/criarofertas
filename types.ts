@@ -16,7 +16,6 @@ export interface Product {
   oldPrice?: string;
   unit: string;
   image?: string;
-  // Alterado: 'layout' e 'tvLayout' foram substituídos por um objeto 'layouts'
   layouts: Record<string, ProductLayout>; 
 }
 
@@ -39,14 +38,17 @@ export interface HeaderElement {
 
 export type HeaderImageMode = 'none' | 'background' | 'hero';
 
+export interface HeaderAndFooterElements {
+  headerTitle: HeaderElement;
+  headerSubtitle: HeaderElement;
+  footerText: HeaderElement;
+}
+
 export interface PosterTheme {
   primaryColor: string;
   secondaryColor: string;
   backgroundColor: string;
   textColor: string;
-  headerTitle: HeaderElement;
-  headerSubtitle: HeaderElement;
-  footerText: HeaderElement;
   backgroundImage?: string;
   layoutCols: number;
   format: PosterFormat;
@@ -64,14 +66,15 @@ export interface PosterTheme {
   headerTextColor: string;
   headerTitleCase: 'uppercase' | 'capitalize';
   hasFrame: boolean;
-  frameColor: string; // Nova propriedade
-  frameThickness: number; // Nova propriedade (em vmin)
+  frameColor: string;
+  frameThickness: number;
   unitBottomEm: number;
   unitRightEm: number;
-  // Novas propriedades para imagem do cabeçalho
   headerImage?: string;
   headerImageMode: HeaderImageMode;
   headerImageOpacity: number;
+  // NOVO: Armazena elementos de cabeçalho/rodapé por formato
+  headerElements: Record<string, HeaderAndFooterElements>;
 }
 
 export interface AIGeneratedImage {

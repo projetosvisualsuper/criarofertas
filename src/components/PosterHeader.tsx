@@ -1,14 +1,16 @@
 import React from 'react';
-import { PosterTheme } from '../types';
+import { PosterTheme, HeaderElement } from '../types';
 
 interface PosterHeaderProps {
-  theme: PosterTheme;
+  theme: Omit<PosterTheme, 'headerElements' | 'format'>; // Pass most of the theme
+  headerTitle: HeaderElement;
+  headerSubtitle: HeaderElement;
   isLandscape: boolean;
   fontScale: number;
   isStory: boolean;
 }
 
-const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontScale, isStory }) => {
+const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerSubtitle, isLandscape, fontScale, isStory }) => {
   const effectiveHeaderLayout = (theme.logo || theme.headerLayoutId === 'text-only') 
     ? theme.headerLayoutId 
     : 'text-only';
@@ -33,11 +35,11 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
           color: theme.headerTextColor,
           textShadow: '4px 4px 0px rgba(0,0,0,0.2)',
           fontSize: (isLandscape ? 4 : 3.5) * fontScale * (theme.logo && effectiveHeaderLayout !== 'logo-top' ? 0.8 : 1) + 'rem',
-          transform: `translateX(${theme.headerTitle.x}px) translateY(${theme.headerTitle.y}px) scale(${theme.headerTitle.scale})`,
+          transform: `translateX(${headerTitle.x}px) translateY(${headerTitle.y}px) scale(${headerTitle.scale})`,
           transformOrigin: effectiveHeaderLayout === 'logo-left' ? 'left center' : effectiveHeaderLayout === 'logo-right' ? 'right center' : 'center',
         }}
       >
-        {theme.headerTitle.text}
+        {headerTitle.text}
       </h1>
       <div 
         className={`inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg border-2 border-white/20 relative z-20 whitespace-nowrap`}
@@ -45,11 +47,11 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
           backgroundColor: theme.secondaryColor, 
           color: theme.primaryColor,
           fontSize: 1.25 * fontScale * (theme.logo && effectiveHeaderLayout !== 'logo-top' ? 0.9 : 1) + 'rem',
-          transform: `translateX(${theme.headerSubtitle.x}px) translateY(${theme.headerSubtitle.y}px) scale(${theme.headerSubtitle.scale}) rotate(-1deg)`,
+          transform: `translateX(${headerSubtitle.x}px) translateY(${headerSubtitle.y}px) scale(${headerSubtitle.scale}) rotate(-1deg)`,
           transformOrigin: effectiveHeaderLayout === 'logo-left' ? 'left center' : effectiveHeaderLayout === 'logo-right' ? 'right center' : 'center',
         }}
       >
-        {theme.headerSubtitle.text}
+        {headerSubtitle.text}
       </div>
     </div>
   );
@@ -68,7 +70,6 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
   );
 
   const HeaderContent = () => {
-    // Oculta conteúdo se for modo Hero Image
     if (isHeroImageMode) return null; 
 
     switch (effectiveHeaderLayout) {
@@ -85,7 +86,6 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
   };
 
   const renderGeometricArt = () => {
-    // A arte geométrica só é renderizada se NÃO houver imagem de cabeçalho.
     if (theme.headerImage) {
       return null;
     }
@@ -157,7 +157,6 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
           zIndex: zIndex,
         }}
       >
-        {/* Se for modo Hero, o conteúdo do cabeçalho é renderizado por cima da imagem */}
         {isHeroImageMode && (
           <div className="absolute inset-0 flex items-center justify-center p-8">
             <HeaderContent />
@@ -169,10 +168,6 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
 
   const renderPrimaryColorOverlay = () => {
     if (!isBackgroundMode) return null;
-
-    // Usamos a cor primária com uma opacidade fixa para garantir que a imagem de fundo apareça.
-    // A opacidade da imagem de fundo (theme.headerImageOpacity) já controla o quão clara a imagem é.
-    // Aqui, aplicamos uma camada de cor primária semi-transparente (ex: 50% de opacidade).
     const overlayOpacity = 0.5; 
 
     return (
@@ -191,20 +186,12 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
       className="relative z-10 w-full flex-shrink-0"
       style={{ 
         minHeight: isLandscape ? '25%' : '20%',
-        // Se houver imagem de cabeçalho, o fundo do header é transparente para que a imagem de fundo do poster (se houver) ou o fundo branco apareça por baixo.
         backgroundColor: theme.headerImage ? 'transparent' : theme.primaryColor,
       }}
     >
-      {/* 1. Renderiza a arte geométrica (só se não houver imagem de cabeçalho) */}
       {renderGeometricArt()}
-      
-      {/* 2. Renderiza a imagem do cabeçalho (Hero ou Background) */}
       {renderHeaderImage()}
-      
-      {/* 3. Renderiza a camada de cor primária semi-transparente (apenas no modo background) */}
       {renderPrimaryColorOverlay()}
-      
-      {/* 4. Renderiza o conteúdo do cabeçalho (Texto/Logo) por cima de tudo, exceto no modo Hero */}
       {!isHeroImageMode && (
         <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
           <HeaderContent />
