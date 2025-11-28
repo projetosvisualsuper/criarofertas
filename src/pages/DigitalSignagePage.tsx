@@ -20,10 +20,8 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, products
   const [isPlaying, setIsPlaying] = useState(true);
   
   const tvFormat = POSTER_FORMATS.find(f => f.id === 'tv');
-  // Only show products that have a price and name defined
   const productsForSlides = products.filter(p => p.price && p.name);
 
-  // Auto-advance logic
   useEffect(() => {
     if (isPlaying && productsForSlides.length > 1) {
       const timer = setInterval(() => {
@@ -45,9 +43,13 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, products
 
   const handleLayoutChange = (productId: string, newLayout: ProductLayout) => {
     setProducts(prevProducts =>
-      prevProducts.map(p =>
-        p.id === productId ? { ...p, tvLayout: newLayout } : p
-      )
+      prevProducts.map(p => {
+        if (p.id === productId) {
+          const newLayouts = { ...p.layouts, 'tv': newLayout };
+          return { ...p, layouts: newLayouts };
+        }
+        return p;
+      })
     );
   };
 
@@ -97,33 +99,10 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, products
           {currentProduct && (
             <>
               <div className="flex items-center justify-center space-x-4 bg-white p-4 rounded-xl shadow-sm">
-                <button 
-                  onClick={handlePrev} 
-                  className="p-3 bg-gray-100 rounded-full shadow-sm hover:bg-gray-200 transition-colors disabled:opacity-50"
-                  disabled={productsForSlides.length <= 1}
-                >
-                  <ChevronLeft size={24} />
-                </button>
-                
-                <button 
-                  onClick={() => setIsPlaying(!isPlaying)} 
-                  className="p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
-                  disabled={productsForSlides.length <= 1}
-                >
-                  {isPlaying ? <Pause size={24} /> : <Play size={24} />}
-                </button>
-                
-                <button 
-                  onClick={handleNext} 
-                  className="p-3 bg-gray-100 rounded-full shadow-sm hover:bg-gray-200 transition-colors disabled:opacity-50"
-                  disabled={productsForSlides.length <= 1}
-                >
-                  <ChevronRight size={24} />
-                </button>
-                
-                <span className="text-sm text-gray-600 ml-4">
-                  Slide {currentSlideIndex + 1} de {productsForSlides.length}
-                </span>
+                <button onClick={handlePrev} className="p-3 bg-gray-100 rounded-full shadow-sm hover:bg-gray-200 transition-colors disabled:opacity-50" disabled={productsForSlides.length <= 1}><ChevronLeft size={24} /></button>
+                <button onClick={() => setIsPlaying(!isPlaying)} className="p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors disabled:opacity-50" disabled={productsForSlides.length <= 1}>{isPlaying ? <Pause size={24} /> : <Play size={24} />}</button>
+                <button onClick={handleNext} className="p-3 bg-gray-100 rounded-full shadow-sm hover:bg-gray-200 transition-colors disabled:opacity-50" disabled={productsForSlides.length <= 1}><ChevronRight size={24} /></button>
+                <span className="text-sm text-gray-600 ml-4">Slide {currentSlideIndex + 1} de {productsForSlides.length}</span>
               </div>
               <SlideLayoutControls product={currentProduct} onLayoutChange={handleLayoutChange} />
             </>

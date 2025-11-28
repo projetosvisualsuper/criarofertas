@@ -15,7 +15,8 @@ const defaultLayout: ProductLayout = {
 };
 
 const SlideLayoutControls: React.FC<SlideLayoutControlsProps> = ({ product, onLayoutChange }) => {
-  const layout = product.tvLayout || defaultLayout;
+  // Agora lê o layout específico para 'tv'
+  const layout = product.layouts?.['tv'] || defaultLayout;
 
   const handleChange = (element: keyof ProductLayout, property: 'x' | 'y' | 'scale', value: number) => {
     const newLayout: ProductLayout = {

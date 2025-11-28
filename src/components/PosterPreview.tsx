@@ -21,6 +21,7 @@ const defaultLayout = {
   image: { x: 0, y: 0, scale: 1 },
   name: { x: 0, y: 0, scale: 1 },
   price: { x: 0, y: 0, scale: 1 },
+  description: { x: 0, y: 0, scale: 1 },
 };
 
 const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme, products, onDownloadStart, onDownloadEnd }, ref) => {
@@ -34,11 +35,7 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
         const element = posterRef.current;
         const targetWidth = theme.format.width;
         const targetHeight = theme.format.height;
-
-        // Calculate the scale factor based on the element's current screen width.
         const scale = targetWidth / element.offsetWidth;
-        
-        // Calculate the source height that maintains the correct aspect ratio.
         const sourceHeight = element.offsetWidth * (targetHeight / targetWidth);
 
         const dataUrl = await toPng(element, { 
@@ -78,7 +75,7 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
 
   const isHeroMode = products.length === 1;
   const product = products[0];
-  const layout = product?.layout || defaultLayout;
+  const layout = product?.layouts?.[theme.format.id] || defaultLayout;
 
   const isLandscape = theme.format.width > theme.format.height;
   const isStory = theme.format.aspectRatio === '1080 / 1920';
@@ -119,160 +116,31 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
               fontFamily: theme.fontFamilyBody,
             }}
           >
-            {theme.hasFrame && (
-              <div 
-                className="absolute inset-0 z-20 pointer-events-none"
-                style={{
-                  borderStyle: 'solid',
-                  borderWidth: `${theme.frameThickness}vmin`,
-                  borderColor: theme.frameColor,
-                  boxShadow: 'inset 0 0 15px rgba(0,0,0,0.2)',
-                }}
-              />
-            )}
-            {theme.backgroundImage && (
-              <div 
-                className="absolute inset-0 z-0 opacity-40 bg-cover bg-center"
-                style={{ backgroundImage: `url(${theme.backgroundImage})` }}
-              />
-            )}
-             <div 
-                className="absolute inset-0 z-0 pointer-events-none"
-                style={{ 
-                    background: isHeroMode 
-                        ? `radial-gradient(circle at center, transparent 0%, ${theme.backgroundColor} 100%)` 
-                        : 'none'
-                }}
-              />
-
+            {theme.hasFrame && (<div className="absolute inset-0 z-20 pointer-events-none" style={{ borderStyle: 'solid', borderWidth: `${theme.frameThickness}vmin`, borderColor: theme.frameColor, boxShadow: 'inset 0 0 15px rgba(0,0,0,0.2)' }}/>)}
+            {theme.backgroundImage && (<div className="absolute inset-0 z-0 opacity-40 bg-cover bg-center" style={{ backgroundImage: `url(${theme.backgroundImage})` }}/>)}
+            <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: isHeroMode ? `radial-gradient(circle at center, transparent 0%, ${theme.backgroundColor} 100%)` : 'none' }}/>
             <PosterHeader theme={theme} isLandscape={isLandscape} fontScale={fontScale} isStory={isStory} />
-
-            <div 
-              className="flex-1 w-full min-h-0 relative z-10 flex flex-col"
-              style={{
-                padding: isHeroMode ? 0 : (isStory ? '1rem' : (isLandscape ? '1.5rem' : '2rem')),
-              }}
-            >
+            <div className="flex-1 w-full min-h-0 relative z-10 flex flex-col" style={{ padding: isHeroMode ? 0 : (isStory ? '1rem' : (isLandscape ? '1.5rem' : '2rem')) }}>
               {isHeroMode && product ? (
                 <div className="w-full flex-1 relative">
-                   <div 
-                     className="absolute top-1/2 left-1/2 w-3/5 h-1/2 transition-transform duration-100"
-                     style={{
-                       transform: `translateX(calc(-50% + ${layout.image.x}px)) translateY(calc(-75% + ${layout.image.y}px)) scale(${layout.image.scale})`
-                     }}
-                   >
-                      {product.image ? (
-                         <img 
-                            src={product.image} 
-                            alt={product.name} 
-                            className="w-full h-full object-contain drop-shadow-2xl"
-                            style={{ filter: 'drop-shadow(0 25px 25px rgba(0,0,0,0.3))' }}
-                         />
-                      ) : (
-                        <div className="w-full h-full text-gray-300 opacity-50 border-4 border-dashed rounded-3xl flex items-center justify-center">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                        </div>
-                      )}
+                   <div className="absolute top-1/2 left-1/2 w-3/5 h-1/2 transition-transform duration-100" style={{ transform: `translateX(calc(-50% + ${layout.image.x}px)) translateY(calc(-75% + ${layout.image.y}px)) scale(${layout.image.scale})` }}>
+                      {product.image ? (<img src={product.image} alt={product.name} className="w-full h-full object-contain drop-shadow-2xl" style={{ filter: 'drop-shadow(0 25px 25px rgba(0,0,0,0.3))' }}/>) : (<div className="w-full h-full text-gray-300 opacity-50 border-4 border-dashed rounded-3xl flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>)}
                    </div>
-                   <div 
-                     className="absolute top-1/2 left-1/2 w-full text-center px-4 transition-transform duration-100"
-                     style={{
-                       transform: `translateX(calc(-50% + ${layout.name.x}px)) translateY(${layout.name.y}px) scale(${layout.name.scale})`
-                     }}
-                   >
-                      <h2 
-                        className="font-bold leading-tight uppercase tracking-tight line-clamp-2 drop-shadow-lg px-2 bg-white/80 backdrop-blur-sm rounded-lg inline-block shadow-sm" 
-                        style={{ 
-                          fontFamily: theme.fontFamilyDisplay,
-                          color: theme.textColor,
-                          fontSize: (isLandscape ? 2.5 : 2) * fontScale + 'rem',
-                          padding: '0.25rem 1rem'
-                        }}
-                      >
-                        {product.name}
-                      </h2>
+                   <div className="absolute top-1/2 left-1/2 w-full text-center px-4 transition-transform duration-100" style={{ transform: `translateX(calc(-50% + ${layout.name.x}px)) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}>
+                      <h2 className="font-bold leading-tight uppercase tracking-tight line-clamp-2 drop-shadow-lg px-2 bg-white/80 backdrop-blur-sm rounded-lg inline-block shadow-sm" style={{ fontFamily: theme.fontFamilyDisplay, color: theme.textColor, fontSize: (isLandscape ? 2.5 : 2) * fontScale + 'rem', padding: '0.25rem 1rem' }}>{product.name}</h2>
                    </div>
-                   {product.description && (
-                      <div
-                          className="absolute top-1/2 left-1/2 w-4/5 text-center px-4 transition-transform duration-100"
-                          style={{
-                              transform: `translateX(calc(-50% + ${product.layout?.description?.x || 0}px)) translateY(calc(25% + ${product.layout?.description?.y || 0}px)) scale(${product.layout?.description?.scale || 1})`
-                          }}
-                      >
-                          <p
-                              className="leading-tight drop-shadow-sm line-clamp-3"
-                              style={{
-                                  color: theme.textColor,
-                                  opacity: 0.8,
-                                  fontSize: (isLandscape ? 1.2 : 1) * fontScale + 'rem',
-                              }}
-                          >
-                              {product.description}
-                          </p>
-                      </div>
-                   )}
-                   <div 
-                     className="absolute top-1/2 left-1/2 transition-transform duration-100"
-                     style={{
-                       transform: `translateX(calc(-50% + ${layout.price.x}px)) translateY(calc(75% + ${layout.price.y}px)) scale(${layout.price.scale})`
-                     }}
-                   >
-                      <PriceDisplay
-                        price={product.price}
-                        oldPrice={product.oldPrice}
-                        unit={product.unit}
-                        theme={theme}
-                        isCompact={false}
-                        isHero={true}
-                        fontScale={fontScale}
-                        isLandscape={isLandscape}
-                      />
+                   {product.description && (<div className="absolute top-1/2 left-1/2 w-4/5 text-center px-4 transition-transform duration-100" style={{ transform: `translateX(calc(-50% + ${layout.description?.x || 0}px)) translateY(calc(25% + ${layout.description?.y || 0}px)) scale(${layout.description?.scale || 1})` }}><p className="leading-tight drop-shadow-sm line-clamp-3" style={{ color: theme.textColor, opacity: 0.8, fontSize: (isLandscape ? 1.2 : 1) * fontScale + 'rem' }}>{product.description}</p></div>)}
+                   <div className="absolute top-1/2 left-1/2 transition-transform duration-100" style={{ transform: `translateX(calc(-50% + ${layout.price.x}px)) translateY(calc(75% + ${layout.price.y}px)) scale(${layout.price.scale})` }}>
+                      <PriceDisplay price={product.price} oldPrice={product.oldPrice} unit={product.unit} theme={theme} isCompact={false} isHero={true} fontScale={fontScale} isLandscape={isLandscape}/>
                    </div>
                 </div>
               ) : (
-                products.length === 0 ? (
-                    <div className="flex-1 flex items-center justify-center text-center opacity-50 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50">
-                        <div className="p-6">
-                            <p className="text-lg font-bold mb-2 text-gray-600">Seu cartaz está vazio</p>
-                            <p className="text-sm text-gray-500">Adicione produtos no menu lateral</p>
-                        </div>
-                    </div>
-                ) : (
-                    <div 
-                      className="grid flex-1"
-                      style={{ 
-                        gridTemplateColumns: `repeat(${theme.layoutCols}, minmax(0, 1fr))`,
-                        gridAutoRows: 'minmax(0, 1fr)',
-                        gap: '1rem'
-                      }}
-                    >
-                      {products.map(p => (
-                        <ProductCard key={p.id} product={p} theme={theme} layoutCols={theme.layoutCols} isStory={isStory} />
-                      ))}
-                    </div>
-                )
+                products.length === 0 ? (<div className="flex-1 flex items-center justify-center text-center opacity-50 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50"><div className="p-6"><p className="text-lg font-bold mb-2 text-gray-600">Seu cartaz está vazio</p><p className="text-sm text-gray-500">Adicione produtos no menu lateral</p></div></div>) : (<div className="grid flex-1" style={{ gridTemplateColumns: `repeat(${theme.layoutCols}, minmax(0, 1fr))`, gridAutoRows: 'minmax(0, 1fr)', gap: '1rem' }}>{products.map(p => (<ProductCard key={p.id} product={p} theme={theme} layoutCols={theme.layoutCols} isStory={isStory} />))}</div>)
               )}
             </div>
-
-            <footer 
-              className="relative z-10 w-full flex-shrink-0 text-center"
-              style={{ 
-                backgroundColor: theme.primaryColor,
-                padding: isStory ? '1rem' : '1rem 1.5rem'
-              }}
-            >
+            <footer className="relative z-10 w-full flex-shrink-0 text-center" style={{ backgroundColor: theme.primaryColor, padding: isStory ? '1rem' : '1rem 1.5rem' }}>
               <div className="absolute top-0 left-0 w-full h-1 bg-black/10"></div>
-              <p 
-                 ref={footerRef}
-                 className="font-bold uppercase tracking-wider opacity-95"
-                 style={{ 
-                   color: theme.headerTextColor,
-                   fontSize: isStory ? '1.1rem' : '1rem',
-                   transform: `translateX(${theme.footerText.x}px) translateY(${theme.footerText.y}px) scale(${theme.footerText.scale})`
-                 }}
-              >
-                {theme.footerText.text}
-              </p>
+              <p ref={footerRef} className="font-bold uppercase tracking-wider opacity-95" style={{ color: theme.headerTextColor, fontSize: isStory ? '1.1rem' : '1rem', transform: `translateX(${theme.footerText.x}px) translateY(${theme.footerText.y}px) scale(${theme.footerText.scale})` }}>{theme.footerText.text}</p>
             </footer>
          </div>
       </div>

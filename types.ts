@@ -16,8 +16,8 @@ export interface Product {
   oldPrice?: string;
   unit: string;
   image?: string;
-  layout?: ProductLayout;
-  tvLayout?: ProductLayout; // Novo layout específico para TV
+  // Alterado: 'layout' e 'tvLayout' foram substituídos por um objeto 'layouts'
+  layouts: Record<string, ProductLayout>; 
 }
 
 export interface PosterFormat {
