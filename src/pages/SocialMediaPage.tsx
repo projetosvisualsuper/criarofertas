@@ -17,6 +17,7 @@ interface SocialMediaPageProps {
 
 export default function SocialMediaPage({ theme, setTheme, products, setProducts, formats, savedImages, deleteImage }: SocialMediaPageProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<SavedImage | null>(null); // Novo estado para a imagem estática
   const posterRef = useRef<PosterPreviewRef>(null);
   
   const socialFormats = formats.filter(f => f.id === 'story' || f.id === 'feed');
@@ -26,6 +27,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
       ...prevTheme,
       format: newFormat,
     }));
+    setPreviewImage(null); // Limpa a visualização estática ao mudar o formato
   }, [setTheme]);
 
   useEffect(() => {
@@ -44,6 +46,58 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
       posterRef.current.triggerDownload();
     }
   };
+  
+  const handleSelectImageForPreview = (image: SavedImage | null) => {
+    setPreviewImage(image);
+    // Se uma imagem for selecionada, atualizamos o formato do tema para corresponder ao formato da imagem salva,
+    // mas sem alterar o tema completo, apenas o formato para que o container do preview tenha o aspect ratio correto.
+    if (image) {
+        const savedFormat = formats.find(f => f.name === image.formatName);
+        if (savedFormat) {
+            setTheme(prevTheme => ({
+                ...prevTheme,
+                format: savedFormat,
+            }));
+        }
+    }
+  };
+
+  const renderPreviewContent = () => {
+    if (previewImage) {
+      // Renderiza a imagem estática salva
+      return (
+        <div className="flex-1 relative overflow-hidden bg-gray-200/80 flex items-center justify-center">
+          <div 
+            className="relative flex-shrink-0 origin-center shadow-2xl"
+            style={{
+              aspectRatio: theme.format.aspectRatio,
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+            }}
+          >
+            <img 
+              src={previewImage.dataUrl} 
+              alt={`Preview ${previewImage.formatName}`} 
+              className="w-full h-full object-contain"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // Renderiza o PosterPreview editável
+    return (
+      <div className="flex-1 relative overflow-hidden bg-gray-200/80">
+        <PosterPreview 
+          ref={posterRef}
+          theme={theme} 
+          products={products} 
+          onDownloadStart={() => setIsDownloading(true)}
+          onDownloadEnd={() => setIsDownloading(false)}
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col md:flex-row h-full w-full overflow-hidden font-sans">
@@ -55,6 +109,8 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
         handleFormatChange={applyFormatPreset}
         savedImages={savedImages}
         deleteImage={deleteImage}
+        handleSelectImageForPreview={handleSelectImageForPreview} // Nova prop
+        previewImage={previewImage} // Nova prop
       />
       
       <main className="flex-1 bg-gray-100 relative h-full flex flex-col">
@@ -66,15 +122,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
              </div>
            </div>
          )}
-         <div className="flex-1 relative overflow-hidden bg-gray-200/80">
-            <PosterPreview 
-              ref={posterRef}
-              theme={theme} 
-              products={products} 
-              onDownloadStart={() => setIsDownloading(true)}
-              onDownloadEnd={() => setIsDownloading(false)}
-            />
-         </div>
+         {renderPreviewContent()}
       </main>
     </div>
   );

@@ -11,9 +11,11 @@ interface SocialMediaSidebarProps {
   handleFormatChange: (newFormat: PosterFormat) => void;
   savedImages: SavedImage[];
   deleteImage: (id: string) => void;
+  handleSelectImageForPreview: (image: SavedImage | null) => void; // Nova prop
+  previewImage: SavedImage | null; // Nova prop
 }
 
-const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme, formats, handleDownload, handleFormatChange, savedImages, deleteImage }) => {
+const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme, formats, handleDownload, handleFormatChange, savedImages, deleteImage, handleSelectImageForPreview, previewImage }) => {
   const [activeTab, setActiveTab] = useState<'formats' | 'gallery'>('formats');
 
   return (
@@ -62,7 +64,26 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
         )}
         
         {activeTab === 'gallery' && (
-          <SocialMediaGallery savedImages={savedImages} deleteImage={deleteImage} setTheme={setTheme} />
+          <>
+            {previewImage && (
+              <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-200 flex items-center justify-between">
+                <p className="text-sm font-semibold text-indigo-800">Visualizando: {previewImage.formatName}</p>
+                <button 
+                  onClick={() => handleSelectImageForPreview(null)}
+                  className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                >
+                  Voltar ao Editor
+                </button>
+              </div>
+            )}
+            <SocialMediaGallery 
+              savedImages={savedImages} 
+              deleteImage={deleteImage} 
+              setTheme={setTheme} 
+              handleSelectImageForPreview={handleSelectImageForPreview}
+              previewImage={previewImage}
+            />
+          </>
         )}
 
       </div>
