@@ -20,15 +20,8 @@ const defaultLayout = {
 const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, isLandscape }) => {
   const layout = product.layouts?.[theme.format.id] || defaultLayout;
 
-  // Estilos específicos para o modo TV/Slide (replicando o visual da imagem 1)
-  const slideThemeOverride: PosterTheme = {
-    ...theme,
-    // Força o estilo do preço para o visual de alto contraste (preto/amarelo)
-    priceCardStyle: 'default',
-    priceCardBackgroundColor: '#000000',
-    priceCardTextColor: '#facc15', // Amarelo forte
-    textColor: '#1a1a1a', // Texto do corpo
-  };
+  // Usamos o tema diretamente, exceto para o texto do nome do produto que precisa de alto contraste
+  const nameTextColor = theme.headerTextColor; // Usar a cor do texto do cabeçalho para o nome
 
   return (
     <div 
@@ -60,11 +53,11 @@ const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, 
           <h2 
             className="font-bold leading-tight uppercase tracking-tight line-clamp-3 drop-shadow-lg px-2 bg-white/80 backdrop-blur-sm rounded-lg inline-block shadow-sm" 
             style={{ 
-              fontFamily: slideThemeOverride.fontFamilyDisplay, 
-              color: slideThemeOverride.textColor, 
+              fontFamily: theme.fontFamilyDisplay, 
+              color: nameTextColor, 
               fontSize: 2 * fontScale + 'rem', 
               padding: '0.25rem 1rem',
-              // Estilo de contorno de texto (simulado com text-shadow)
+              // Mantendo o contorno de texto para alto contraste no nome
               textShadow: '2px 2px 0px #000000, -2px -2px 0px #000000, 2px -2px 0px #000000, -2px 2px 0px #000000',
               color: '#ffffff', // Cor do texto branco
             }}
@@ -76,7 +69,7 @@ const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, 
         {/* Descrição */}
         {product.description && (
           <div className="w-full px-4 transition-transform duration-100 mb-8" style={{ transform: `translateX(${layout.description?.x || 0}px) translateY(${layout.description?.y || 0}px) scale(${layout.description?.scale || 1})` }}>
-            <p className="leading-tight drop-shadow-sm line-clamp-3" style={{ color: slideThemeOverride.textColor, opacity: 0.8, fontSize: 1 * fontScale + 'rem' }}>
+            <p className="leading-tight drop-shadow-sm line-clamp-3" style={{ color: theme.textColor, opacity: 0.8, fontSize: 1 * fontScale + 'rem' }}>
               {product.description}
             </p>
           </div>
@@ -88,7 +81,7 @@ const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, 
             price={product.price} 
             oldPrice={product.oldPrice} 
             unit={product.unit} 
-            theme={slideThemeOverride} // Usando o tema com override
+            theme={theme} // Usando o tema original
             isCompact={false} 
             isHero={true} 
             fontScale={fontScale * 1.0} 
