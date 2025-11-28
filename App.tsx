@@ -8,6 +8,7 @@ import SettingsPage from './src/pages/SettingsPage';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
 import { PosterTheme, Product, PosterFormat } from './types';
 import { useLocalStorageState } from './src/hooks/useLocalStorageState';
+import { Loader2 } from 'lucide-react';
 
 const defaultLayout = {
   image: { x: 0, y: 0, scale: 1 },
@@ -28,32 +29,61 @@ export default function App() {
   
   const [theme, setTheme] = useLocalStorageState<PosterTheme>('ofertaflash_theme', INITIAL_THEME);
   const [products, setProducts] = useLocalStorageState<Product[]>('ofertaflash_products', INITIAL_PRODUCTS);
-  
+  const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
-    // This effect runs once on mount to ensure the state loaded from localStorage is valid.
-    // It handles cases where the user has an older version of the state saved.
+    let themeUpdated = false;
+    let productsUpdated = false;
+
+    // Check and migrate theme
     if (!theme.headerElements) {
       console.log("Migrating theme state from localStorage to new structure...");
-      setTheme(prevTheme => {
-        // Create a new theme object that has the new structure but preserves old user settings.
-        const migratedTheme = { ...INITIAL_THEME, ...prevTheme };
-        // Explicitly set the new `headerElements` property from the default.
-        migratedTheme.headerElements = INITIAL_THEME.headerElements;
-        return migratedTheme;
-      });
+      themeUpdated = true;
+      setTheme(prevTheme => ({
+        ...INITIAL_THEME,
+        ...prevTheme,
+        headerElements: INITIAL_THEME.headerElements,
+      }));
     }
 
+    // Check and migrate products
     if (products.some(p => !p.layouts)) {
       console.log("Migrating products state from localStorage to new structure...");
+      productsUpdated = true;
       setProducts(prevProducts => 
         prevProducts.map(p => 
           p.layouts ? p : { ...p, layouts: createInitialLayouts() }
         )
       );
     }
-  }, []); // The empty dependency array ensures this runs only once.
+
+    // If no updates were needed, we are ready immediately.
+    if (!themeUpdated && !productsUpdated) {
+      setIsReady(true);
+    }
+    // If updates were triggered, the effect will re-run when state updates,
+    // and on the next run, this condition will be met.
+  }, [theme, products, setTheme, setProducts]);
+
+  // This effect marks the app as ready once the data structures are confirmed to be valid.
+  useEffect(() => {
+      if (theme.headerElements && !products.some(p => !p.layouts)) {
+          setIsReady(true);
+      }
+  }, [theme, products]);
 
   const formats: PosterFormat[] = POSTER_FORMATS;
+
+  if (!isReady) {
+    return (
+      <div className="flex items-center justify-center h-screen w-screen bg-gray-100">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
+          <p className="text-lg text-gray-700">Carregando e atualizando dados...</p>
+        </div>
+      </div>
+    );
+  }
 
   const renderModule = () => {
     const commonProps = { theme, setTheme, products, setProducts, formats };
