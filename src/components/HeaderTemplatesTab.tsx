@@ -14,10 +14,13 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateThumb, setNewTemplateThumb] = useState<string | null>(null);
 
-  const applyTemplate = (templateTheme: Partial<PosterTheme>) => {
+  const applyTemplate = (template: HeaderTemplate) => {
     setTheme(prevTheme => ({
       ...prevTheme,
-      ...templateTheme,
+      ...template.theme,
+      headerImage: template.thumbnail, // Use the thumbnail as the header image
+      headerImageMode: 'hero',         // Set mode to 'hero'
+      useLogoOnHero: false,            // Default to showing only the image
     }));
   };
 
@@ -48,6 +51,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
       headerLayoutId: theme.headerLayoutId,
       headerImage: theme.headerImage,
       headerImageMode: theme.headerImageMode,
+      useLogoOnHero: theme.useLogoOnHero,
       headerImageOpacity: theme.headerImageOpacity,
       logo: theme.logo,
       headerElements: theme.headerElements,
@@ -116,7 +120,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
             {customTemplates.map(template => (
               <div key={template.id} className="relative group">
                 <button
-                  onClick={() => applyTemplate(template.theme)}
+                  onClick={() => applyTemplate(template)}
                   className="w-full border rounded-lg overflow-hidden bg-white hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500 transition-all"
                 >
                   <img src={template.thumbnail} alt={template.name} className="w-full h-24 object-cover" />
@@ -143,7 +147,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
           {HEADER_TEMPLATE_PRESETS.map(template => (
             <button
               key={template.id}
-              onClick={() => applyTemplate(template.theme)}
+              onClick={() => applyTemplate(template)}
               className="border rounded-lg overflow-hidden group bg-white hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500 transition-all"
             >
               <img src={template.thumbnail} alt={template.name} className="w-full h-24 object-cover bg-gray-200" />

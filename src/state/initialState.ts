@@ -62,6 +62,7 @@ export const INITIAL_THEME: PosterTheme = {
   unitRightEm: -1.5,
   headerImage: undefined,
   headerImageMode: 'none',
+  useLogoOnHero: false,
   headerImageOpacity: 0.3,
   headerElements: createInitialHeaderElements(),
 };

@@ -196,9 +196,9 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
           zIndex: zIndex,
         }}
       >
-        {isHeroImageMode && (
+        {isHeroImageMode && theme.useLogoOnHero && theme.logo && (
           <div className="absolute inset-0 flex items-center justify-center p-8">
-            <HeaderContent />
+            <HeaderLogo />
           </div>
         )}
       </div>

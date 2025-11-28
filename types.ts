@@ -72,6 +72,7 @@ export interface PosterTheme {
   unitRightEm: number;
   headerImage?: string;
   headerImageMode: HeaderImageMode;
+  useLogoOnHero?: boolean;
   headerImageOpacity: number;
   // Armazena elementos de cabeçalho/rodapé por formato
   headerElements: Record<string, HeaderAndFooterElements>;
