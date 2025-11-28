@@ -25,11 +25,18 @@ const SlidePreview = React.forwardRef<HTMLDivElement, SlidePreviewProps>(({ prod
   // Encontrar a classe de transição
   const transitionPreset = SLIDE_TRANSITION_PRESETS.find(p => p.id === theme.slideTransitionId);
   const transitionClass = transitionPreset ? transitionPreset.className : 'animate-slide-in';
+  
+  // Se for uma transição escalonada, não aplicamos a classe de animação ao contêiner principal,
+  // mas sim a classe de ativação para que os filhos sejam animados.
+  const isStaggered = theme.slideTransitionId === 'stagger-fade';
+  const containerClass = isStaggered ? transitionClass : '';
+  const contentClass = isStaggered ? '' : transitionClass;
+
 
   return (
     <div 
       ref={ref}
-      className="relative flex flex-col bg-white overflow-hidden shadow-2xl w-full h-full"
+      className={`relative flex flex-col bg-white overflow-hidden shadow-2xl w-full h-full ${containerClass}`}
       style={{
         backgroundColor: slideTheme.backgroundColor,
         color: slideTheme.textColor,
@@ -49,11 +56,11 @@ const SlidePreview = React.forwardRef<HTMLDivElement, SlidePreviewProps>(({ prod
         isStory={false} 
       />
       
-      {/* Main Content Area with Transition */}
+      {/* Main Content Area */}
       <div className="flex-1 w-full min-h-0 relative z-10 flex p-8">
         <div 
-          // Aplicando a classe de transição aqui
-          className={`w-full flex-1 flex transition-all duration-700 ease-out ${transitionClass}`}
+          // Aplicando a classe de transição aqui, se não for escalonada
+          className={`w-full flex-1 flex transition-all duration-700 ease-out ${contentClass}`}
           key={product.id} // Mantendo a chave para forçar a re-renderização e a animação
         >
           <SlideContent 
@@ -61,6 +68,7 @@ const SlidePreview = React.forwardRef<HTMLDivElement, SlidePreviewProps>(({ prod
             theme={slideTheme} 
             fontScale={fontScale} 
             isLandscape={isLandscape} 
+            isStaggered={isStaggered} // Passando a flag para o filho
           />
         </div>
       </div>

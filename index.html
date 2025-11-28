@@ -48,6 +48,18 @@
         }
       }
       
+      /* Staggered Fade Keyframes */
+      @keyframes staggerFadeIn {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
       .animate-slide-in {
         animation: slideIn 0.7s ease-out forwards;
       }
@@ -59,6 +71,26 @@
       }
       .animate-rotate-scale {
         animation: rotateScale 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+      }
+
+      /* Staggered Fade Classes - Applied to children when parent has 'stagger-fade-active' */
+      .stagger-fade-active .stagger-item {
+        opacity: 0; /* Start hidden */
+        animation: staggerFadeIn 0.5s ease-out forwards;
+      }
+      
+      /* Delay definitions */
+      .stagger-fade-active .stagger-delay-1 {
+        animation-delay: 0.1s;
+      }
+      .stagger-fade-active .stagger-delay-2 {
+        animation-delay: 0.3s;
+      }
+      .stagger-fade-active .stagger-delay-3 {
+        animation-delay: 0.5s;
+      }
+      .stagger-fade-active .stagger-delay-4 {
+        animation-delay: 0.7s;
       }
     </style>
     <script>

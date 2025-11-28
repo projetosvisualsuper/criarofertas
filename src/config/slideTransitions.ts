@@ -1,4 +1,4 @@
-import { ArrowRight, Maximize2, RotateCcw, Zap, Eye } from 'lucide-react';
+import { ArrowRight, Maximize2, RotateCcw, Zap, Eye, Layers } from 'lucide-react';
 
 export const SLIDE_TRANSITION_PRESETS = [
   {
@@ -24,6 +24,12 @@ export const SLIDE_TRANSITION_PRESETS = [
     name: 'Giro e Escala',
     icon: RotateCcw,
     className: 'animate-rotate-scale',
+  },
+  {
+    id: 'stagger-fade',
+    name: 'Escalonado (Fade)',
+    icon: Layers,
+    className: 'stagger-fade-active', // Usaremos esta classe para ativar a animação nos filhos
   },
   {
     id: 'none',

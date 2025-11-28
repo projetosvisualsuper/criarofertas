@@ -8,6 +8,7 @@ interface SlideContentProps {
   theme: PosterTheme;
   fontScale: number;
   isLandscape: boolean;
+  isStaggered?: boolean; // Nova prop
 }
 
 const defaultLayout = {
@@ -17,8 +18,12 @@ const defaultLayout = {
   description: { x: 0, y: 0, scale: 1 },
 };
 
-const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, isLandscape }) => {
+const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, isLandscape, isStaggered = false }) => {
   const layout = product.layouts?.[theme.format.id] || defaultLayout;
+
+  // Função auxiliar para aplicar classes de escalonamento
+  const getStaggerClass = (delay: number) => 
+    isStaggered ? `stagger-item stagger-delay-${delay}` : '';
 
   return (
     <div 
@@ -26,7 +31,10 @@ const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, 
     >
       {/* Coluna da Imagem */}
       <div className="w-1/2 h-full relative flex items-center justify-center">
-        <div className="w-full h-full transition-transform duration-100 p-4" style={{ transform: `translateX(${layout.image.x}px) translateY(${layout.image.y}px) scale(${layout.image.scale})` }}>
+        <div 
+          className={`w-full h-full transition-transform duration-100 p-4 ${getStaggerClass(1)}`} 
+          style={{ transform: `translateX(${layout.image.x}px) translateY(${layout.image.y}px) scale(${layout.image.scale})` }}
+        >
           {product.image ? (
             <img 
               src={product.image} 
@@ -46,16 +54,19 @@ const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, 
       <div className="w-1/2 h-full relative flex flex-col items-center justify-center text-center p-4">
         
         {/* Nome do Produto */}
-        <div className="w-full transition-transform duration-100 mb-4" style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}>
+        <div 
+          className={`w-full transition-transform duration-100 mb-4 ${getStaggerClass(2)}`} 
+          style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}
+        >
           <h2 
             className="font-bold leading-tight tracking-tight line-clamp-3 px-2 inline-block" 
             style={{ 
               fontFamily: theme.fontFamilyDisplay, 
-              color: theme.textColor, // Usando a cor de texto principal do tema
+              color: theme.textColor, 
               fontSize: 2 * fontScale + 'rem', 
-              padding: '0', // Removendo padding
-              textShadow: 'none', // Removendo contorno
-              textTransform: 'none', // Removendo uppercase
+              padding: '0', 
+              textShadow: 'none', 
+              textTransform: 'none', 
             }}
           >
             {product.name}
@@ -64,7 +75,10 @@ const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, 
         
         {/* Descrição */}
         {product.description && (
-          <div className="w-full px-4 transition-transform duration-100 mb-8" style={{ transform: `translateX(${layout.description?.x || 0}px) translateY(${layout.description?.y || 0}px) scale(${layout.description?.scale || 1})` }}>
+          <div 
+            className={`w-full px-4 transition-transform duration-100 mb-8 ${getStaggerClass(3)}`} 
+            style={{ transform: `translateX(${layout.description?.x || 0}px) translateY(${layout.description?.y || 0}px) scale(${layout.description?.scale || 1})` }}
+          >
             <p className="leading-tight drop-shadow-sm line-clamp-3" style={{ color: theme.textColor, opacity: 0.8, fontSize: 1 * fontScale + 'rem' }}>
               {product.description}
             </p>
@@ -72,7 +86,10 @@ const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, 
         )}
         
         {/* Preço */}
-        <div className="transition-transform duration-100 mt-8" style={{ transform: `translateX(${layout.price.x}px) translateY(${layout.price.y}px) scale(${layout.price.scale})` }}>
+        <div 
+          className={`transition-transform duration-100 mt-8 ${getStaggerClass(4)}`} 
+          style={{ transform: `translateX(${layout.price.x}px) translateY(${layout.price.y}px) scale(${layout.price.scale})` }}
+        >
           <PriceDisplay 
             price={product.price} 
             oldPrice={product.oldPrice} 
