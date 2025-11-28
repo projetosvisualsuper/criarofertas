@@ -40,8 +40,15 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     setProducts(prevProducts =>
       prevProducts.map(p => {
         if (p.id === productId) {
+          // Safeguard: Ensure layouts object exists before updating
+          const baseLayouts = p.layouts || {
+            'a4': defaultLayout,
+            'story': defaultLayout,
+            'feed': defaultLayout,
+            'tv': defaultLayout,
+          };
           const newLayouts = {
-            ...p.layouts,
+            ...baseLayouts,
             [theme.format.id]: newLayout,
           };
           return { ...p, layouts: newLayouts };
@@ -264,7 +271,9 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
             </div>
 
             {products.map((product) => {
-              const currentLayout = product.layouts[theme.format.id] || defaultLayout;
+              // FIX: Safeguard against missing layouts property from older localStorage state
+              const currentLayout = (product.layouts && product.layouts[theme.format.id]) || defaultLayout;
+              
               const updateElementLayout = (element: keyof ProductLayout, prop: keyof ProductLayout[keyof ProductLayout], value: number) => {
                 const newElementLayout = { ...currentLayout[element], [prop]: value };
                 const newLayout = { ...currentLayout, [element]: newElementLayout };
