@@ -429,14 +429,14 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                                         <label className="font-medium text-gray-600">Posição X</label>
                                         <span className="font-mono text-gray-500">{theme.logo.x}px</span>
                                     </div>
-                                    <input type="range" min="-200" max="200" value={theme.logo.x} onChange={(e) => setTheme({ ...theme, logo: { ...theme.logo!, x: Number(e.target.value) } })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+                                    <input type="range" min="-400" max="400" value={theme.logo.x} onChange={(e) => setTheme({ ...theme, logo: { ...theme.logo!, x: Number(e.target.value) } })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
                                 </div>
                                 <div className="space-y-1">
                                     <div className="flex justify-between text-xs">
                                         <label className="font-medium text-gray-600">Posição Y</label>
                                         <span className="font-mono text-gray-500">{theme.logo.y}px</span>
                                     </div>
-                                    <input type="range" min="-200" max="200" value={theme.logo.y} onChange={(e) => setTheme({ ...theme, logo: { ...theme.logo!, y: Number(e.target.value) } })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+                                    <input type="range" min="-400" max="400" value={theme.logo.y} onChange={(e) => setTheme({ ...theme, logo: { ...theme.logo!, y: Number(e.target.value) } })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
                                 </div>
                             </div>
                         </div>
