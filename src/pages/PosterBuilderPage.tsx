@@ -40,31 +40,30 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
   };
 
   const handleFormatChange = useCallback((newFormat: PosterFormat) => {
-    const preset = LAYOUT_PRESETS[newFormat.id] || {};
+    const preset = LAYOUT_PRESETS[newFormat.id] || { layoutCols: 2 };
     setTheme(prevTheme => {
-      // Defensive check for older state structures from localStorage
       const safeHeaderElements = prevTheme.headerElements || INITIAL_THEME.headerElements;
-      const currentFormatElements = safeHeaderElements[newFormat.id];
+      const formatElements = safeHeaderElements[newFormat.id];
 
-      const mergeElement = (
-        prevElement: HeaderElement, 
-        presetElement: Partial<HeaderElement> | undefined
+      // Helper to merge preset overrides (e.g., scale) with existing elements, preserving text and other values
+      const mergeWithPreset = (
+        currentElement: HeaderElement, 
+        presetElement?: Partial<HeaderElement>
       ): HeaderElement => ({
-        ...prevElement,
-        ...presetElement,
-        text: prevElement.text,
+        ...currentElement,
+        ...presetElement, // This will override scale, x, y if they exist in the preset
       });
 
       const newHeaderElementsForFormat: HeaderAndFooterElements = {
-        headerTitle: mergeElement(currentFormatElements.headerTitle, preset.headerTitle),
-        headerSubtitle: mergeElement(currentFormatElements.headerSubtitle, preset.headerSubtitle),
-        footerText: mergeElement(currentFormatElements.footerText, preset.footerText),
+        headerTitle: mergeWithPreset(formatElements.headerTitle, preset.headerTitle),
+        headerSubtitle: mergeWithPreset(formatElements.headerSubtitle, preset.headerSubtitle),
+        footerText: mergeWithPreset(formatElements.footerText, preset.footerText),
       };
 
       return {
         ...prevTheme,
         format: newFormat,
-        layoutCols: preset.layoutCols || prevTheme.layoutCols,
+        layoutCols: preset.layoutCols,
         headerElements: {
           ...safeHeaderElements,
           [newFormat.id]: newHeaderElementsForFormat,

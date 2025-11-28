@@ -73,7 +73,7 @@ export interface PosterTheme {
   headerImage?: string;
   headerImageMode: HeaderImageMode;
   headerImageOpacity: number;
-  // NOVO: Armazena elementos de cabeçalho/rodapé por formato
+  // Armazena elementos de cabeçalho/rodapé por formato
   headerElements: Record<string, HeaderAndFooterElements>;
 }
 

@@ -3,6 +3,7 @@ import { PosterTheme, Product } from '../types';
 import PriceDisplay from './PriceDisplay';
 import PosterHeader from './PosterHeader';
 import { POSTER_FORMATS } from '../state/initialState';
+import { INITIAL_THEME } from '../state/initialState';
 
 interface SlidePreviewProps {
   product: Product;
@@ -23,6 +24,11 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ product, theme }) => {
   const isLandscape = true;
   const fontScale = 1;
 
+  // Defensively get header elements for the 'tv' format
+  const tvHeaderElements = (theme.headerElements && theme.headerElements['tv']) 
+    ? theme.headerElements['tv'] 
+    : INITIAL_THEME.headerElements['tv'];
+
   return (
     <div 
       className="relative flex flex-col bg-white overflow-hidden shadow-2xl w-full h-full"
@@ -36,7 +42,14 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ product, theme }) => {
       {slideTheme.hasFrame && (<div className="absolute inset-0 z-20 pointer-events-none" style={{ borderStyle: 'solid', borderWidth: `${slideTheme.frameThickness}vmin`, borderColor: slideTheme.frameColor, boxShadow: 'inset 0 0 15px rgba(0,0,0,0.2)' }}/>)}
       {slideTheme.backgroundImage && (<div className="absolute inset-0 z-0 opacity-40 bg-cover bg-center" style={{ backgroundImage: `url(${slideTheme.backgroundImage})` }}/>)}
       <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: `radial-gradient(circle at center, transparent 0%, ${slideTheme.backgroundColor} 100%)` }}/>
-      <PosterHeader theme={slideTheme} isLandscape={isLandscape} fontScale={fontScale} isStory={false} />
+      <PosterHeader 
+        theme={slideTheme} 
+        headerTitle={tvHeaderElements.headerTitle}
+        headerSubtitle={tvHeaderElements.headerSubtitle}
+        isLandscape={isLandscape} 
+        fontScale={fontScale} 
+        isStory={false} 
+      />
       <div className="flex-1 w-full min-h-0 relative z-10 flex p-8">
         <div className="w-full flex-1 flex">
           <div className="w-1/2 h-full relative flex items-center justify-center">
@@ -57,7 +70,7 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ product, theme }) => {
       </div>
       <footer className="relative z-10 w-full flex-shrink-0 text-center" style={{ backgroundColor: slideTheme.primaryColor, padding: '1rem 1.5rem' }}>
         <div className="absolute top-0 left-0 w-full h-1 bg-black/10"></div>
-        <p className="font-bold uppercase tracking-wider opacity-95" style={{ color: slideTheme.headerTextColor, fontSize: '1rem', transform: `translateX(${slideTheme.footerText.x}px) translateY(${slideTheme.footerText.y}px) scale(${slideTheme.footerText.scale})` }}>{slideTheme.footerText.text}</p>
+        <p className="font-bold uppercase tracking-wider opacity-95" style={{ color: slideTheme.headerTextColor, fontSize: '1rem', transform: `translateX(${tvHeaderElements.footerText.x}px) translateY(${tvHeaderElements.footerText.y}px) scale(${tvHeaderElements.footerText.scale})` }}>{tvHeaderElements.footerText.text}</p>
       </footer>
     </div>
   );
