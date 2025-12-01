@@ -21,6 +21,10 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
 
   // For applying default templates from the gallery
   const applyPresetTemplate = (templateTheme: Partial<PosterTheme>) => {
+    if (isFreePlan) {
+        showError("A Galeria de Templates Prontos é exclusiva para planos Premium e Pro.");
+        return;
+    }
     setTheme(prevTheme => ({
       ...prevTheme,
       ...templateTheme,
@@ -187,13 +191,17 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
       )}
 
       <div className="space-y-4 border-t pt-4">
-        <h3 className="text-sm font-semibold text-gray-700">Galeria de Templates Prontos</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            Galeria de Templates Prontos
+            {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
+        </h3>
+        <div className={`grid grid-cols-2 gap-3 ${isFreePlan ? 'opacity-50 pointer-events-none' : ''}`}>
           {HEADER_TEMPLATE_PRESETS.map(template => (
             <button
               key={template.id}
               onClick={() => applyPresetTemplate(template.theme)}
               className="border rounded-lg overflow-hidden group bg-white hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500 transition-all"
+              disabled={isFreePlan}
             >
               <img src={template.thumbnail} alt={template.name} className="w-full h-24 object-cover bg-gray-200" />
               <div className="p-2 text-center">
