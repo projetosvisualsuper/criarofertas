@@ -20,19 +20,25 @@ export default defineConfig(({ mode }) => {
         }
       },
       optimizeDeps: {
-        // Mantendo apenas React/React-DOM na exclusão, que são carregados via importmap
+        // Exclui todas as dependências carregadas via importmap
         exclude: [
           'react',
           'react-dom',
+          'lucide-react',
+          '@google/genai',
+          'html-to-image',
         ],
       },
       build: {
         rollupOptions: {
-          // Mantendo apenas React/React-DOM na exclusão, que são carregados via importmap
+          // Marca todas as dependências carregadas via importmap como externas
           external: [
             'react', 
             'react-dom', 
             'react/jsx-runtime', 
+            'lucide-react',
+            '@google/genai',
+            'html-to-image',
           ],
         },
       },
