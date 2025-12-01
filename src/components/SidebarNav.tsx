@@ -16,7 +16,7 @@ interface SidebarNavProps {
 const MODULES: { id: string; name: string; icon: React.ElementType; description: string; permission: Permission }[] = [
   { id: 'poster', name: 'OfertaFlash Builder', icon: LayoutTemplate, description: 'Crie cartazes e flyers de ofertas.', permission: 'access_builder' },
   { id: 'product-db', name: 'Banco de Produtos', icon: Database, description: 'Cadastre produtos e imagens para reutilizar.', permission: 'manage_products' },
-  { id: 'company', name: 'Dados da Empresa', icon: Building, description: 'Gerencie as informações do seu negócio.', permission: 'access_builder' }, // ALTERADO AQUI
+  { id: 'company', name: 'Dados da Empresa', icon: Building, description: 'Gerencie as informações do seu negócio.', permission: 'access_builder' },
   { id: 'signage', name: 'TV Digital (Slides)', icon: Monitor, description: 'Gere slides e vídeos para telas de TV.', permission: 'access_signage' },
   { id: 'social', name: 'Artes para Redes Sociais', icon: Image, description: 'Crie posts e stories otimizados.', permission: 'access_social_media' },
   { id: 'ads', name: 'Anúncios Áudio/Vídeo', icon: Clapperboard, description: 'Crie anúncios curtos com narração IA.', permission: 'access_ads' },
@@ -37,8 +37,8 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
     }
   };
   
-  // Agora, todos os módulos são renderizados
-  const allModules = MODULES;
+  // Filtra os módulos: mostra apenas os permitidos OU o módulo atualmente ativo (para manter o contexto do UpgradeOverlay).
+  const visibleModules = MODULES.filter(module => hasPermission(module.permission) || module.id === activeModule);
 
   return (
     <div className="w-64 h-full bg-gray-900 text-white flex flex-col flex-shrink-0">
@@ -54,7 +54,7 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
       )}
       
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {allModules.map((module) => {
+        {visibleModules.map((module) => {
           const isAllowed = hasPermission(module.permission);
           const Icon = module.icon;
           
@@ -62,6 +62,8 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
             if (isAllowed) {
               setActiveModule(module.id);
             } else {
+              // Se o módulo não é permitido, mas está visível (porque é o ativo), 
+              // não fazemos nada, pois o UpgradeOverlay já está na tela.
               showError(`Recurso bloqueado. Faça upgrade para o ${PLAN_NAMES.premium} ou ${PLAN_NAMES.pro}.`);
             }
           };
@@ -70,7 +72,8 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
             <button
               key={module.id}
               onClick={handleClick}
-              disabled={!isAllowed && activeModule !== module.id} // Permite que o módulo ativo (se for bloqueado) permaneça ativo
+              // Desabilitamos o botão se ele não for permitido, mesmo que seja o ativo.
+              disabled={!isAllowed} 
               className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${
                 activeModule === module.id
                   ? 'bg-indigo-600 text-white shadow-lg'
