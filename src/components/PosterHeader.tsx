@@ -19,6 +19,11 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
   const isBackgroundMode = theme.headerImage && theme.headerImageMode === 'background';
   
   const currentLogoLayout = theme.logo?.layouts[theme.format.id];
+  
+  // Adiciona um timestamp para forçar o cache-busting
+  const logoSrcWithCacheBust = theme.logo?.src 
+    ? `${theme.logo.src}?t=${new Date().getTime()}` 
+    : undefined;
 
   const HeaderText = () => (
     <div className={`flex flex-col ${
@@ -59,7 +64,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
   );
 
   const HeaderLogo = () => (
-    theme.logo && currentLogoLayout ? (
+    theme.logo && currentLogoLayout && logoSrcWithCacheBust ? (
       <div 
         style={{
           transform: `translateX(${currentLogoLayout.x}px) translateY(${currentLogoLayout.y}px) scale(${currentLogoLayout.scale})`,
@@ -67,8 +72,8 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
         }}
       >
         <img 
-          key={theme.logo.src} // Adicionado key para forçar re-renderização
-          src={theme.logo.src} 
+          key={theme.logo.src} // Mantém a key baseada na URL original
+          src={logoSrcWithCacheBust} 
           className="max-w-full max-h-16 object-contain drop-shadow-lg" 
         />
       </div>
@@ -202,7 +207,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
           zIndex: zIndex,
         }}
       >
-        {isHeroImageMode && theme.useLogoOnHero && theme.logo && (
+        {isHeroImageMode && theme.useLogoOnHero && theme.logo && logoSrcWithCacheBust && (
           <div className="absolute inset-0 flex items-center justify-center p-8">
             <HeaderLogo />
           </div>
