@@ -62,6 +62,12 @@ export interface LogoLayout {
   y: number;
 }
 
+export interface Logo {
+  src: string;
+  layouts: Record<string, LogoLayout>;
+  path?: string; // Adicionado para rastrear o arquivo no Supabase Storage
+}
+
 export interface SavedImage {
   id: string;
   dataUrl: string;
@@ -106,10 +112,7 @@ export interface PosterTheme {
   backgroundImage?: string;
   layoutCols: Record<string, number>;
   format: PosterFormat;
-  logo?: {
-    src: string;
-    layouts: Record<string, LogoLayout>;
-  }
+  logo?: Logo; // Usando a nova interface Logo
   priceCardStyle: 'default' | 'pill' | 'minimal';
   priceCardBackgroundColor: string;
   priceCardTextColor: string;

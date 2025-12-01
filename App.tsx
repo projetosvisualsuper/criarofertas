@@ -88,6 +88,7 @@ const AppContent: React.FC = () => {
                 logo: {
                     src: oldLogo.src,
                     layouts: createInitialLogoLayouts(oldLogo),
+                    path: oldLogo.path, // Mantém o path se existir
                 }
             };
         });
