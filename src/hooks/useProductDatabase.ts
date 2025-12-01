@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { RegisteredProduct } from '../../types';
-import supabase from '@/src/integrations/supabase/client';
+import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../utils/toast';
 
 export function useProductDatabase() {
