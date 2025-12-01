@@ -156,6 +156,11 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
       setIsUploading(false);
     }
   };
+  
+  // Adiciona um timestamp para forçar o cache-busting
+  const logoSrcWithCacheBust = theme.logo?.src 
+    ? `${theme.logo.src}?t=${new Date().getTime()}` 
+    : undefined;
 
   const fields: { label: string; field: keyof CompanyInfo; isTextarea?: boolean }[] = [
     { label: 'Nome da Empresa', field: 'name' },
@@ -187,13 +192,13 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
               <div className="w-28 h-28 bg-white border-2 border-dashed rounded-md flex items-center justify-center shrink-0 overflow-hidden relative">
                 {isUploading ? (
                     <Loader2 size={32} className="text-indigo-500 animate-spin" />
-                ) : theme.logo?.src ? (
+                ) : logoSrcWithCacheBust ? (
                   <img 
-                    src={theme.logo.src} 
+                    src={logoSrcWithCacheBust} 
                     alt="Logo" 
                     className="max-w-full max-h-full object-contain" 
-                    // Adicionando key para forçar re-renderização se a URL mudar
-                    key={theme.logo.src}
+                    // A key é importante para forçar a re-renderização no PosterHeader
+                    key={theme.logo?.src} 
                   />
                 ) : (
                   <ImageIcon size={32} className="text-gray-400" />
