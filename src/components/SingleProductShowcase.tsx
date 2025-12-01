@@ -12,9 +12,9 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
   const fontScale = isLandscape ? 0.8 : 1;
 
   return (
-    <div className="flex flex-col h-full w-full items-center justify-evenly p-4">
-      {/* Image Section */}
-      <div className="w-full flex items-center justify-center min-h-0 max-h-[55%]">
+    <div className="flex flex-col h-full w-full items-center p-4">
+      {/* Image Section - This will take up the available space */}
+      <div className="flex-1 w-full flex items-center justify-center min-h-0">
         {product.image ? (
           <img
             src={product.image}
@@ -29,8 +29,8 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
         )}
       </div>
 
-      {/* Text Section */}
-      <div className="flex-shrink-0 flex flex-col items-center text-center">
+      {/* Text Section - This will not grow, and have a margin top */}
+      <div className="flex-shrink-0 flex flex-col items-center text-center mt-4">
         <h2
           className="font-bold leading-tight tracking-tight line-clamp-3"
           style={{
