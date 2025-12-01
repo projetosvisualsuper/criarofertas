@@ -78,12 +78,14 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
     }
     
     setIsUploading(true);
-    const filePath = `${userId}/logo-${Date.now()}.${file.name.split('.').pop()}`;
+    // Usamos um nome de arquivo único para evitar problemas de cache
+    const filePath = `${userId}/logo-${crypto.randomUUID()}.${file.name.split('.').pop()}`;
 
     try {
-      // 1. Deletar logo antigo se existir
+      // 1. Deletar logo antigo se existir (opcional, mas limpa o storage)
       if (theme.logo?.path) {
-        await supabase.storage.from('logos').remove([theme.logo.path]);
+        // Não precisamos esperar o delete, apenas tentamos
+        supabase.storage.from('logos').remove([theme.logo.path]).catch(err => console.warn("Failed to remove old logo:", err));
       }
       
       // 2. Upload para o Storage
@@ -91,7 +93,7 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
         .from('logos')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: true, // Usando upsert para garantir que o arquivo seja substituído se o nome for o mesmo
+          upsert: true,
         });
 
       if (uploadError) throw uploadError;
@@ -102,6 +104,8 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
         .getPublicUrl(filePath);
         
       if (!urlData.publicUrl) throw new Error("Falha ao obter URL pública.");
+      
+      console.log("Nova URL da Logo:", urlData.publicUrl); // Log para debug
 
       // 4. Atualizar o tema com a nova URL e layouts
       setTheme(prev => ({
@@ -118,7 +122,7 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
 
     } catch (error) {
       console.error("Erro no upload do logo:", error);
-      showError("Falha ao enviar o logo. Verifique as permissões do Storage.");
+      showError("Falha ao enviar o logo. Verifique as permissões do Storage e se o bucket 'logos' existe.");
     } finally {
       setIsUploading(false);
     }
