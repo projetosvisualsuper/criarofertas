@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { PosterTheme, HeaderTemplate } from '../../types';
 import { HEADER_TEMPLATE_PRESETS } from '../config/headerTemplatePresets';
-import { Save, Trash2, Upload, XCircle } from 'lucide-react';
+import { Save, Trash2, Upload, XCircle, Lock } from 'lucide-react';
 import { useLocalStorageState } from '../hooks/useLocalStorageState';
+import { useAuth } from '../context/AuthContext';
+import { showError } from '../utils/toast';
 
 interface HeaderTemplatesTabProps {
   theme: PosterTheme;
@@ -10,6 +12,9 @@ interface HeaderTemplatesTabProps {
 }
 
 const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme }) => {
+  const { profile } = useAuth();
+  const isFreePlan = profile?.role === 'free';
+  
   const [customTemplates, setCustomTemplates] = useLocalStorageState<HeaderTemplate[]>('ofertaflash_custom_header_templates', []);
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateThumb, setNewTemplateThumb] = useState<string | null>(null);
@@ -28,6 +33,10 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
 
   // For applying user-saved custom templates
   const applyCustomTemplate = (template: HeaderTemplate) => {
+    if (isFreePlan) {
+        showError("Para usar templates salvos, faça upgrade para o plano Premium ou Pro.");
+        return;
+    }
     setTheme(prevTheme => ({
       ...prevTheme,
       ...template.theme,
@@ -38,6 +47,10 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
   };
 
   const handleThumbUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isFreePlan) {
+        showError("Funcionalidade de salvar templates é exclusiva para planos Premium e Pro.");
+        return;
+    }
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -49,6 +62,10 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
   };
 
   const handleSaveTemplate = () => {
+    if (isFreePlan) {
+        showError("Funcionalidade de salvar templates é exclusiva para planos Premium e Pro.");
+        return;
+    }
     if (!newTemplateName.trim() || !newTemplateThumb) {
       alert("Por favor, forneça um nome e uma imagem para o template.");
       return;
@@ -83,15 +100,24 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
   };
 
   const handleDeleteTemplate = (id: string) => {
+    if (isFreePlan) {
+        showError("Funcionalidade de salvar templates é exclusiva para planos Premium e Pro.");
+        return;
+    }
     if (window.confirm("Tem certeza que deseja excluir este template?")) {
       setCustomTemplates(prev => prev.filter(t => t.id !== id));
     }
   };
 
+  const saveTemplateClasses = isFreePlan ? 'opacity-50 cursor-not-allowed' : '';
+
   return (
     <div className="space-y-6">
-      <details className="p-3 bg-gray-50 rounded-lg border" open>
-        <summary className="text-sm font-semibold text-gray-700 cursor-pointer">Salvar Cabeçalho Atual</summary>
+      <details className={`p-3 bg-gray-50 rounded-lg border ${saveTemplateClasses}`} open>
+        <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2">
+            Salvar Cabeçalho Atual
+            {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
+        </summary>
         <div className="mt-3 space-y-3">
           <input
             type="text"
@@ -99,17 +125,18 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
             value={newTemplateName}
             onChange={(e) => setNewTemplateName(e.target.value)}
             className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+            disabled={isFreePlan}
           />
           <div className="w-full">
-            <label htmlFor="thumb-upload" className="w-full flex items-center justify-center gap-2 text-sm px-3 py-2 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+            <label htmlFor="thumb-upload" className={`w-full flex items-center justify-center gap-2 text-sm px-3 py-2 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${isFreePlan ? 'bg-gray-200 text-gray-500' : 'hover:bg-gray-100'}`}>
               <Upload size={16} />
               {newTemplateThumb ? 'Trocar Miniatura' : 'Enviar Miniatura'}
             </label>
-            <input type="file" id="thumb-upload" accept="image/*" className="hidden" onChange={handleThumbUpload} />
+            <input type="file" id="thumb-upload" accept="image/*" className="hidden" onChange={handleThumbUpload} disabled={isFreePlan} />
             {newTemplateThumb && (
               <div className="mt-2 relative w-24 h-24 rounded-md overflow-hidden border">
                 <img src={newTemplateThumb} alt="Preview" className="w-full h-full object-cover" />
-                <button onClick={() => setNewTemplateThumb(null)} className="absolute top-1 right-1 bg-white/70 rounded-full p-0.5 text-red-600 hover:bg-white">
+                <button onClick={() => setNewTemplateThumb(null)} className="absolute top-1 right-1 bg-white/70 rounded-full p-0.5 text-red-600 hover:bg-white" disabled={isFreePlan}>
                   <XCircle size={16} />
                 </button>
               </div>
@@ -117,7 +144,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
           </div>
           <button
             onClick={handleSaveTemplate}
-            disabled={!newTemplateName.trim() || !newTemplateThumb}
+            disabled={isFreePlan || !newTemplateName.trim() || !newTemplateThumb}
             className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
           >
             <Save size={16} />
@@ -128,13 +155,17 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
 
       {customTemplates.length > 0 && (
         <div className="space-y-4 border-t pt-4">
-          <h3 className="text-sm font-semibold text-gray-700">Meus Templates Salvos</h3>
-          <div className="grid grid-cols-2 gap-3">
+          <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            Meus Templates Salvos
+            {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
+          </h3>
+          <div className={`grid grid-cols-2 gap-3 ${isFreePlan ? 'opacity-50 pointer-events-none' : ''}`}>
             {customTemplates.map(template => (
               <div key={template.id} className="relative group">
                 <button
                   onClick={() => applyCustomTemplate(template)}
                   className="w-full border rounded-lg overflow-hidden bg-white hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500 transition-all"
+                  disabled={isFreePlan}
                 >
                   <img src={template.thumbnail} alt={template.name} className="w-full h-24 object-cover" />
                   <div className="p-2 text-center">
@@ -145,6 +176,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
                   onClick={() => handleDeleteTemplate(template.id)}
                   className="absolute top-0 right-0 p-1 text-red-500 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity -mt-2 -mr-2 shadow-md"
                   title="Excluir Template"
+                  disabled={isFreePlan}
                 >
                   <Trash2 size={14} />
                 </button>
