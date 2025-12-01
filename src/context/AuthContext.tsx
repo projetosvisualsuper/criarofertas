@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/src/integrations/supabase/client';
 import { Profile } from '../../types';
@@ -8,6 +8,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   hasPermission: (permission: string) => boolean;
+  refreshProfile: () => Promise<void>; // Nova função
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,21 +18,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single();
 
-    if (error) {
+    if (error && error.code !== 'PGRST116') { // PGRST116 = No rows found
       console.error('Error fetching profile:', error);
       showError('Falha ao carregar perfil do usuário.');
       setProfile(null);
-    } else {
+    } else if (data) {
       setProfile(data as Profile);
     }
-  };
+  }, []);
+  
+  const refreshProfile = useCallback(async () => {
+    if (session?.user?.id) {
+      await fetchProfile(session.user.id);
+    }
+  }, [session, fetchProfile]);
 
   useEffect(() => {
     const handleSession = async (currentSession: Session | null) => {
@@ -56,7 +63,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchProfile]);
   
   const checkPermission = (permission: string): boolean => {
     if (!profile) return false;
@@ -69,7 +76,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }
 
   return (
-    <AuthContext.Provider value={{ session, profile, hasPermission: checkPermission }}>
+    <AuthContext.Provider value={{ session, profile, hasPermission: checkPermission, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
