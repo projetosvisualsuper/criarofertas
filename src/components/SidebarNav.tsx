@@ -1,5 +1,7 @@
 import React from 'react';
-import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building } from 'lucide-react';
+import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut } from 'lucide-react';
+import { supabase } from '@/src/integrations/supabase/client';
+import { showError, showSuccess } from '../utils/toast';
 
 interface SidebarNavProps {
   activeModule: string;
@@ -17,6 +19,17 @@ const MODULES = [
 ];
 
 const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }) => {
+  
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Logout Error:', error);
+      showError('Falha ao sair. Tente novamente.');
+    } else {
+      showSuccess('Sessão encerrada com sucesso.');
+    }
+  };
+
   return (
     <div className="w-64 h-full bg-gray-900 text-white flex flex-col flex-shrink-0">
       <div className="p-4 border-b border-gray-700 flex items-center gap-2">
@@ -44,8 +57,15 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
         ))}
       </nav>
       
-      <div className="p-4 border-t border-gray-700 text-xs text-gray-500">
-        <p>Powered by Gemini AI</p>
+      <div className="p-4 border-t border-gray-700 flex flex-col space-y-2 flex-shrink-0">
+        <button
+          onClick={handleLogout}
+          className="w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 text-red-400 hover:bg-red-700 hover:text-white"
+        >
+          <LogOut size={20} />
+          <span className="text-sm font-semibold">Sair (Logout)</span>
+        </button>
+        <p className="text-xs text-gray-500">Powered by Gemini AI</p>
       </div>
     </div>
   );
