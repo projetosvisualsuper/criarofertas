@@ -207,14 +207,11 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
       const newTheme = {
         ...prev,
         ...presetTheme,
-        format: prev.format,
-        logo: prev.logo,
-        backgroundImage: prev.backgroundImage,
-        headerLayoutId: prev.headerLayoutId,
-        headerImage: prev.headerImage,
-        headerImageMode: prev.headerImageMode,
-        headerImageOpacity: prev.headerImageOpacity,
-        headerElements: { ...prev.headerElements },
+        // ** THE FIX IS HERE **
+        // Explicitly reset header image properties if the new preset doesn't provide them.
+        headerImage: presetTheme.headerImage || undefined,
+        headerImageMode: presetTheme.headerImageMode || 'none',
+        backgroundImage: presetTheme.backgroundImage || undefined,
       };
       
       // Preserve user text for the current format
