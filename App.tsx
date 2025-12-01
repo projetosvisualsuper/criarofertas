@@ -5,9 +5,7 @@ import DigitalSignagePage from './src/pages/DigitalSignagePage';
 import SocialMediaPage from './src/pages/SocialMediaPage';
 import AudioVideoAdPage from './src/pages/AudioVideoAdPage';
 import SettingsPage from './src/pages/SettingsPage';
-import ProductManagerPage from './src/pages/ProductManagerPage';
-import LoginPage from './src/pages/LoginPage'; // Novo Import
-import { SessionProvider, useSession } from './src/components/SessionProvider'; // Novo Import
+import ProductManagerPage from './src/pages/ProductManagerPage'; // Novo Import
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
 import { PosterTheme, Product, PosterFormat, SavedImage } from './types';
 import { useLocalStorageState } from './src/hooks/useLocalStorageState';
@@ -36,9 +34,7 @@ const createInitialLogoLayouts = (base: any) => ({
     'tv': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
 });
 
-function AppContent() {
-  const { session, isLoading: isSessionLoading } = useSession();
-  
+export default function App() {
   const [activeModule, setActiveModule] = useState('poster');
   
   const [theme, setTheme] = useLocalStorageState<PosterTheme>('ofertaflash_theme', INITIAL_THEME);
@@ -112,7 +108,7 @@ function AppContent() {
     setSavedImages(prev => prev.filter(img => img.id !== id));
   };
 
-  if (isSessionLoading || !isReady) {
+  if (!isReady) {
     return (
       <div className="flex items-center justify-center h-screen w-screen bg-gray-100">
         <div className="flex flex-col items-center gap-4">
@@ -121,10 +117,6 @@ function AppContent() {
         </div>
       </div>
     );
-  }
-  
-  if (!session) {
-    return <LoginPage />;
   }
 
   const renderModule = () => {
@@ -161,12 +153,4 @@ function AppContent() {
       </main>
     </div>
   );
-}
-
-export default function App() {
-    return (
-        <SessionProvider>
-            <AppContent />
-        </SessionProvider>
-    );
 }
