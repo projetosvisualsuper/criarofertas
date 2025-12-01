@@ -20,10 +20,10 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
   const layout = product.layouts?.[theme.format.id] || defaultLayout;
 
   return (
-    <div className="flex flex-col h-full w-full items-center justify-between p-4">
-      {/* Image Section */}
+    <div className="flex flex-col h-full w-full items-center">
+      {/* Image Section - Takes up available space */}
       <div
-        className="w-full flex items-center justify-center min-h-0"
+        className="flex-1 w-full flex items-center justify-center min-h-0 relative"
         style={{ transform: `translateX(${layout.image.x}px) translateY(${layout.image.y}px) scale(${layout.image.scale})` }}
       >
         {product.image ? (
@@ -40,8 +40,8 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
         )}
       </div>
 
-      {/* Text Section */}
-      <div className="flex-shrink-0 flex flex-col items-center text-center">
+      {/* Text & Price Section - Sits at the bottom */}
+      <div className="flex-shrink-0 flex flex-col items-center text-center w-full p-4">
         <div style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}>
           <h2
             className="font-bold leading-tight tracking-tight line-clamp-3"
@@ -51,7 +51,16 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
               fontSize: 3 * fontScale + 'rem',
             }}
           >
-            {product.name}
+            <span style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              boxDecorationBreak: 'clone',
+              WebkitBoxDecorationBreak: 'clone',
+              padding: '0.1em 0.4em',
+              borderRadius: '0.25rem',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            }}>
+              {product.name}
+            </span>
           </h2>
         </div>
 
@@ -70,7 +79,7 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
         )}
 
         <div
-          className="mt-2 md:mt-4"
+          className="mt-4"
           style={{ transform: `translateX(${layout.price.x}px) translateY(${layout.price.y}px) scale(${layout.price.scale})` }}
         >
           <PriceDisplay
