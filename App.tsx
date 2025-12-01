@@ -47,7 +47,7 @@ const createInitialLogoLayouts = (base: any) => ({
 const MODULE_PERMISSIONS: Record<string, Permission> = {
   'poster': 'access_builder',
   'product-db': 'manage_products',
-  'company': 'manage_company_info',
+  'company': 'access_builder', // Alterado para 'access_builder' para permitir acesso Free
   'signage': 'access_signage',
   'social': 'access_social_media',
   'ads': 'access_ads',

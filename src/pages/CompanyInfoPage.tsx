@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { PosterTheme, CompanyInfo, LogoLayout } from '../../types';
-import { Building, Edit, Image as ImageIcon, Trash2, Loader2, Check, X } from 'lucide-react';
+import { Building, Edit, Image as ImageIcon, Trash2, Loader2, Check, X, Lock } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../utils/toast';
+import { useAuth } from '../context/AuthContext';
 
 interface CompanyInfoPageProps {
   theme: PosterTheme;
@@ -23,15 +24,20 @@ const ToggleSwitch: React.FC<{
   checked: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   label: string;
-}> = ({ checked, onChange, label }) => (
-  <label className="relative inline-flex items-center cursor-pointer">
-    <input type="checkbox" checked={checked} onChange={onChange} className="sr-only peer" />
+  disabled: boolean;
+}> = ({ checked, onChange, label, disabled }) => (
+  <label className={`relative inline-flex items-center cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+    <input type="checkbox" checked={checked} onChange={onChange} className="sr-only peer" disabled={disabled} />
     <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
     <span className="ml-3 text-sm font-medium text-gray-700">{label}</span>
   </label>
 );
 
 const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) => {
+  const { profile } = useAuth();
+  const isFreePlan = profile?.role === 'free';
+  const isEditingAllowed = !isFreePlan; // Permite edição de texto e toggles apenas para Premium/Pro
+
   const [isUploading, setIsUploading] = useState(false);
   
   // Inicializa o estado local com o valor do tema
@@ -47,6 +53,10 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
   if (!theme.companyInfo) return null;
 
   const handleInfoChange = (field: keyof CompanyInfo, value: string | boolean) => {
+    if (!isEditingAllowed) {
+        showError("Edição de informações da empresa é exclusiva para planos Premium e Pro.");
+        return;
+    }
     const updatedInfo = { ...localCompanyInfo, [field]: value };
     setLocalCompanyInfo(updatedInfo);
     
@@ -166,7 +176,7 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
       
       <div className="max-w-3xl w-full mx-auto bg-white p-6 rounded-xl shadow-md space-y-8">
         
-        {/* Seção 1: Logo */}
+        {/* Seção 1: Logo (Permitido para Free) */}
         <div className="space-y-4 border-b pb-6">
             <h3 className="text-xl font-semibold text-gray-800">Logo da Empresa</h3>
             <div className="p-4 bg-gray-50 rounded-lg border flex items-center gap-6">
@@ -201,9 +211,12 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
             </div>
         </div>
 
-        {/* Seção 2: Informações do Rodapé */}
-        <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800">Informações de Contato e Rodapé</h3>
+        {/* Seção 2: Informações de Contato e Rodapé (Bloqueado para Free) */}
+        <div className={`space-y-4 ${isFreePlan ? 'opacity-50 pointer-events-none' : ''}`}>
+            <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                Informações de Contato e Rodapé
+                {isFreePlan && <Lock size={18} className="text-red-500" title="Recurso Premium" />}
+            </h3>
             <p className="text-sm text-gray-500">
               Preencha os dados e use o toggle para controlar quais informações aparecem no rodapé dos seus cartazes.
             </p>
@@ -222,6 +235,7 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
                         label={isChecked ? 'Exibindo' : 'Oculto'}
                         checked={isChecked}
                         onChange={(e) => handleInfoChange(toggleField, e.target.checked)}
+                        disabled={!isEditingAllowed}
                       />
                     </div>
                     
@@ -229,17 +243,19 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
                       <textarea
                         value={value}
                         onChange={(e) => handleInfoChange(field, e.target.value)}
-                        className="w-full border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                        className="w-full border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none disabled:bg-gray-100"
                         rows={2}
                         placeholder={`Insira o(a) ${label.toLowerCase()}`}
+                        disabled={!isEditingAllowed}
                       />
                     ) : (
                       <input
                         type="text"
                         value={value}
                         onChange={(e) => handleInfoChange(field, e.target.value)}
-                        className="w-full border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                        className="w-full border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-gray-100"
                         placeholder={`Insira o(a) ${label.toLowerCase()}`}
+                        disabled={!isEditingAllowed}
                       />
                     )}
                   </div>

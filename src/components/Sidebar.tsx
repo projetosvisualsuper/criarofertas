@@ -319,7 +319,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     setIsGenerating(true);
     const loadingToast = showSuccess('Analisando texto e extraindo produtos...');
     try {
-        const newProducts = await parseProductsFromText(bulkText);
+        const newProducts = parseProductsFromText(bulkText);
         const productsWithLayout = newProducts.map(p => ({...p, layouts: createNewProduct(0).layouts}));
         setProducts(prev => [...prev, ...productsWithLayout]);
         setBulkText("");
@@ -537,7 +537,15 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                   </div>
                 )}
                 {/* Imagem de Cabeçalho */}
-                <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Imagem de Cabeçalho</label><div className="flex items-center gap-2"><input type="file" id="header-img-upload" accept="image/*" className="hidden" onChange={handleHeaderImageUpload} disabled={isFreePlan} /><label htmlFor="header-img-upload" className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isFreePlan ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>{theme.headerImage ? 'Trocar Imagem' : 'Enviar Imagem'}</label>{theme.headerImage && <button onClick={() => setTheme({ ...theme, headerImage: undefined, headerImageMode: 'none' })} className="p-2 text-red-500" disabled={isFreePlan}><Trash2 size={16} /></button>}</div>
+                <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-600">Imagem de Cabeçalho</label>
+                    <div className="flex items-center gap-2">
+                        <input type="file" id="header-img-upload" accept="image/*" className="hidden" onChange={handleHeaderImageUpload} disabled={isFreePlan} />
+                        <label htmlFor="header-img-upload" className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isFreePlan ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
+                            {theme.headerImage ? 'Trocar Imagem' : 'Enviar Imagem'}
+                        </label>
+                        {theme.headerImage && <button onClick={() => setTheme({ ...theme, headerImage: undefined, headerImageMode: 'none' })} className="p-2 text-red-500" disabled={isFreePlan}><Trash2 size={16} /></button>}
+                    </div>
                   {theme.headerImage && (
                     <div className="space-y-2">
                       <select value={theme.headerImageMode} onChange={(e) => setTheme({ ...theme, headerImageMode: e.target.value as HeaderImageMode })} className="w-full border rounded px-2 py-1 text-sm bg-white" disabled={isFreePlan}>
@@ -559,8 +567,11 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                 </div>
                 
                 {/* Imagem de Fundo Geral (Upload) */}
-                <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-600">Imagem de Fundo (Geral)</label>
+                <div className="space-y-2 border-t pt-4">
+                    <label className="text-xs font-medium text-gray-600 flex items-center gap-2">
+                      Imagem de Fundo (Geral)
+                      {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
+                    </label>
                     <div className="flex items-center gap-2">
                         <input type="file" id="bg-img-upload" accept="image/*" className="hidden" onChange={(e) => {const file = e.target.files?.[0]; if (file) {const reader = new FileReader(); reader.onloadend = () => setTheme({ ...theme, backgroundImage: reader.result as string }); reader.readAsDataURL(file);}}} disabled={isFreePlan} />
                         <label htmlFor="bg-img-upload" className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isFreePlan ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
@@ -580,7 +591,20 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
             </summary>
             <div className="p-2 space-y-3">
                 <div><label className="text-xs font-medium text-gray-600">Formato do Card</label><select value={theme.priceCardStyle} onChange={(e) => setTheme({ ...theme, priceCardStyle: e.target.value as 'default' | 'pill' | 'minimal' })} className="w-full border rounded px-2 py-1 text-sm bg-white" disabled={isFreePlan}><option value="default">Padrão</option><option value="pill">Pílula</option><option value="minimal">Mínimo</option></select></div>
-                {theme.priceCardStyle !== 'minimal' && (<div className="grid grid-cols-2 gap-4"><div><label className="text-xs font-medium text-gray-600">Cor do Fundo</label><input type="color" value={theme.priceCardBackgroundColor} onChange={(e) => setTheme({ ...theme, priceCardBackgroundColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div><div><label className="text-xs font-medium text-gray-600">Cor do Texto</label><input type="color" value={theme.priceCardTextColor} onChange={(e) => setTheme({ ...theme, priceCardTextColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div></div>)}
+                
+                {/* BLOCO AVANÇADO: Cores do Card de Preço */}
+                {theme.priceCardStyle !== 'minimal' && (
+                  <div className={`space-y-2 border-t pt-3 mt-3 ${premiumSectionClass}`}>
+                      <label className="text-xs font-medium text-gray-600 flex items-center gap-2">
+                          Cores do Card de Preço
+                          {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
+                      </label>
+                      <div className="grid grid-cols-2 gap-4">
+                          <div><label className="text-xs font-medium text-gray-600">Cor do Fundo</label><input type="color" value={theme.priceCardBackgroundColor} onChange={(e) => setTheme({ ...theme, priceCardBackgroundColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div>
+                          <div><label className="text-xs font-medium text-gray-600">Cor do Texto</label><input type="color" value={theme.priceCardTextColor} onChange={(e) => setTheme({ ...theme, priceCardTextColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div>
+                      </div>
+                  </div>
+                )}
             </div>
         </details>
 
