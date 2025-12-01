@@ -1,36 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Settings, Zap, CheckCircle, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import React from 'react';
+import { Settings, Key } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
-  // A chave real é carregada via vite.config.ts para process.env.GEMINI_API_KEY
-  const initialApiKey = process.env.GEMINI_API_KEY || '';
-  
-  const [apiKey, setApiKey] = useState(initialApiKey);
-  const [isKeyConfigured, setIsKeyConfigured] = useState(!!initialApiKey);
-  const [showKey, setShowKey] = useState(false);
-
-  // Função para formatar a chave (mostrar apenas os primeiros e últimos caracteres)
-  const formatKey = (key: string) => {
-    if (!key) return 'NÃO CONFIGURADA';
-    if (key.length < 10) return 'Configurada (Curta)';
-    return `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
-  };
-
-  const statusIcon = isKeyConfigured ? (
-    <CheckCircle size={24} className="text-green-600" />
-  ) : (
-    <AlertTriangle size={24} className="text-red-600" />
-  );
-
-  const statusText = isKeyConfigured ? (
-    <span className="text-sm font-mono text-green-600">
-      {formatKey(apiKey)}
-    </span>
-  ) : (
-    <span className="text-sm font-semibold text-red-600">
-      Chave Ausente
-    </span>
-  );
+  // A chave agora é um segredo do lado do servidor e não pode ser acessada aqui.
+  // Apenas fornecemos instruções.
 
   return (
     <div className="flex-1 flex flex-col p-8 bg-gray-100 overflow-y-auto">
@@ -42,48 +15,43 @@ const SettingsPage: React.FC = () => {
       <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
         <h3 className="text-xl font-semibold mb-4 border-b pb-2">Integrações de IA</h3>
         
-        {/* Status Atual da Chave */}
-        <div className="flex items-center justify-between p-4 border rounded-lg" style={{ borderColor: isKeyConfigured ? '#d1fae5' : '#fee2e2', backgroundColor: isKeyConfigured ? '#f0fdf4' : '#fef2f2' }}>
+        {/* Gemini API Key */}
+        <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg space-y-3">
             <div className="flex items-center gap-3">
-                {statusIcon}
+                <Key size={24} className="text-indigo-600" />
                 <div>
-                    <p className="font-medium text-gray-800">Chave Gemini API</p>
-                    <p className="text-sm text-gray-600">Chave de acesso para serviços de geração de conteúdo e imagens.</p>
+                    <p className="font-semibold text-indigo-800">Chave da API Gemini</p>
+                    <p className="text-sm text-gray-700">
+                        Sua chave é usada de forma segura no backend para todas as funcionalidades de IA.
+                    </p>
                 </div>
             </div>
-            {statusText}
-        </div>
-        
-        {/* Instruções de Configuração */}
-        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
-            <p className="font-semibold text-yellow-800">Como configurar a Chave API:</p>
-            <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
-                <li>Obtenha sua chave no Google AI Studio.</li>
-                <li>Crie ou edite o arquivo <code className="font-mono bg-yellow-100 p-0.5 rounded">.env.local</code> na raiz do projeto.</li>
-                <li>Adicione a linha: <code className="font-mono bg-yellow-100 p-0.5 rounded">GEMINI_API_KEY="SUA_CHAVE_AQUI"</code></li>
-                <li><span className="font-bold">Reinicie o aplicativo</span> para que a nova chave seja carregada.</li>
+            <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1 pl-2">
+                <li>Obtenha sua chave no <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-600 underline hover:text-indigo-800">Google AI Studio</a>.</li>
+                <li>Acesse o painel do seu projeto no <a href="https://supabase.com/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 underline hover:text-indigo-800">Supabase</a>.</li>
+                <li>Navegue até: <strong>Project Settings</strong> &gt; <strong>Edge Functions</strong>.</li>
+                <li>Clique em <strong>Add new secret</strong>.</li>
+                <li>Nome do segredo: <code className="font-mono bg-indigo-100 p-0.5 rounded">GEMINI_API_KEY</code></li>
+                <li>Cole sua chave no campo de valor e salve.</li>
             </ol>
         </div>
 
-        {/* Campo de visualização (apenas para referência, não salva no ambiente) */}
-        <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700 block">Chave Carregada (Somente Leitura)</label>
-            <div className="relative">
-                <input 
-                    type={showKey ? 'text' : 'password'}
-                    value={apiKey}
-                    readOnly
-                    placeholder="Chave não carregada do ambiente..."
-                    className="w-full border rounded px-3 py-2 text-sm bg-gray-50 text-gray-700 pr-10"
-                />
-                <button 
-                    onClick={() => setShowKey(!showKey)}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 p-1"
-                    title={showKey ? 'Ocultar Chave' : 'Mostrar Chave'}
-                >
-                    {showKey ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+        {/* Google Cloud TTS API Key */}
+        <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-3">
+            <div className="flex items-center gap-3">
+                <Key size={24} className="text-green-600" />
+                <div>
+                    <p className="font-semibold text-green-800">Chave da API Google Cloud Text-to-Speech</p>
+                    <p className="text-sm text-gray-700">
+                        Necessária para a funcionalidade de geração de áudio (locução).
+                    </p>
+                </div>
             </div>
+             <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1 pl-2">
+                <li>Habilite a API Text-to-Speech no seu projeto Google Cloud.</li>
+                <li>Crie uma chave de API.</li>
+                <li>No Supabase, adicione um novo segredo com o nome <code className="font-mono bg-green-100 p-0.5 rounded">GOOGLE_CLOUD_TTS_API_KEY</code> e cole sua chave.</li>
+            </ol>
         </div>
         
         <h3 className="text-xl font-semibold mt-8 mb-4 border-b pb-2">Outras Configurações</h3>
