@@ -71,29 +71,34 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
     const filePath = `${userId}/logo-${Date.now()}.${file.name.split('.').pop()}`;
 
     try {
-      // 1. Upload para o Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      // 1. Deletar logo antigo se existir
+      if (theme.logo?.path) {
+        await supabase.storage.from('logos').remove([theme.logo.path]);
+      }
+      
+      // 2. Upload para o Storage
+      const { error: uploadError } = await supabase.storage
         .from('logos')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false,
+          upsert: true, // Usando upsert para garantir que o arquivo seja substituído se o nome for o mesmo
         });
 
       if (uploadError) throw uploadError;
 
-      // 2. Obter URL pública (ou de download)
+      // 3. Obter URL pública
       const { data: urlData } = supabase.storage
         .from('logos')
         .getPublicUrl(filePath);
         
       if (!urlData.publicUrl) throw new Error("Falha ao obter URL pública.");
 
-      // 3. Atualizar o tema com a nova URL e layouts
+      // 4. Atualizar o tema com a nova URL e layouts
       setTheme(prev => ({
         ...prev,
         logo: {
           src: urlData.publicUrl,
-          layouts: createInitialLogoLayouts(), 
+          layouts: prev.logo?.layouts || createInitialLogoLayouts(), // Mantém layouts existentes ou cria novos
           path: filePath, // Salva o path para facilitar a remoção
         },
         headerLayoutId: prev.headerLayoutId === 'text-only' ? 'logo-left' : prev.headerLayoutId,
@@ -168,8 +173,14 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
               <div className="w-28 h-28 bg-white border-2 border-dashed rounded-md flex items-center justify-center shrink-0 overflow-hidden relative">
                 {isUploading ? (
                     <Loader2 size={32} className="text-indigo-500 animate-spin" />
-                ) : theme.logo ? (
-                  <img src={theme.logo.src} alt="Logo" className="max-w-full max-h-full object-contain" />
+                ) : theme.logo?.src ? (
+                  <img 
+                    src={theme.logo.src} 
+                    alt="Logo" 
+                    className="max-w-full max-h-full object-contain" 
+                    // Adicionando key para forçar re-renderização se a URL mudar
+                    key={theme.logo.src}
+                  />
                 ) : (
                   <ImageIcon size={32} className="text-gray-400" />
                 )}

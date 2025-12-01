@@ -26,17 +26,22 @@ const LoginPage: React.FC = () => {
                   password_label: 'Sua senha',
                   button_label: 'Entrar',
                   link_text: 'Já tem uma conta? Entre aqui',
+                  email_input_placeholder: 'seu.email@exemplo.com',
+                  password_input_placeholder: 'Sua senha',
                 },
                 sign_up: {
                   email_label: 'Seu email',
                   password_label: 'Crie uma senha',
                   button_label: 'Cadastrar',
                   link_text: 'Não tem uma conta? Cadastre-se',
+                  email_input_placeholder: 'seu.email@exemplo.com',
+                  password_input_placeholder: 'Crie uma senha segura',
                 },
                 forgotten_password: {
                   email_label: 'Seu email',
                   button_label: 'Enviar instruções',
                   link_text: 'Esqueceu sua senha?',
+                  email_input_placeholder: 'seu.email@exemplo.com',
                 }
               },
             }}
