@@ -66,7 +66,11 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
           transformOrigin: effectiveHeaderLayout === 'logo-left' ? 'left center' : effectiveHeaderLayout === 'logo-right' ? 'right center' : 'center'
         }}
       >
-        <img src={theme.logo.src} className="max-w-full max-h-16 object-contain drop-shadow-lg" />
+        <img 
+          key={theme.logo.src} // Adicionado key para forçar re-renderização
+          src={theme.logo.src} 
+          className="max-w-full max-h-16 object-contain drop-shadow-lg" 
+        />
       </div>
     ) : null
   );
