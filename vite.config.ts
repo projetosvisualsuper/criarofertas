@@ -18,6 +18,13 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
-      }
+      },
+      build: {
+        rollupOptions: {
+          // Explicitamente marca React e React-DOM como externos para evitar o empacotamento
+          // e garantir que a versão do CDN (React 19 via importmap) seja usada exclusivamente.
+          external: ['react', 'react-dom', 'react/jsx-runtime'],
+        },
+      },
     };
 });
