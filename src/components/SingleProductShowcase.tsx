@@ -25,6 +25,11 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
       <div
         className="relative flex-[3] min-h-0 flex items-center justify-center"
       >
+        {product.oldPrice && (
+           <div className="absolute top-0 right-0 bg-red-600 text-white text-xl font-bold px-4 py-2 rounded-bl-xl shadow-lg z-10">
+             -{Math.round(((parseFloat(product.oldPrice) - parseFloat(product.price)) / parseFloat(product.oldPrice)) * 100)}%
+           </div>
+        )}
         {product.image ? (
           <img
             src={product.image}
