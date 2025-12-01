@@ -116,3 +116,13 @@ export interface HeaderTemplate {
   thumbnail: string;
   theme: Partial<PosterTheme>;
 }
+
+// NOVO: Estrutura para o roteiro de anúncio
+export interface AdScript {
+  headline: string;
+  script: string;
+  suggestions: {
+    music: string;
+    voice: string;
+  };
+}

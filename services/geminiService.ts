@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Product } from "../types";
+import { Product, AdScript } from "../types";
 
 const getAI = () => {
   const apiKey = process.env.API_KEY;
@@ -100,38 +100,65 @@ export const generateBackgroundImage = async (prompt: string): Promise<string | 
   }
 };
 
-export const generateAdScript = async (product: Product): Promise<string> => {
+export const generateAdScript = async (products: Product[]): Promise<AdScript> => {
+  if (products.length === 0) {
+    return { headline: "Nenhuma Oferta", script: "Selecione produtos para gerar o roteiro.", suggestions: { music: "Nenhuma", voice: "Nenhuma" } };
+  }
+
+  const productDetails = products.map(p => 
+    `Nome: ${p.name}, Preço: R$ ${p.price} / ${p.unit}, De: ${p.oldPrice ? `R$ ${p.oldPrice}` : 'Não aplicável'}, Descrição: ${p.description || 'Nenhuma'}`
+  ).join('\n---\n');
+
+  const prompt = `Crie um roteiro de anúncio de áudio/vídeo curto (máximo 30 segundos) para as seguintes ofertas em Português (Brasil). O roteiro deve ser dividido em 3 ou 4 cenas/partes, incluindo uma chamada para ação clara.
+
+Detalhes dos Produtos:
+${productDetails}
+
+Gere a resposta em formato JSON, seguindo exatamente o schema fornecido.
+
+Schema JSON:
+{
+  "headline": "Frase de impacto curta para o anúncio",
+  "script": "O roteiro completo, formatado com quebras de linha e marcadores de cena (ex: [CENA 1: Abertura])",
+  "suggestions": {
+    "music": "Sugestão de estilo musical (ex: Jingle animado, Música de suspense)",
+    "voice": "Sugestão de estilo de voz do locutor (ex: Entusiasmado e rápido, Calmo e persuasivo)"
+  }
+}`;
+
   try {
     const ai = getAI();
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: `Crie um roteiro de anúncio de áudio/vídeo curto (máximo 30 segundos) para o seguinte produto em Português (Brasil). O roteiro deve ser dividido em 3 ou 4 cenas/partes, incluindo uma chamada para ação clara.
-
-      Detalhes do Produto:
-      Nome: ${product.name}
-      Descrição: ${product.description || 'Nenhuma descrição fornecida.'}
-      Preço: R$ ${product.price} / ${product.unit}
-      Preço Antigo: ${product.oldPrice ? `De R$ ${product.oldPrice}` : 'Não aplicável'}
-
-      Formato do Roteiro (Use este formato exatamente):
-      
-      [CENA 1: Abertura Impactante]
-      (Música animada começa)
-      LOCUTOR: [Frase de impacto sobre o problema ou desejo]
-      
-      [CENA 2: Apresentação da Oferta]
-      LOCUTOR: Mas hoje, temos a solução perfeita! O incrível ${product.name}!
-      
-      [CENA 3: Detalhes e Preço]
-      LOCUTOR: Leve para casa por apenas R$ ${product.price} a ${product.unit}. ${product.oldPrice ? `Economize R$ ${(parseFloat(product.oldPrice) - parseFloat(product.price)).toFixed(2)}!` : ''}
-      
-      [CENA 4: Chamada para Ação]
-      LOCUTOR: Não perca! Oferta válida só hoje. Visite nossa loja ou acesse nosso site agora!
-      (Música termina com um jingle rápido)`,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            headline: { type: Type.STRING },
+            script: { type: Type.STRING },
+            suggestions: {
+              type: Type.OBJECT,
+              properties: {
+                music: { type: Type.STRING },
+                voice: { type: Type.STRING },
+              },
+              required: ["music", "voice"],
+            },
+          },
+          required: ["headline", "script", "suggestions"],
+        },
+      },
     });
-    return response.text?.trim() || "Erro ao gerar roteiro.";
+
+    const jsonStr = response.text?.trim();
+    if (!jsonStr) throw new Error("Resposta JSON vazia.");
+    
+    return JSON.parse(jsonStr) as AdScript;
+
   } catch (error) {
     console.error("Error generating ad script:", error);
-    return "Não foi possível gerar o roteiro devido a um erro de conexão com a IA.";
+    return { headline: "Erro de Geração", script: "Não foi possível gerar o roteiro devido a um erro de conexão com a IA.", suggestions: { music: "Nenhuma", voice: "Nenhuma" } };
   }
 };
