@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode, ProductLayout, HeaderAndFooterElements, LogoLayout, RegisteredProduct } from '../types';
-import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid, GalleryThumbnails, Search, Database } from 'lucide-react';
+import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid, GalleryThumbnails, Search, Database, RotateCcw } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/geminiService';
 import { THEME_PRESETS, ThemePreset } from '../config/themePresets';
 import { HEADER_LAYOUT_PRESETS } from '../config/headerLayoutPresets';
@@ -99,6 +99,12 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
       };
       return { ...prevTheme, headerElements: newHeaderElements };
     });
+  };
+  
+  const handleResetText = (element: keyof HeaderAndFooterElements) => {
+    const defaultText = INITIAL_THEME.headerElements[theme.format.id][element].text;
+    handleHeaderElementChange(element, 'text', defaultText);
+    showSuccess(`Texto do ${element === 'headerTitle' ? 'Título' : element === 'headerSubtitle' ? 'Subtítulo' : 'Rodapé'} resetado.`);
   };
 
   const handleProductChange = (id: string, field: keyof Product, value: any) => {
@@ -293,6 +299,24 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     p.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const InputWithReset = ({ element, field, placeholder }: { element: keyof HeaderAndFooterElements, field: keyof HeaderElement, placeholder: string }) => (
+    <div className="relative flex items-center">
+      <input 
+        className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none pr-10" 
+        value={currentHeaderElements[element][field] as string} 
+        onChange={(e) => handleHeaderElementChange(element, field, e.target.value)} 
+        placeholder={placeholder}
+      />
+      <button 
+        onClick={() => handleResetText(element)}
+        className="absolute right-2 p-1 text-gray-400 hover:text-indigo-600 transition-colors"
+        title="Resetar para o padrão"
+      >
+        <RotateCcw size={16} />
+      </button>
+    </div>
+  );
+
   return (
     <div className="w-full md:w-[400px] h-full bg-white border-r flex flex-col shadow-xl z-20 relative">
       <div className="p-4 border-b bg-gray-50 flex-shrink-0">
@@ -459,13 +483,19 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
             </div>
             <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
               <div className="flex justify-between items-center"><label className="text-sm font-semibold text-gray-700">Cabeçalho e Rodapé</label><div className="flex border rounded-md overflow-hidden"><button onClick={() => setTheme({...theme, headerTitleCase: 'uppercase'})} className={`p-1 ${theme.headerTitleCase === 'uppercase' ? 'bg-indigo-600 text-white' : 'bg-white hover:bg-gray-100'}`} title="Caixa Alta"><CaseUpper size={16}/></button><button onClick={() => setTheme({...theme, headerTitleCase: 'capitalize'})} className={`p-1 ${theme.headerTitleCase === 'capitalize' ? 'bg-indigo-600 text-white' : 'bg-white hover:bg-gray-100'}`} title="Capitalizado"><CaseLower size={16}/></button></div></div>
-              <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none mt-2" value={currentHeaderElements.headerTitle.text} onChange={(e) => handleHeaderElementChange('headerTitle', 'text', e.target.value)} placeholder="Título Principal"/>
+              
+              {/* Título Principal */}
+              <InputWithReset element="headerTitle" field="text" placeholder="Título Principal" />
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2"><div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Título</label><span className="font-mono text-gray-500">{(currentHeaderElements.headerTitle.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={currentHeaderElements.headerTitle.scale} onChange={(e) => handleHeaderElementChange('headerTitle', 'scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{currentHeaderElements.headerTitle.x}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.headerTitle.x} onChange={(e) => handleHeaderElementChange('headerTitle', 'x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{currentHeaderElements.headerTitle.y}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.headerTitle.y} onChange={(e) => handleHeaderElementChange('headerTitle', 'y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div></div>
               <hr className="my-3"/>
-              <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" value={currentHeaderElements.headerSubtitle.text} onChange={(e) => handleHeaderElementChange('headerSubtitle', 'text', e.target.value)} placeholder="Subtítulo"/>
+              
+              {/* Subtítulo */}
+              <InputWithReset element="headerSubtitle" field="text" placeholder="Subtítulo" />
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2"><div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Subtítulo</label><span className="font-mono text-gray-500">{(currentHeaderElements.headerSubtitle.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={currentHeaderElements.headerSubtitle.scale} onChange={(e) => handleHeaderElementChange('headerSubtitle', 'scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{currentHeaderElements.headerSubtitle.x}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.headerSubtitle.x} onChange={(e) => handleHeaderElementChange('headerSubtitle', 'x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{currentHeaderElements.headerSubtitle.y}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.headerSubtitle.y} onChange={(e) => handleHeaderElementChange('headerSubtitle', 'y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div></div>
               <hr className="my-3"/>
-              <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" value={currentHeaderElements.footerText.text} onChange={(e) => handleHeaderElementChange('footerText', 'text', e.target.value)} placeholder="Texto do Rodapé"/>
+              
+              {/* Texto do Rodapé */}
+              <InputWithReset element="footerText" field="text" placeholder="Texto do Rodapé" />
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2"><div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Rodapé</label><span className="font-mono text-gray-500">{(currentHeaderElements.footerText.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={currentHeaderElements.footerText.scale} onChange={(e) => handleHeaderElementChange('footerText', 'scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{currentHeaderElements.footerText.x}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.footerText.x} onChange={(e) => handleHeaderElementChange('footerText', 'x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{currentHeaderElements.footerText.y}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.footerText.y} onChange={(e) => handleHeaderElementChange('footerText', 'y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div></div>
             </div>
             
