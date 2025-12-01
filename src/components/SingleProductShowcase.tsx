@@ -12,9 +12,9 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
   const fontScale = isLandscape ? 0.8 : 1;
 
   return (
-    <div className="flex flex-col h-full w-full items-center justify-center p-4 gap-4">
+    <div className="flex flex-col h-full w-full items-center justify-evenly p-4">
       {/* Image Section */}
-      <div className="flex-1 w-full flex items-center justify-center min-h-0 max-h-[50%]">
+      <div className="w-full flex items-center justify-center min-h-0 max-h-[55%]">
         {product.image ? (
           <img
             src={product.image}
