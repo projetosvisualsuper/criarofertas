@@ -24,9 +24,14 @@ export default defineConfig(({ mode }) => {
       },
       build: {
         rollupOptions: {
-          // Explicitamente marca React e React-DOM como externos para evitar o empacotamento
-          // e garantir que a versão do CDN (React 19 via importmap) seja usada exclusivamente.
-          external: ['react', 'react-dom', 'react/jsx-runtime'],
+          // Explicitamente marca React, React-DOM e os pacotes Supabase UI como externos
+          external: [
+            'react', 
+            'react-dom', 
+            'react/jsx-runtime', 
+            '@supabase/auth-ui-react', 
+            '@supabase/auth-ui-shared'
+          ],
         },
       },
     };
