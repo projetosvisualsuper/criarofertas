@@ -21,10 +21,9 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
 
   return (
     <div className="flex flex-col h-full w-full p-4 md:p-8">
-      {/* Image Section - Takes up a fixed proportion of the space */}
+      {/* Image Section - flex-basis: 60% */}
       <div
-        className="relative w-full flex items-center justify-center"
-        style={{ height: '60%' }}
+        className="relative flex-[3] min-h-0 flex items-center justify-center"
       >
         {product.image ? (
           <img
@@ -43,8 +42,8 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
         )}
       </div>
 
-      {/* Text & Price Section - Takes remaining space and centers content */}
-      <div className="relative flex-1 flex flex-col items-center justify-center text-center w-full pt-2">
+      {/* Text & Price Section - flex-basis: 40% */}
+      <div className="relative flex-[2] flex flex-col items-center justify-center text-center w-full">
         <div style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}>
           <h2
             className="font-bold leading-tight tracking-tight line-clamp-3"
