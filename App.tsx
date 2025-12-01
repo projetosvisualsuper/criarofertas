@@ -77,7 +77,6 @@ const AppContent: React.FC = () => {
     if (!loadingTheme && !loadingRegisteredProducts && !loadingSavedImages && profile) {
       // 1. Lógica de migração (mantida)
       let themeUpdated = false;
-      // ... (restante da lógica de migração)
       
       // 1. Theme structure migration (ensures all fields exist)
       if (!theme.headerElements || typeof theme.layoutCols !== 'object' || theme.layoutCols === null || !theme.companyInfo) {
@@ -117,15 +116,15 @@ const AppContent: React.FC = () => {
         );
       }
       
-      // 4. Verificar permissão do módulo ativo
-      if (!hasPermission(MODULE_PERMISSIONS[activeModule])) {
-        // Se o módulo ativo não for permitido, encontre o primeiro módulo permitido
+      // 4. Definir o módulo ativo para o primeiro permitido
+      const currentModulePermission = MODULE_PERMISSIONS[activeModule];
+      if (!hasPermission(currentModulePermission)) {
         const firstAllowedModule = Object.entries(MODULE_PERMISSIONS).find(([_, permission]) => hasPermission(permission));
         if (firstAllowedModule) {
           setActiveModule(firstAllowedModule[0]);
         } else {
-          // Se não houver módulos permitidos, talvez mostrar uma tela de erro/acesso negado
-          setActiveModule('poster'); // Fallback, mas o SidebarNav deve filtrar
+          // Se não houver módulos permitidos, o usuário verá a tela de Acesso Negado
+          setActiveModule('none'); 
         }
       }
 
@@ -151,8 +150,10 @@ const AppContent: React.FC = () => {
   }
 
   const renderModule = () => {
-    // Garante que o usuário tem permissão para o módulo antes de renderizá-lo
-    if (!hasPermission(MODULE_PERMISSIONS[activeModule])) {
+    const currentModulePermission = MODULE_PERMISSIONS[activeModule];
+    
+    // Se o módulo ativo for 'none' (nenhum permitido) ou se a permissão falhar
+    if (activeModule === 'none' || !hasPermission(currentModulePermission)) {
         return (
             <div className="flex-1 flex items-center justify-center p-8 bg-gray-100">
                 <div className="text-center p-8 bg-white rounded-xl shadow-lg">
@@ -187,12 +188,12 @@ const AppContent: React.FC = () => {
       case 'settings':
         return <SettingsPage />;
       default:
-        // Se o módulo ativo for inválido ou não permitido, tenta o 'poster' como fallback
-        return hasPermission('access_builder') ? <PosterBuilderPage {...commonProps} addSavedImage={addSavedImage} /> : (
+        // Este bloco deve ser inalcançável após a correção da lógica de inicialização
+        return (
             <div className="flex-1 flex items-center justify-center p-8 bg-gray-100">
                 <div className="text-center p-8 bg-white rounded-xl shadow-lg">
-                    <h3 className="text-2xl font-bold text-red-600 mb-4">Acesso Negado</h3>
-                    <p className="text-gray-600">Nenhum módulo disponível para sua conta.</p>
+                    <h3 className="text-2xl font-bold text-red-600 mb-4">Erro de Módulo</h3>
+                    <p className="text-gray-600">O módulo ativo é inválido.</p>
                 </div>
             </div>
         );
