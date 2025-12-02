@@ -297,18 +297,29 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
 
   const handleThemePresetChange = (presetTheme: Partial<PosterTheme>) => {
     setTheme(prev => {
-      const newTheme = {
+      // 1. Mescla o tema atual com o preset, garantindo que o formato e headerElements existam
+      const newTheme: PosterTheme = {
         ...prev,
         ...presetTheme,
+        // Garante que o formato atual seja mantido, a menos que o preset o sobrescreva
+        format: presetTheme.format || prev.format,
+        // Garante que headerElements seja mantido, a menos que o preset o sobrescreva
+        headerElements: prev.headerElements, 
         headerImage: presetTheme.headerImage || undefined,
         headerImageMode: presetTheme.headerImageMode || 'none',
         backgroundImage: presetTheme.backgroundImage || undefined,
       };
       
-      const currentElements = newTheme.headerElements[newTheme.format.id];
-      currentElements.headerTitle.text = prev.headerElements[prev.format.id].headerTitle.text;
-      currentElements.headerSubtitle.text = prev.headerElements[prev.format.id].headerSubtitle.text;
-      currentElements.footerText.text = prev.headerElements[prev.format.id].footerText.text;
+      // 2. Preserva os textos atuais (título, subtítulo, rodapé) no novo tema/formato
+      const currentFormatId = newTheme.format.id;
+      const prevElements = prev.headerElements[prev.format.id] || INITIAL_THEME.headerElements[prev.format.id];
+      
+      // Garante que o formato atual no novo tema tenha os textos do formato anterior
+      if (newTheme.headerElements[currentFormatId]) {
+          newTheme.headerElements[currentFormatId].headerTitle.text = prevElements.headerTitle.text;
+          newTheme.headerElements[currentFormatId].headerSubtitle.text = prevElements.headerSubtitle.text;
+          newTheme.headerElements[currentFormatId].footerText.text = prevElements.footerText.text;
+      }
 
       return newTheme;
     });
@@ -465,12 +476,10 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     }
   }
   
-  const filteredRegisteredProducts = useMemo(() => {
-    return registeredProducts.filter(p => 
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      p.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [registeredProducts, searchTerm]);
+  const filteredRegisteredProducts = registeredProducts.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    p.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const renderTemplatesTab = () => (
     <HeaderTemplatesTab theme={theme} setTheme={setTheme} />
