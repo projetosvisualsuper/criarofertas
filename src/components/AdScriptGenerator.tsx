@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Product, PosterTheme, AdScript } from '../../types';
 import { Wand2, Loader2, Zap, Clipboard, Check, Download, Music, Mic, Volume2, VolumeX } from 'lucide-react';
-import { generateAdScript } from '../../services/openAiService'; // ATUALIZADO
+import { generateAdScript } from '../../services/openAiService';
 import { showSuccess, showError, showLoading, updateToast } from '../utils/toast';
 import { supabase } from '@/src/integrations/supabase/client';
 
@@ -11,7 +11,7 @@ interface AdScriptGeneratorProps {
 }
 
 // Hardcoded URL for the Edge Function (replace with your project ID)
-const TTS_FUNCTION_URL = "https://otezhjcvagcikwagjgem.supabase.co/functions/v1/openai-tts"; // ATUALIZADO
+const TTS_FUNCTION_URL = "https://otezhjcvagcikwagjgem.supabase.co/functions/v1/google-tts"; // ATUALIZADO PARA GOOGLE-TTS
 
 const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>(products.length > 0 ? [products[0].id] : []);
@@ -77,15 +77,14 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     
     setIsGeneratingAudio(true);
     setAudioUrl(null);
-    const loadingToast = showLoading("Gerando áudio com OpenAI TTS...");
+    const loadingToast = showLoading("Gerando áudio com Google TTS...");
 
     try {
-      // Chamada direta à Edge Function (sem usar supabase.functions.invoke, pois é mais simples para Deno)
+      // Chamada direta à Edge Function do Google TTS
       const response = await fetch(TTS_FUNCTION_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Não precisamos de autenticação JWT aqui, pois a função é pública e usa a chave secreta do servidor.
         },
         body: JSON.stringify({ 
           text: adScript.script,
@@ -96,10 +95,12 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
       const data = await response.json();
 
       if (!response.ok || data.error) {
-        throw new Error(data.error || "Erro desconhecido na Edge Function.");
+        throw new Error(data.error || data.details || "Erro desconhecido na Edge Function.");
       }
 
       const audioBase64 = data.audioContent;
+      
+      // O Google TTS retorna Base64 puro, que precisa ser decodificado para Blob
       const audioBlob = new Blob([Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0))], { type: 'audio/mp3' });
       const url = URL.createObjectURL(audioBlob);
       setAudioUrl(url);
@@ -109,7 +110,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     } catch (error) {
       console.error("TTS Generation Error:", error);
       // CORREÇÃO AQUI: Mencionando a chave correta
-      updateToast(loadingToast, "Falha ao gerar áudio. Verifique a chave OPENAI_API_KEY.", 'error');
+      updateToast(loadingToast, `Falha ao gerar áudio. Verifique a chave GOOGLE_TTS_API_KEY e se o serviço está habilitado no Google Cloud. Detalhe: ${(error as Error).message}`, 'error');
     } finally {
       setIsGeneratingAudio(false);
     }
