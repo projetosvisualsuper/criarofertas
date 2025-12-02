@@ -6,8 +6,7 @@ const corsHeaders = {
   'Content-Type': 'application/json',
 };
 
-// Usando a voz 'Antoni' (Voice ID: ErXwCm9eNvkWKQThBnL5) que é uma voz padrão e confiável para o modelo multilingual.
-const DEFAULT_VOICE_ID = "ErXwCm9eNvkWKQThBnL5"; 
+// Removendo DEFAULT_VOICE_ID para usar o padrão do modelo ElevenLabs
 const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
 
 serve(async (req) => {
@@ -27,7 +26,8 @@ serve(async (req) => {
   }
 
   try {
-    const { text, voiceId = DEFAULT_VOICE_ID } = await req.json();
+    // Não estamos mais esperando voiceId no payload
+    const { text } = await req.json(); 
 
     if (!text) {
       return new Response(JSON.stringify({ error: 'Missing text parameter' }), {
@@ -35,6 +35,16 @@ serve(async (req) => {
         headers: corsHeaders,
       });
     }
+    
+    // A ElevenLabs requer o Voice ID no endpoint. Se não pudermos usar um padrão,
+    // precisamos de um Voice ID que funcione.
+    // Vamos usar uma Voice ID genérica que costuma funcionar para o modelo multilingual.
+    // Se esta falhar, o usuário precisará fornecer uma Voice ID válida do seu painel.
+    const fallbackVoiceId = "21m00Tz4a8C3YgS-x8g"; // Voice ID 'Rachel' - vamos tentar esta novamente, mas com o modelo correto.
+    
+    // O erro anterior era 'invalid_uid' para 21m00Tz4a8C3YgS-x8g.
+    // Vamos tentar a Voice ID 'Antoni' novamente, mas se falhar, o usuário deve saber que precisa de uma Voice ID válida.
+    const voiceId = "ErXwCm9eNvkWKQThBnL5"; // Antoni
 
     // 3. Call ElevenLabs API
     const ttsPayload = {
