@@ -11,7 +11,7 @@ interface AdScriptGeneratorProps {
 }
 
 // Hardcoded URL for the Edge Function (replace with your project ID)
-const TTS_FUNCTION_URL = "https://otezhjcvagcikwagjgem.supabase.co/functions/v1/openai-tts"; // REVERTIDO PARA OPENAI
+const TTS_FUNCTION_URL = "https://otezhjcvagcikwagjgem.supabase.co/functions/v1/elevenlabs-tts"; // APONTANDO PARA ELEVENLABS
 
 const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>(products.length > 0 ? [products[0].id] : []);
@@ -77,10 +77,10 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     
     setIsGeneratingAudio(true);
     setAudioUrl(null);
-    const loadingToast = showLoading("Gerando áudio com OpenAI TTS...");
+    const loadingToast = showLoading("Gerando áudio com ElevenLabs TTS...");
 
     try {
-      // Chamada direta à Edge Function do OpenAI
+      // Chamada direta à Edge Function da ElevenLabs
       const response = await fetch(TTS_FUNCTION_URL, {
         method: 'POST',
         headers: {
@@ -94,12 +94,14 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
       const data = await response.json();
 
       if (!response.ok || data.error) {
-        throw new Error(data.error || data.details || "Erro desconhecido na Edge Function.");
+        // Se houver erro, data.details deve conter a mensagem da ElevenLabs
+        const errorDetail = data.details || data.error || "Erro desconhecido na Edge Function.";
+        throw new Error(errorDetail);
       }
 
       const audioBase64 = data.audioContent;
       
-      // O OpenAI retorna Base64 puro, que precisa ser decodificado para Blob
+      // O ElevenLabs retorna Base64 puro, que precisa ser decodificado para Blob
       const audioBlob = new Blob([Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0))], { type: 'audio/mp3' });
       const url = URL.createObjectURL(audioBlob);
       setAudioUrl(url);
@@ -109,7 +111,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     } catch (error) {
       console.error("TTS Generation Error:", error);
       // Mencionando a chave correta para o usuário
-      updateToast(loadingToast, `Falha ao gerar áudio. Verifique a chave OPENAI_API_KEY e se o serviço está configurado. Detalhe: ${(error as Error).message}`, 'error');
+      updateToast(loadingToast, `Falha ao gerar áudio. Verifique a chave ELEVENLABS_API_KEY e se o serviço está configurado. Detalhe: ${(error as Error).message}`, 'error');
     } finally {
       setIsGeneratingAudio(false);
     }

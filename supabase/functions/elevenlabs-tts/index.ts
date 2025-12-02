@@ -59,7 +59,6 @@ serve(async (req) => {
       const errorText = await ttsResponse.text();
       console.error("ElevenLabs TTS API Error:", ttsResponse.status, errorText);
       
-      // Tenta extrair a mensagem de erro da ElevenLabs para dar mais detalhes ao usuário
       let details = errorText;
       try {
           const errorJson = JSON.parse(errorText);
