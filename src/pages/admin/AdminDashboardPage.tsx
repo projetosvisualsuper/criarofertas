@@ -1,14 +1,18 @@
 import React from 'react';
-import { Home, Users, DollarSign, Clock } from 'lucide-react';
+import { Home, Users, DollarSign, Clock, Loader2 } from 'lucide-react';
+import { useAdminStats } from '../../hooks/useAdminStats';
 
 const AdminDashboardPage: React.FC = () => {
-  // Estes dados seriam carregados de forma dinâmica no futuro
-  const stats = {
-    totalUsers: 125,
-    activeSubscriptions: 45,
-    monthlyRevenue: 4455,
-    recentSignups: 5,
-  };
+  const { stats, loading } = useAdminStats();
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center h-full">
+        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+        <p className="ml-4 text-gray-600">Carregando dados do sistema...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -19,28 +23,28 @@ const AdminDashboardPage: React.FC = () => {
           <div className="p-3 bg-blue-100 rounded-full"><Users className="text-blue-600" size={24} /></div>
           <div>
             <p className="text-sm text-gray-500">Total de Clientes</p>
-            <p className="text-2xl font-bold">{stats.totalUsers}</p>
+            <p className="text-2xl font-bold">{stats.total_users}</p>
           </div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-md flex items-center gap-4">
           <div className="p-3 bg-green-100 rounded-full"><DollarSign className="text-green-600" size={24} /></div>
           <div>
-            <p className="text-sm text-gray-500">Assinaturas Ativas</p>
-            <p className="text-2xl font-bold">{stats.activeSubscriptions}</p>
+            <p className="text-sm text-gray-500">Assinaturas Pagas</p>
+            <p className="text-2xl font-bold">{stats.paid_subscriptions}</p>
           </div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-md flex items-center gap-4">
           <div className="p-3 bg-yellow-100 rounded-full"><Clock className="text-yellow-600" size={24} /></div>
           <div>
-            <p className="text-sm text-gray-500">Receita Mensal (MRR)</p>
-            <p className="text-2xl font-bold">R$ {stats.monthlyRevenue.toFixed(2)}</p>
+            <p className="text-sm text-gray-500">Usuários Ativos</p>
+            <p className="text-2xl font-bold">{stats.active_users}</p>
           </div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-md flex items-center gap-4">
           <div className="p-3 bg-indigo-100 rounded-full"><Home className="text-indigo-600" size={24} /></div>
           <div>
             <p className="text-sm text-gray-500">Novos Cadastros (7d)</p>
-            <p className="text-2xl font-bold">{stats.recentSignups}</p>
+            <p className="text-2xl font-bold">{stats.recent_signups_7d}</p>
           </div>
         </div>
       </div>
