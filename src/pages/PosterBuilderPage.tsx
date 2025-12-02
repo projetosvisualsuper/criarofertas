@@ -31,7 +31,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
   useEffect(() => {
     const loadFonts = async () => {
       try {
-        const response = await fetch('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;700;900&family=Oswald:wght@700&family=Roboto+Condensed:wght@700&display=swap');
+        const response = await fetch('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;700;900&family=Oswald:wght@700&family=Pacifico&family=Lobster&family=Roboto+Condensed:wght@700&display=swap');
         const css = await response.text();
         const style = document.createElement('style');
         style.innerHTML = css;
@@ -62,10 +62,11 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
     if (!posterElement) return;
 
     setIsSaving(true);
-    const user = await supabase.auth.getUser();
-    const userId = user.data.user?.id;
+    const userResponse = await supabase.auth.getUser();
+    const userId = userResponse.data.user?.id;
+    
     if (!userId) {
-        showError("Usuário não autenticado.");
+        showError("Usuário não autenticado. Por favor, faça login novamente.");
         setIsSaving(false);
         return;
     }
@@ -98,7 +99,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
       // 2. Converter Base64 para Blob
       const imageBlob = dataURLtoBlob(dataUrl);
       const fileName = `art-${theme.format.id}-${crypto.randomUUID()}.png`;
-      const filePath = `${userId}/${fileName}`;
+      const filePath = `${userId}/${fileName}`; // Caminho: [UID]/[nome-do-arquivo].png
 
       // 3. Upload para o Supabase Storage (Bucket 'saved_arts')
       const { error: uploadError } = await supabase.storage
@@ -108,7 +109,11 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
           upsert: true,
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        // Loga o erro detalhado do Storage
+        console.error("Storage Upload Error:", uploadError);
+        throw new Error(`Falha no upload: ${uploadError.message}`);
+      }
 
       // 4. Obter URL pública
       const { data: urlData } = supabase.storage
@@ -141,7 +146,8 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
 
     } catch (err) {
       console.error("Failed to save poster to gallery", err);
-      showError("Erro ao salvar a arte na galeria. (Verifique as permissões do Storage 'saved_arts')");
+      // Mostra a mensagem de erro detalhada para o usuário
+      showError(`Erro ao salvar a arte na galeria. Detalhe: ${(err as Error).message}`);
     } finally {
       setIsSaving(false);
     }
