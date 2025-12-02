@@ -12,47 +12,29 @@ export const PERMISSIONS = [
   'view_reports',
   'manage_users',
   'access_admin_panel',
-  'manage_orders', // NOVA PERMISSÃO
 ] as const;
 
 export type Permission = typeof PERMISSIONS[number];
 
-// Mapeamento de permissões padrão por Role (agora alinhado com Planos SaaS)
+// Mapeamento de permissões padrão por Role (apenas como fallback, pois agora usamos plan_configurations)
 export const DEFAULT_PERMISSIONS_BY_ROLE: Record<string, Permission[]> = {
-  admin: [ // Nova role de Admin com todas as permissões
-    ...PERMISSIONS,
+  admin: [ 
+    'access_builder', 'manage_products', 'manage_company_info', 'access_signage', 'access_social_media', 'access_ads', 'access_settings', 'view_reports', 'manage_users', 'access_admin_panel',
   ],
-  pro: [ // Plano Pro (Acesso Total)
-    'access_builder',
-    'manage_products',
-    'manage_company_info',
-    'access_signage',
-    'access_social_media',
-    'access_ads',
-    'access_settings',
-    'view_reports',
-    'manage_users',
-    'manage_orders', // Adicionado ao Pro
+  pro: [ 
+    'access_builder', 'manage_products', 'manage_company_info', 'access_signage', 'access_social_media', 'access_ads', 'access_settings', 'view_reports', 'manage_users',
   ],
-  premium: [ // Plano Premium (Removendo 'view_reports')
-    'access_builder',
-    'manage_products',
-    'manage_company_info',
-    'access_signage',
-    'access_social_media',
-    'access_ads',
-    'manage_orders', // Adicionado ao Premium
+  premium: [ 
+    'access_builder', 'manage_products', 'manage_company_info', 'access_signage', 'access_social_media', 'access_ads',
   ],
-  free: [ // Plano Grátis (Acesso Básico)
-    'access_builder',
-    'access_social_media',
-    'manage_products',
+  free: [ 
+    'access_builder', 'access_social_media', 'manage_products',
   ],
 };
 
-// Mapeamento de Roles para exibição (agora Planos)
+// Mapeamento de Roles para exibição (apenas como fallback)
 export const PLAN_NAMES: Record<string, string> = {
-  admin: 'Administrador', // Novo nome de plano
+  admin: 'Administrador',
   pro: 'Plano Pro',
   premium: 'Plano Premium',
   free: 'Plano Grátis',
