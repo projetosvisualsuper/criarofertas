@@ -175,7 +175,7 @@ const AppContent: React.FC = () => {
       case 'ads':
         return <AudioVideoAdPage theme={theme} products={products} />;
       case 'orders':
-        return <OrderManagerPage />; // NOVO MÓDULO
+        return <OrderManagerPage />; // Mapeamento correto
       case 'reports':
         return <ReportsPage />;
       case 'users':
