@@ -4,7 +4,7 @@ import { useAdminStats } from '../../hooks/useAdminStats';
 import { useRecentActivities, Activity } from '../../hooks/useRecentActivities';
 
 interface AdminDashboardPageProps {
-  setActiveHubModule: (module: string) => void;
+  setActiveAdminModule: (module: 'dashboard' | 'users' | 'plans' | 'settings' | 'reports') => void;
 }
 
 // Componente auxiliar para formatar a data
@@ -57,7 +57,7 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
   );
 };
 
-const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ setActiveHubModule }) => {
+const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ setActiveAdminModule }) => {
   const { stats, loading: loadingStats } = useAdminStats();
   const { activities, loading: loadingActivities } = useRecentActivities();
 
@@ -134,7 +134,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ setActiveHubMod
             </p>
             <button 
                 className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors"
-                onClick={() => setActiveHubModule('reports')}
+                onClick={() => setActiveAdminModule('reports')}
             >
                 <BarChart3 size={16} /> Ver Relatórios
             </button>
