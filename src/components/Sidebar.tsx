@@ -86,10 +86,13 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   const { profile, session } = useAuth();
   const isFreePlan = profile?.role === 'free';
   
+  const { registeredProducts } = useProductDatabase(session?.user?.id); // <-- CORREÇÃO AQUI
+  
   const [activeTab, setActiveTab] = useState<'products' | 'templates' | 'design' | 'ai'>('products');
   const [isGenerating, setIsGenerating] = useState(false);
   const [bulkText, setBulkText] = useState("");
   const [bgPrompt, setBgPrompt] = useState("");
+  const [searchTerm, setSearchTerm] = useState(''); // <-- ESTADO DE BUSCA AQUI
   
   const { customThemes, addCustomTheme, deleteCustomTheme } = useCustomThemes(session?.user?.id);
   const [newThemeName, setNewThemeName] = useState('');
@@ -462,10 +465,12 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     }
   }
   
-  const filteredRegisteredProducts = registeredProducts.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    p.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredRegisteredProducts = useMemo(() => {
+    return registeredProducts.filter(p => 
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      p.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [registeredProducts, searchTerm]);
 
   const renderTemplatesTab = () => (
     <HeaderTemplatesTab theme={theme} setTheme={setTheme} />
