@@ -3,7 +3,7 @@ import { RegisteredProduct } from '../../types';
 import { Plus, Save, Loader2, XCircle, Image as ImageIcon, Trash2, Wand2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from './ui/dialog';
 import { showSuccess, showError } from '../utils/toast';
-import { generateProductImageAndUpload } from '../../services/geminiService'; // NOVO IMPORT
+import { generateProductImageAndUpload } from '../../services/openAiService'; // ATUALIZADO
 
 interface ProductFormModalProps {
   trigger: React.ReactNode;

@@ -1,10 +1,10 @@
 import { supabase } from "@/src/integrations/supabase/client";
 import { Product, AdScript } from "../types";
-import { dataURLtoBlob } from "../src/utils/cn"; // Importando a função auxiliar
+import { dataURLtoBlob } from "../src/utils/cn";
 
 // Helper function to invoke the edge function and handle responses
-async function invokeGeminiProxy(task: string, data: any) {
-  const { data: result, error } = await supabase.functions.invoke('gemini-proxy', {
+async function invokeOpenAIProxy(task: string, data: any) {
+  const { data: result, error } = await supabase.functions.invoke('openai-proxy', {
     body: { task, data },
   });
 
@@ -24,7 +24,7 @@ async function invokeGeminiProxy(task: string, data: any) {
       return result;
   }
   
-  // Se for uma tarefa de texto, o resultado do Gemini está aninhado em 'response'.
+  // Se for uma tarefa de texto, o resultado do OpenAI está aninhado em 'response'.
   if (!result.response) {
     console.error(`Edge function returned malformed text response for task "${task}":`, result);
     throw new Error("Edge function returned a malformed text response (missing 'response' field).");
@@ -35,7 +35,7 @@ async function invokeGeminiProxy(task: string, data: any) {
 
 export const generateMarketingCopy = async (topic: string): Promise<string> => {
   try {
-    const response = await invokeGeminiProxy('generateMarketingCopy', { topic });
+    const response = await invokeOpenAIProxy('generateMarketingCopy', { topic });
     return response.text?.trim() || "Ofertas Imperdíveis";
   } catch (error) {
     console.error("Error generating copy:", error);
@@ -45,28 +45,45 @@ export const generateMarketingCopy = async (topic: string): Promise<string> => {
 
 export const parseProductsFromText = async (text: string): Promise<Product[]> => {
   try {
-    const response = await invokeGeminiProxy('parseProductsFromText', { text });
+    const response = await invokeOpenAIProxy('parseProductsFromText', { text });
     const jsonStr = response.text?.trim();
     if (!jsonStr) return [];
     
-    const rawProducts = JSON.parse(jsonStr);
+    // O GPT pode envolver o array em um objeto, então tentamos extrair o array diretamente.
+    let rawProducts;
+    try {
+        const parsed = JSON.parse(jsonStr);
+        // Se for um objeto com uma chave principal (ex: {products: [...]}), tentamos extrair.
+        if (parsed.products && Array.isArray(parsed.products)) {
+            rawProducts = parsed.products;
+        } else if (Array.isArray(parsed)) {
+            rawProducts = parsed;
+        } else {
+            // Se não for um array, falha.
+            throw new Error("AI did not return a valid product array.");
+        }
+    } catch (e) {
+        console.error("Failed to parse JSON from AI response:", e);
+        throw new Error("A IA não retornou um formato JSON de produtos válido.");
+    }
+    
     return rawProducts.map((p: any) => ({
       ...p,
       id: crypto.randomUUID(),
     }));
   } catch (error) {
     console.error("Error parsing products:", error);
-    return [];
+    throw error;
   }
 };
 
 export const generateBackgroundImage = async (prompt: string): Promise<string | null> => {
   try {
-    const response = await invokeGeminiProxy('generateBackgroundImage', { prompt });
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        return `data:image/png;base64,${part.inlineData.data}`;
-      }
+    const response = await invokeOpenAIProxy('generateBackgroundImage', { prompt });
+    
+    // A Edge Function agora retorna imageBase64 e mimeType diretamente
+    if (response.imageBase64) {
+        return `data:${response.mimeType};base64,${response.imageBase64}`;
     }
     return null;
   } catch (error) {
@@ -81,14 +98,23 @@ export const generateAdScript = async (products: Product[]): Promise<AdScript> =
   }
 
   try {
-    const response = await invokeGeminiProxy('generateAdScript', { products });
+    const response = await invokeOpenAIProxy('generateAdScript', { products });
     const jsonStr = response.text?.trim();
     
     if (!jsonStr) {
         throw new Error("A IA não conseguiu gerar o roteiro. Tente produtos diferentes ou verifique o console para erros de segurança.");
     }
     
-    return JSON.parse(jsonStr) as AdScript;
+    // O GPT retorna o JSON como string, precisamos garantir que seja um objeto AdScript
+    let parsedScript;
+    try {
+        parsedScript = JSON.parse(jsonStr);
+    } catch (e) {
+        console.error("Failed to parse AdScript JSON:", e);
+        throw new Error("A IA retornou um formato de roteiro inválido.");
+    }
+    
+    return parsedScript as AdScript;
   } catch (error) {
     console.error("Error generating ad script:", error);
     throw error;
@@ -108,8 +134,8 @@ export const generateProductImageAndUpload = async (productName: string): Promis
         throw new Error("Usuário não autenticado.");
     }
     
-    // 1. Chamar a Edge Function (gemini-proxy) para gerar a imagem
-    const edgeData = await invokeGeminiProxy('generateProductImage', { productName });
+    // 1. Chamar a Edge Function (openai-proxy) para gerar a imagem
+    const edgeData = await invokeOpenAIProxy('generateProductImage', { productName });
     
     const { imageBase64, mimeType } = edgeData;
     if (!imageBase64) {
@@ -125,7 +151,7 @@ export const generateProductImageAndUpload = async (productName: string): Promis
 
     // 3. Upload para o Supabase Storage (Bucket 'product_images')
     const { error: uploadError } = await supabase.storage
-        .from('product_images') // Usando um bucket dedicado para imagens de produtos
+        .from('product_images')
         .upload(filePath, imageBlob, {
             cacheControl: '3600',
             upsert: true,

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Product, PosterTheme, AdScript } from '../../types';
 import { Wand2, Loader2, Zap, Clipboard, Check, Download, Music, Mic, Volume2, VolumeX } from 'lucide-react';
-import { generateAdScript } from '../../services/geminiService';
+import { generateAdScript } from '../../services/openAiService'; // ATUALIZADO
 import { showSuccess, showError, showLoading, updateToast } from '../utils/toast';
 import { supabase } from '@/src/integrations/supabase/client';
 
@@ -11,7 +11,7 @@ interface AdScriptGeneratorProps {
 }
 
 // Hardcoded URL for the Edge Function (replace with your project ID)
-const TTS_FUNCTION_URL = "https://otezhjcvagcikwagjgem.supabase.co/functions/v1/generate-tts";
+const TTS_FUNCTION_URL = "https://otezhjcvagcikwagjgem.supabase.co/functions/v1/openai-tts"; // ATUALIZADO
 
 const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>(products.length > 0 ? [products[0].id] : []);

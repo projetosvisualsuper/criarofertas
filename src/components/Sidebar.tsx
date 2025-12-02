@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode, ProductLayout, HeaderAndFooterElements, LogoLayout, RegisteredProduct } from '../types';
 import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid, GalleryThumbnails, Search, Database, RotateCcw, Lock } from 'lucide-react';
-import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/geminiService';
+import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/openAiService'; // ATUALIZADO
 import { THEME_PRESETS, ThemePreset } from '../config/themePresets';
 import { HEADER_LAYOUT_PRESETS } from '../config/headerLayoutPresets';
 import { FONT_PRESETS } from '../config/fontPresets';
@@ -944,7 +944,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
           renderAITab()
         )}
       </div>
-      <div className="p-4 border-t bg-gray-50 text-xs text-gray-500 text-center flex-shrink-0">Powered by Google Gemini 2.5</div>
+      <div className="p-4 border-t bg-gray-50 text-xs text-gray-500 text-center flex-shrink-0">Powered by OpenAI</div>
       
       {/* Modal de Confirmação de Exclusão de Tema */}
       <ConfirmationModal
