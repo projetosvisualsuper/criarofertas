@@ -29,7 +29,7 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Zap size={48} className="text-indigo-600 mx-auto" />
-          <h1 className="text-3xl font-bold text-gray-800 mt-2">OfertaFlash Builder</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mt-2">Criar Ofertas</h1>
           <p className="text-gray-600">Faça login para criar suas campanhas</p>
         </div>
         <div className="bg-white p-8 rounded-2xl shadow-lg">
