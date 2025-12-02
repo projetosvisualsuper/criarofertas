@@ -51,6 +51,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
       setAdScript(generatedScript);
       updateToast(loadingToast, "Roteiro gerado com sucesso!", 'success');
     } catch (error) {
+      console.error("Detailed Script Generation Error:", error); // Adicionando log detalhado
       updateToast(loadingToast, "Erro ao gerar roteiro. Verifique sua chave API.", 'error');
     } finally {
       setIsLoading(false);
