@@ -120,7 +120,7 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, whol
           }}
         >
           <span ref={wholesaleTextRef} className="font-bold tracking-wider block" style={wholesaleTextStyle}>
-            ATACADO: R$ {wholesalePriceFormatted} / {wholesaleUnit}
+            A PARTIR DE: {wholesaleUnit} R$ {wholesalePriceFormatted}
           </span>
         </div>
       )}
