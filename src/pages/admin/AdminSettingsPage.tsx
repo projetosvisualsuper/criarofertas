@@ -1,18 +1,122 @@
-import React from 'react';
-import { Settings, Key, ToggleLeft, ToggleRight, Loader2, Bell } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Settings, Key, ToggleLeft, ToggleRight, Loader2, Bell, Save, XCircle, Trash2 } from 'lucide-react';
 import { useGlobalSettings } from '../../hooks/useGlobalSettings';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '@/src/integrations/supabase/client';
+import { showSuccess, showError } from '../../utils/toast';
 
 const AdminSettingsPage: React.FC = () => {
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
-  const { settings, loading, updateMaintenanceMode } = useGlobalSettings(isAdmin);
+  const { settings, loading: loadingSettings, updateMaintenanceMode } = useGlobalSettings(isAdmin);
+
+  const [announcementMessage, setAnnouncementMessage] = useState('');
+  const [activeAnnouncement, setActiveAnnouncement] = useState<{ id: string; message: string } | null>(null);
+  const [isSavingAnnouncement, setIsSavingAnnouncement] = useState(false);
+  const [loadingAnnouncement, setLoadingAnnouncement] = useState(true);
 
   const isMaintenanceEnabled = settings.maintenance_mode.enabled;
 
   const handleToggleMaintenance = () => {
     updateMaintenanceMode(!isMaintenanceEnabled);
   };
+  
+  // --- Lógica de Anúncios Globais ---
+  
+  const fetchActiveAnnouncement = async () => {
+    setLoadingAnnouncement(true);
+    const { data, error } = await supabase
+      .from('global_announcements')
+      .select('id, message')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+      
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching active announcement:', error);
+    } else if (data) {
+      setActiveAnnouncement(data);
+      setAnnouncementMessage(data.message);
+    } else {
+      setActiveAnnouncement(null);
+      setAnnouncementMessage('');
+    }
+    setLoadingAnnouncement(false);
+  };
+  
+  useEffect(() => {
+    if (isAdmin) {
+      fetchActiveAnnouncement();
+    }
+  }, [isAdmin]);
+
+  const handleSaveAnnouncement = async () => {
+    if (!announcementMessage.trim()) {
+      showError("A mensagem do anúncio não pode ser vazia.");
+      return;
+    }
+    
+    setIsSavingAnnouncement(true);
+    
+    try {
+      // 1. Desativar anúncios antigos (se houver)
+      if (activeAnnouncement) {
+        await supabase
+          .from('global_announcements')
+          .update({ is_active: false })
+          .eq('is_active', true);
+      }
+      
+      // 2. Inserir o novo anúncio ativo
+      const { error } = await supabase
+        .from('global_announcements')
+        .insert({ message: announcementMessage.trim(), is_active: true });
+        
+      if (error) throw error;
+      
+      showSuccess("Novo anúncio global publicado com sucesso!");
+      fetchActiveAnnouncement();
+      
+    } catch (error) {
+      console.error("Error saving announcement:", error);
+      showError("Falha ao publicar o anúncio.");
+    } finally {
+      setIsSavingAnnouncement(false);
+    }
+  };
+  
+  const handleDeactivateAnnouncement = async () => {
+    if (!activeAnnouncement) return;
+    
+    setIsSavingAnnouncement(true);
+    
+    try {
+      const { error } = await supabase
+        .from('global_announcements')
+        .update({ is_active: false })
+        .eq('id', activeAnnouncement.id);
+        
+      if (error) throw error;
+      
+      showSuccess("Anúncio global desativado.");
+      fetchActiveAnnouncement();
+      
+    } catch (error) {
+      console.error("Error deactivating announcement:", error);
+      showError("Falha ao desativar o anúncio.");
+    } finally {
+      setIsSavingAnnouncement(false);
+    }
+  };
+
+  if (!isAdmin) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8 bg-gray-100">
+        <p className="text-gray-500">Acesso negado. Apenas administradores podem ver esta página.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col p-8 bg-gray-100 overflow-y-auto">
@@ -23,7 +127,7 @@ const AdminSettingsPage: React.FC = () => {
       
       <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
         
-        {loading ? (
+        {loadingSettings ? (
           <div className="flex items-center justify-center p-8">
             <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
             <p className="ml-3 text-gray-600">Carregando configurações...</p>
@@ -48,16 +152,56 @@ const AdminSettingsPage: React.FC = () => {
               <p className="text-xs text-gray-500 mt-2">Ativar esta opção restringe o acesso ao aplicativo apenas para usuários com o papel 'admin'.</p>
             </div>
 
-            {/* Anúncios Globais (Ainda em desenvolvimento) */}
-            <div>
-              <h3 className="font-semibold text-lg mb-2">Anúncios Globais</h3>
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-md border">
-                <p className="text-sm text-gray-600">Enviar uma notificação para todos os usuários.</p>
-                <button className="text-gray-400 cursor-not-allowed" disabled>
-                  <Bell size={24} />
+            {/* Anúncios Globais */}
+            <div className="border-t pt-6">
+              <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                <Bell size={20} className="text-yellow-600" /> Anúncios Globais
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Publique uma mensagem que será exibida como um banner no topo do aplicativo para todos os usuários.
+              </p>
+              
+              {loadingAnnouncement ? (
+                <div className="flex items-center justify-center p-4">
+                  <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
+                </div>
+              ) : activeAnnouncement ? (
+                <div className="p-4 bg-yellow-100 border border-yellow-400 rounded-lg space-y-3">
+                  <p className="text-sm font-bold text-yellow-800 flex items-center gap-2">
+                    <Bell size={16} /> Anúncio Ativo:
+                  </p>
+                  <p className="text-sm text-gray-700 italic border-l-4 border-yellow-500 pl-3">{activeAnnouncement.message}</p>
+                  <button
+                    onClick={handleDeactivateAnnouncement}
+                    disabled={isSavingAnnouncement}
+                    className="flex items-center gap-1 text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {isSavingAnnouncement ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                    Desativar Anúncio
+                  </button>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 p-2 border rounded-lg">Nenhum anúncio ativo no momento.</p>
+              )}
+              
+              <div className="mt-4 space-y-3">
+                <textarea
+                  value={announcementMessage}
+                  onChange={(e) => setAnnouncementMessage(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                  rows={3}
+                  placeholder="Digite a nova mensagem de anúncio global aqui..."
+                  disabled={isSavingAnnouncement}
+                />
+                <button
+                  onClick={handleSaveAnnouncement}
+                  disabled={isSavingAnnouncement || !announcementMessage.trim()}
+                  className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
+                >
+                  {isSavingAnnouncement ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                  Publicar Novo Anúncio
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mt-2">Funcionalidade em desenvolvimento.</p>
             </div>
           </>
         )}

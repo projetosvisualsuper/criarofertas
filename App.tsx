@@ -14,6 +14,7 @@ import AdminPage from './src/pages/AdminPage';
 import ReportsPage from './src/pages/ReportsPage';
 import UpgradeOverlay from './src/components/UpgradeOverlay';
 import ReturnToAdminBanner from './src/components/ReturnToAdminBanner';
+import GlobalAnnouncementBanner from './src/components/GlobalAnnouncementBanner'; // NOVO IMPORT
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
 import { PosterTheme, Product, PosterFormat, SavedImage, Permission } from './types';
@@ -21,7 +22,7 @@ import { useUserSettings } from './src/hooks/useUserSettings';
 import { useProductDatabase } from './src/hooks/useProductDatabase';
 import { useSavedImages } from './src/hooks/useSavedImages';
 import { usePosterProducts } from './src/hooks/usePosterProducts';
-import { useGlobalSettings } from './src/hooks/useGlobalSettings'; // NOVO HOOK
+import { useGlobalSettings } from './src/hooks/useGlobalSettings';
 import { Loader2, AlertTriangle } from 'lucide-react';
 
 const defaultLayout = {
@@ -71,7 +72,7 @@ const AppContent: React.FC = () => {
   const { products, setProducts, loading: loadingProducts } = usePosterProducts(userId);
   const { savedImages, addSavedImage, deleteImage: deleteSavedImage, loading: loadingSavedImages } = useSavedImages(userId);
   const { loading: loadingRegisteredProducts } = useProductDatabase(userId);
-  const { settings: globalSettings, loading: loadingGlobalSettings } = useGlobalSettings(); // Usando o hook
+  const { settings: globalSettings, loading: loadingGlobalSettings } = useGlobalSettings();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -217,8 +218,9 @@ const AppContent: React.FC = () => {
     <div className="flex h-screen w-full overflow-hidden font-sans">
       <ReturnToAdminBanner />
       <SidebarNav activeModule={activeModule} setActiveModule={setActiveModule} />
-      <main className="flex-1 relative h-full overflow-hidden">
-         <div className="relative w-full h-full">
+      <main className="flex-1 relative h-full overflow-hidden flex flex-col">
+         <GlobalAnnouncementBanner />
+         <div className="relative w-full h-full flex-1">
             {renderModuleContent()}
             {!isModuleAllowed && activeModule !== 'admin' && (
                 <UpgradeOverlay requiredPermission={currentModulePermission} />
