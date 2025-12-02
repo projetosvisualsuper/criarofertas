@@ -7,85 +7,67 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // --- Verificação de Administrador (Etapa 1: Validar o chamador) ---
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Cabeçalho de autorização ausente.' }), { status: 401, headers: corsHeaders });
-    }
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) {
-      return new Response(JSON.stringify({ error: 'Token de usuário inválido.' }), { status: 401, headers: corsHeaders });
-    }
-
-    // --- Verificação de Administrador (Etapa 2: Confirmar a role com a chave de serviço) ---
+    // 1. Crie um cliente Supabase com a chave de serviço para todas as operações.
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const { data: callerProfile, error: profileError } = await supabaseAdmin
+    // 2. Obtenha o token do cabeçalho da requisição.
+    const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'Authentication token not found' }), { status: 401, headers: corsHeaders });
+    }
+
+    // 3. Valide o token para obter o usuário que está fazendo a chamada.
+    const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Authentication failed' }), { status: 401, headers: corsHeaders });
+    }
+
+    // 4. Verifique se o usuário autenticado é um administrador.
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
 
-    if (profileError || callerProfile?.role !== 'admin') {
-      return new Response(JSON.stringify({ error: 'Acesso negado. Apenas administradores podem personificar usuários.' }), { status: 403, headers: corsHeaders });
+    if (profileError || !profile || profile.role !== 'admin') {
+      return new Response(JSON.stringify({ error: 'Permission denied: User is not an admin' }), { status: 403, headers: corsHeaders });
     }
 
-    // --- Geração do Link de Personificação (Lógica Refatorada) ---
+    // 5. Se for um admin, gere o link de personificação para o usuário alvo.
     const { userEmailToImpersonate } = await req.json();
     if (!userEmailToImpersonate) {
-      return new Response(JSON.stringify({ error: 'Email do usuário alvo ausente.' }), { status: 400, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: 'Target user email is missing' }), { status: 400, headers: corsHeaders });
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const adminAuthUrl = `${supabaseUrl}/auth/v1/admin/generate_link`;
-
-    // Chamada direta para a API de Auth do Supabase
-    const response = await fetch(adminAuthUrl, {
-      method: 'POST',
-      headers: {
-        'apikey': serviceRoleKey!,
-        'Authorization': `Bearer ${serviceRoleKey}`,
-        'Content-Type': 'application/json'
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'magiclink',
+      email: userEmailToImpersonate,
+      options: {
+        redirectTo: '/',
       },
-      body: JSON.stringify({
-        type: 'magiclink',
-        email: userEmailToImpersonate,
-        options: {
-          redirectTo: '/',
-        },
-      })
     });
 
-    const responseData = await response.json();
-
-    if (!response.ok) {
-      console.error("Erro da API de Auth Admin do Supabase:", responseData);
-      throw new Error(responseData.error_description || 'Falha ao gerar o link mágico.');
+    if (linkError) {
+      throw linkError;
     }
 
-    return new Response(JSON.stringify({ signInLink: responseData.action_link }), {
+    // 6. Retorne o link gerado.
+    return new Response(JSON.stringify({ signInLink: linkData.properties.action_link }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error) {
-    console.error("Erro na função de personificação:", error);
+    console.error('Error in impersonate-user function:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
