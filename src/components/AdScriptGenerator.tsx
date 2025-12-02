@@ -51,8 +51,21 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
       setAdScript(generatedScript);
       updateToast(loadingToast, "Roteiro gerado com sucesso!", 'success');
     } catch (error) {
-      console.error("Detailed Script Generation Error:", error); // Adicionando log detalhado
-      updateToast(loadingToast, "Erro ao gerar roteiro. Verifique sua chave API.", 'error');
+      const errorMessage = (error as Error).message;
+      console.error("Detailed Script Generation Error:", errorMessage); 
+      
+      // Se o erro for de chave API, a mensagem será "GEMINI_API_KEY is not set..."
+      // Se for de invocação, será "Edge function returned an empty..."
+      
+      updateToast(loadingToast, `Erro ao gerar roteiro: ${errorMessage}`, 'error');
+      
+      // Define um script de erro para exibição na tela
+      setAdScript({ 
+        headline: "Erro de Geração", 
+        script: `Não foi possível gerar o roteiro devido a um erro: ${errorMessage}. Verifique a chave API e o console.`, 
+        suggestions: { music: "Nenhuma", voice: "Nenhuma" } 
+      });
+      
     } finally {
       setIsLoading(false);
     }

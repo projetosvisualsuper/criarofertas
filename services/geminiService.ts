@@ -76,7 +76,8 @@ export const generateAdScript = async (products: Product[]): Promise<AdScript> =
     
     return JSON.parse(jsonStr) as AdScript;
   } catch (error) {
+    // Lança o erro capturado para que o componente possa logar a mensagem exata
     console.error("Error generating ad script:", error);
-    return { headline: "Erro de Geração", script: "Não foi possível gerar o roteiro devido a um erro de conexão com a IA.", suggestions: { music: "Nenhuma", voice: "Nenhuma" } };
+    throw error; // Lança o erro original
   }
 };
