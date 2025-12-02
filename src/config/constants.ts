@@ -11,14 +11,26 @@ export const PERMISSIONS = [
   'access_settings',
   'view_reports',
   'manage_users',
+  'access_admin_panel', // Nova permissão
 ] as const;
 
 export type Permission = typeof PERMISSIONS[number];
 
 // Mapeamento de permissões padrão por Role (agora alinhado com Planos SaaS)
 export const DEFAULT_PERMISSIONS_BY_ROLE: Record<string, Permission[]> = {
-  pro: [ // Plano Pro (Acesso Total)
+  admin: [ // Nova role de Admin com todas as permissões
     ...PERMISSIONS,
+  ],
+  pro: [ // Plano Pro (Acesso Total)
+    'access_builder',
+    'manage_products',
+    'manage_company_info',
+    'access_signage',
+    'access_social_media',
+    'access_ads',
+    'access_settings',
+    'view_reports',
+    'manage_users',
   ],
   premium: [ // Plano Premium
     'access_builder',
@@ -38,6 +50,7 @@ export const DEFAULT_PERMISSIONS_BY_ROLE: Record<string, Permission[]> = {
 
 // Mapeamento de Roles para exibição (agora Planos)
 export const PLAN_NAMES: Record<string, string> = {
+  admin: 'Administrador', // Novo nome de plano
   pro: 'Plano Pro',
   premium: 'Plano Premium',
   free: 'Plano Grátis',

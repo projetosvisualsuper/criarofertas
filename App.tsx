@@ -8,9 +8,10 @@ import SettingsPage from './src/pages/SettingsPage';
 import ProductManagerPage from './src/pages/ProductManagerPage';
 import CompanyInfoPage from './src/pages/CompanyInfoPage';
 import UserManagementPage from './src/pages/UserManagementPage';
-import ProfilePage from './src/pages/ProfilePage'; // NOVO: Importando ProfilePage
+import ProfilePage from './src/pages/ProfilePage';
 import LoginPage from './src/pages/LoginPage';
-import UpgradeOverlay from './src/components/UpgradeOverlay'; // Importando o novo overlay
+import AdminPage from './src/pages/AdminPage'; // Importando o AdminPage
+import UpgradeOverlay from './src/components/UpgradeOverlay';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
 import { PosterTheme, Product, PosterFormat, SavedImage, Permission } from './types';
@@ -19,7 +20,6 @@ import { useUserSettings } from './src/hooks/useUserSettings';
 import { useProductDatabase } from './src/hooks/useProductDatabase';
 import { useSavedImages } from './src/hooks/useSavedImages';
 import { Loader2 } from 'lucide-react';
-import { hasPermission } from './src/config/constants';
 
 const defaultLayout = {
   image: { x: 0, y: 0, scale: 1 },
@@ -44,9 +44,8 @@ const createInitialLogoLayouts = (base: any) => ({
     'tv': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
 });
 
-// Mapeamento de módulos para a permissão necessária
 const MODULE_PERMISSIONS: Record<string, Permission> = {
-  'profile': 'access_builder', // Permissão básica para todos
+  'profile': 'access_builder',
   'poster': 'access_builder',
   'product-db': 'manage_products',
   'company': 'access_builder',
@@ -55,35 +54,25 @@ const MODULE_PERMISSIONS: Record<string, Permission> = {
   'ads': 'access_ads',
   'users': 'manage_users',
   'settings': 'access_settings',
+  'admin': 'access_admin_panel', // Permissão para o painel admin
 };
 
 const AppContent: React.FC = () => {
   const { session, profile, hasPermission } = useAuth();
   const userId = session?.user?.id;
   
-  const [activeModule, setActiveModule] = useState('profile'); // Mudando o padrão para 'profile'
+  const [activeModule, setActiveModule] = useState('profile');
   
-  // Usando Supabase para Theme
   const { theme, setTheme, loading: loadingTheme } = useUserSettings(userId);
-  
-  // Usando localStorage APENAS para os produtos do cartaz (não os cadastrados)
   const [products, setProducts] = useLocalStorageState<Product[]>('ofertaflash_products', INITIAL_PRODUCTS);
-  
-  // Usando Supabase para Imagens Salvas
   const { savedImages, addSavedImage, deleteImage: deleteSavedImage, loading: loadingSavedImages } = useSavedImages(userId);
-  
-  // Hook para o Banco de Produtos (Registered Products)
   const { loading: loadingRegisteredProducts } = useProductDatabase(userId);
-  
   const [isReady, setIsReady] = useState(false);
 
-  // Lógica de migração e verificação de prontidão
   useEffect(() => {
     if (!loadingTheme && !loadingRegisteredProducts && !loadingSavedImages && profile) {
-      // 1. Lógica de migração (mantida)
       let themeUpdated = false;
       
-      // 1. Theme structure migration (ensures all fields exist)
       if (!theme.headerElements || typeof theme.layoutCols !== 'object' || theme.layoutCols === null || !theme.companyInfo) {
         themeUpdated = true;
         setTheme(prevTheme => ({
@@ -95,7 +84,6 @@ const AppContent: React.FC = () => {
         }));
       }
 
-      // 2. Logo layout migration
       if (theme.logo && !(theme.logo as any).layouts) {
           themeUpdated = true;
           setTheme(prevTheme => {
@@ -106,13 +94,12 @@ const AppContent: React.FC = () => {
                   logo: {
                       src: oldLogo.src,
                       layouts: createInitialLogoLayouts(oldLogo),
-                      path: oldLogo.path, // Mantém o path se existir
+                      path: oldLogo.path,
                   }
               };
           });
       }
 
-      // 3. Product layout migration
       if (products.some(p => !p.layouts)) {
         setProducts(prevProducts => 
           prevProducts.map(p => 
@@ -121,16 +108,13 @@ const AppContent: React.FC = () => {
         );
       }
       
-      // 4. Definir o módulo ativo para o primeiro permitido (ou manter o atual se for permitido)
       const currentModulePermission = MODULE_PERMISSIONS[activeModule];
       
       if (!hasPermission(currentModulePermission)) {
-        // Se o módulo ativo não for permitido, encontre o primeiro permitido para iniciar
         const firstAllowedModule = Object.entries(MODULE_PERMISSIONS).find(([_, permission]) => hasPermission(permission));
         if (firstAllowedModule) {
             setActiveModule(firstAllowedModule[0]);
         } else {
-            // Se não houver módulos permitidos (o que não deve acontecer se 'poster' for free)
             setActiveModule('poster'); 
         }
       }
@@ -162,8 +146,12 @@ const AppContent: React.FC = () => {
   const renderModuleContent = () => {
     const commonProps = { theme, setTheme, products, setProducts, formats };
 
+    if (activeModule === 'admin') {
+      return <AdminPage setActiveHubModule={setActiveModule} />;
+    }
+
     switch (activeModule) {
-      case 'profile': // NOVO: Renderizando ProfilePage
+      case 'profile':
         return <ProfilePage />;
       case 'poster':
         return <PosterBuilderPage {...commonProps} addSavedImage={addSavedImage} />;
@@ -203,7 +191,7 @@ const AppContent: React.FC = () => {
       <main className="flex-1 relative h-full overflow-hidden">
          <div className="relative w-full h-full">
             {renderModuleContent()}
-            {!isModuleAllowed && (
+            {!isModuleAllowed && activeModule !== 'admin' && (
                 <UpgradeOverlay requiredPermission={currentModulePermission} />
             )}
          </div>

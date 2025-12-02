@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut, Users, Lock, UserCircle } from 'lucide-react';
+import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut, Users, Lock, UserCircle, Shield } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showError, showSuccess } from '../utils/toast';
 import { useAuth } from '../context/AuthContext';
@@ -12,7 +12,6 @@ interface SidebarNavProps {
   setActiveModule: (module: string) => void;
 }
 
-// Mapeamento de módulos para a permissão necessária
 const MODULES: { id: string; name: string; icon: React.ElementType; description: string; permission: Permission }[] = [
   { id: 'profile', name: 'Meu Perfil', icon: UserCircle, description: 'Gerencie sua conta e plano.', permission: 'access_builder' },
   { id: 'poster', name: 'OfertaFlash Builder', icon: LayoutTemplate, description: 'Crie cartazes e flyers de ofertas.', permission: 'access_builder' },
@@ -38,7 +37,6 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
     }
   };
   
-  // Filtra os módulos: mostra apenas os permitidos OU o módulo atualmente ativo (para manter o contexto do UpgradeOverlay).
   const visibleModules = MODULES.filter(module => hasPermission(module.permission) || module.id === activeModule);
 
   return (
@@ -63,8 +61,6 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
             if (isAllowed) {
               setActiveModule(module.id);
             } else {
-              // Se o módulo não é permitido, mas está visível (porque é o ativo), 
-              // não fazemos nada, pois o UpgradeOverlay já está na tela.
               showError(`Recurso bloqueado. Faça upgrade para o ${PLAN_NAMES.premium} ou ${PLAN_NAMES.pro}.`);
             }
           };
@@ -73,7 +69,6 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
             <button
               key={module.id}
               onClick={handleClick}
-              // Desabilitamos o botão se ele não for permitido, mesmo que seja o ativo.
               disabled={!isAllowed} 
               className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${
                 activeModule === module.id
@@ -97,6 +92,19 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
       {profile && <PlanStatus profile={profile} onPlanUpdated={refreshProfile} />}
 
       <div className="p-4 border-t border-gray-700 flex flex-col space-y-2 flex-shrink-0">
+        {hasPermission('access_admin_panel') && (
+          <button
+            onClick={() => setActiveModule('admin')}
+            className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${
+              activeModule === 'admin'
+                ? 'bg-red-700 text-white'
+                : 'text-yellow-400 hover:bg-gray-700 hover:text-yellow-300'
+            }`}
+          >
+            <Shield size={20} />
+            <span className="text-sm font-semibold">Painel Admin</span>
+          </button>
+        )}
         <button
           onClick={handleLogout}
           className="w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 text-red-400 hover:bg-red-700 hover:text-white"
