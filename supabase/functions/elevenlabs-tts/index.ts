@@ -6,8 +6,8 @@ const corsHeaders = {
   'Content-Type': 'application/json',
 };
 
-// Voice ID fornecido pelo usuário, que deve ser compatível com o plano e o modelo multilingual.
-const USER_VOICE_ID = "rpNe0HOx7heUulPiOEaG"; 
+// Voice ID pública conhecida (Adam) para o modelo multilingual.
+const USER_VOICE_ID = "pNInz6obpgDQGcFUfTRT"; 
 const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
 
 serve(async (req) => {
@@ -62,7 +62,6 @@ serve(async (req) => {
       let details = errorText;
       try {
           const errorJson = JSON.parse(errorText);
-          // Tenta extrair a mensagem de erro mais útil
           details = errorJson.detail?.message || errorJson.detail || errorText;
       } catch (e) {
           // Ignora erro de parse se não for JSON
@@ -88,7 +87,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("TTS Catch Error:", error);
-    // Retorna o erro de forma mais clara
     return new Response(JSON.stringify({ error: 'Internal server error during ElevenLabs TTS generation', details: error.message }), {
       status: 500,
       headers: corsHeaders,
