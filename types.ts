@@ -169,3 +169,9 @@ export interface Profile {
   updated_at: string;
   deleted_at: string | null;
 }
+
+// NOVO: Interface para a visualização completa do admin
+export interface AdminProfileView extends Profile {
+  email: string | null;
+  created_at: string;
+}

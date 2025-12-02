@@ -1,34 +1,32 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Users, Loader2, User, Edit } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Users, Loader2, Edit, Search, UserX, UserCheck } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
-import { Profile } from '../../types';
-import { showError } from '../utils/toast';
+import { Profile, AdminProfileView } from '../../types';
+import { showSuccess, showError } from '../utils/toast';
 import { PLAN_NAMES } from '../config/constants';
 import { useAuth } from '../context/AuthContext';
 import AdminEditUserModal from '../components/admin/AdminEditUserModal';
 
 const UserManagementPage: React.FC = () => {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [profiles, setProfiles] = useState<AdminProfileView[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const { hasPermission } = useAuth();
 
   const canManageUsers = hasPermission('manage_users');
 
   const fetchProfiles = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('role', { ascending: true });
+    const { data, error } = await supabase.rpc('get_all_user_profiles');
 
     if (error) {
       console.error('Error fetching profiles:', error);
-      showError('Falha ao carregar la lista de usuários.');
+      showError('Falha ao carregar a lista de usuários.');
       setProfiles([]);
     } else {
-      setProfiles(data as Profile[]);
+      setProfiles(data as AdminProfileView[]);
     }
     setLoading(false);
   }, []);
@@ -48,8 +46,46 @@ const UserManagementPage: React.FC = () => {
   };
 
   const handleUserUpdated = () => {
-    fetchProfiles(); // Recarrega a lista de usuários após a atualização
+    fetchProfiles();
   };
+
+  const handleDeactivate = async (profile: AdminProfileView) => {
+    if (window.confirm(`Tem certeza que deseja desativar o usuário ${profile.username || profile.email}?`)) {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', profile.id);
+      
+      if (error) {
+        showError("Falha ao desativar usuário.");
+      } else {
+        showSuccess("Usuário desativado.");
+        fetchProfiles();
+      }
+    }
+  };
+
+  const handleActivate = async (profile: AdminProfileView) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ deleted_at: null })
+      .eq('id', profile.id);
+    
+    if (error) {
+      showError("Falha ao ativar usuário.");
+    } else {
+      showSuccess("Usuário ativado com sucesso.");
+      fetchProfiles();
+    }
+  };
+
+  const filteredProfiles = useMemo(() => {
+    if (!searchTerm) return profiles;
+    return profiles.filter(p =>
+      p.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [profiles, searchTerm]);
 
   return (
     <div className="flex-1 flex flex-col p-8 bg-gray-100 h-full overflow-y-auto">
@@ -59,7 +95,19 @@ const UserManagementPage: React.FC = () => {
       </h2>
       
       <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
-        <h3 className="text-xl font-semibold text-gray-800 border-b pb-4">Perfis Cadastrados ({profiles.length})</h3>
+        <div className="flex justify-between items-center border-b pb-4">
+          <h3 className="text-xl font-semibold text-gray-800">Perfis Cadastrados ({filteredProfiles.length})</h3>
+          <div className="relative">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar por nome ou email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64 border rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+          </div>
+        </div>
         
         {loading ? (
           <div className="flex justify-center items-center p-8">
@@ -67,36 +115,57 @@ const UserManagementPage: React.FC = () => {
             <p className="ml-4 text-gray-600">Carregando perfis...</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {profiles.map(profile => (
-              <div key={profile.id} className="flex items-center bg-gray-50 border rounded-lg shadow-sm p-4">
-                <User size={24} className="text-gray-500 mr-4 shrink-0" />
-                
-                <div className="flex-1 min-w-0">
-                  <p className="text-base font-semibold text-gray-800 truncate">{profile.username || 'N/A'}</p>
-                  <p className="text-sm text-gray-500">ID: {profile.id.substring(0, 8)}...</p>
-                </div>
-                
-                <div className="flex flex-col items-end shrink-0 ml-4">
-                  <span className="text-sm font-bold px-3 py-1 rounded-full" style={{ backgroundColor: '#e0e7ff', color: '#4f46e5' }}>
-                    {PLAN_NAMES[profile.role] || profile.role}
-                  </span>
-                  <p className="text-xs text-gray-500 mt-1">{profile.permissions.length} Permissões</p>
-                </div>
-                
-                {canManageUsers && (
-                  <button 
-                    onClick={() => handleEditClick(profile)}
-                    className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors ml-4"
-                    title="Editar Perfil"
-                  >
-                    <Edit size={18} />
-                  </button>
-                )}
-              </div>
-            ))}
-            {profiles.length === 0 && (
-              <div className="p-8 text-center text-gray-500 border-dashed border-2 rounded-lg">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuário</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plano</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data de Cadastro</th>
+                  <th scope="col" className="relative px-6 py-3"><span className="sr-only">Ações</span></th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredProfiles.map(profile => (
+                  <tr key={profile.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{profile.username || 'N/A'}</div>
+                      <div className="text-sm text-gray-500">{profile.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                        {PLAN_NAMES[profile.role] || profile.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {profile.deleted_at ? (
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inativo</span>
+                      ) : (
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Ativo</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(profile.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      {canManageUsers && (
+                        <>
+                          <button onClick={() => handleEditClick(profile)} className="text-indigo-600 hover:text-indigo-900" title="Editar Plano"><Edit size={18} /></button>
+                          {profile.deleted_at ? (
+                            <button onClick={() => handleActivate(profile)} className="text-green-600 hover:text-green-900" title="Ativar Usuário"><UserCheck size={18} /></button>
+                          ) : (
+                            <button onClick={() => handleDeactivate(profile)} className="text-red-600 hover:text-red-900" title="Desativar Usuário"><UserX size={18} /></button>
+                          )}
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filteredProfiles.length === 0 && (
+              <div className="p-8 text-center text-gray-500">
                   Nenhum perfil encontrado.
               </div>
             )}
