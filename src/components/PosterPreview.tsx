@@ -93,7 +93,8 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
   }));
   
   const renderFrame = () => {
-    if (!theme.hasFrame) return null;
+    // Se a borda não estiver ativada ou o estilo for 'none', não renderiza nada.
+    if (!theme.hasFrame || theme.frameStyleId === 'none') return null;
     
     const baseStyle: React.CSSProperties = {
       borderStyle: 'solid',
@@ -112,26 +113,28 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
       case 'rounded':
         return <div style={{ ...baseStyle, borderRadius: `${theme.frameThickness * 2}vmin` }} />;
       case 'star':
-        // Implementação simples de borda decorativa (pode ser complexa com CSS puro)
+        // Implementação de borda decorativa simples (usando borda dupla para efeito)
         return (
-          <div style={baseStyle}>
-            <div className="absolute inset-0" style={{ 
-              borderStyle: 'solid', 
-              borderWidth: `${theme.frameThickness}vmin`, 
-              borderColor: theme.frameColor,
-              backgroundImage: `repeating-linear-gradient(45deg, ${theme.frameColor}, ${theme.frameColor} 10px, transparent 10px, transparent 20px)`,
-              opacity: 0.5,
-            }} />
-            <div className="absolute inset-0" style={{ ...baseStyle, borderStyle: 'solid', borderWidth: `${theme.frameThickness / 4}vmin`, boxShadow: 'none' }} />
-          </div>
+          <div style={{ 
+            ...baseStyle, 
+            borderStyle: 'double', 
+            borderWidth: `${theme.frameThickness}vmin`, 
+            borderRadius: '0.5vmin',
+            boxShadow: 'inset 0 0 10px rgba(0,0,0,0.3)',
+          }} />
         );
       case 'heart':
-        // Usando uma borda dupla para efeito simples
+        // Usando uma borda tripla para efeito simples
         return (
-          <div style={{ ...baseStyle, borderStyle: 'double', borderWidth: `${theme.frameThickness}vmin`, borderRadius: '1vmin' }} />
+          <div style={{ 
+            ...baseStyle, 
+            borderStyle: 'groove', 
+            borderWidth: `${theme.frameThickness}vmin`, 
+            borderRadius: '1vmin',
+            boxShadow: 'inset 0 0 10px rgba(0,0,0,0.3)',
+          }} />
         );
       case 'solid':
-      case 'none':
       default:
         return <div style={baseStyle} />;
     }
