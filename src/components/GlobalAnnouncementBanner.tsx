@@ -9,9 +9,10 @@ const GlobalAnnouncementBanner: React.FC = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
 
+  // Garante que messages seja um array de strings, mesmo que o DB retorne uma string única (fallback)
   const messages = (announcement?.message && Array.isArray(announcement.message)) 
     ? announcement.message 
-    : [];
+    : (typeof announcement?.message === 'string' ? [announcement.message] : []);
 
   useEffect(() => {
     if (announcement) {
