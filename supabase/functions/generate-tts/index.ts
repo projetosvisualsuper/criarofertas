@@ -6,8 +6,10 @@ const corsHeaders = {
   'Content-Type': 'application/json',
 };
 
-// URL da API do Google Cloud Text-to-Speech
-const TTS_API_URL = "https://texttospeech.googleapis.com/v1/text:synthesize";
+// URL da API do ElevenLabs
+const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
+// ID de uma voz em Português (ex: 'Antoni' - pode ser ajustado)
+const DEFAULT_VOICE_ID = "pNInz6obpgDQGcFJLoz2"; 
 
 serve(async (req) => {
   // 1. Handle CORS OPTIONS request
@@ -16,9 +18,9 @@ serve(async (req) => {
   }
 
   // 2. Get API Key from Supabase Secrets
-  const apiKey = Deno.env.get('GOOGLE_CLOUD_TTS_API_KEY');
+  const apiKey = Deno.env.get('ELEVENLABS_API_KEY');
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'TTS API Key not configured' }), {
+    return new Response(JSON.stringify({ error: 'ELEVENLABS_API_KEY not configured. Please set the secret.' }), {
       status: 500,
       headers: corsHeaders,
     });
@@ -34,46 +36,50 @@ serve(async (req) => {
       });
     }
 
-    // Mapeamento simplificado de estilo de voz para um nome de voz do Google Cloud TTS
-    // Nota: O mapeamento real pode ser mais complexo e exigir uma lista de vozes disponíveis.
-    // Usaremos uma voz padrão em português (pt-BR)
-    const voiceName = 'pt-BR-Standard-A'; 
-
+    // 3. Call ElevenLabs API
     const ttsPayload = {
-      input: { text: text },
-      voice: { languageCode: 'pt-BR', name: voiceName },
-      audioConfig: { audioEncoding: 'MP3' },
+      text: text,
+      model_id: "eleven_multilingual_v2", // Modelo multilíngue
+      voice_settings: {
+        stability: 0.5,
+        similarity_boost: 0.8,
+      },
     };
 
-    // 3. Call Google Cloud TTS API
-    const ttsResponse = await fetch(`${TTS_API_URL}?key=${apiKey}`, {
+    const ttsResponse = await fetch(`${ELEVENLABS_API_URL}/${DEFAULT_VOICE_ID}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'xi-api-key': apiKey,
+        'Accept': 'audio/mpeg', // Esperamos um arquivo de áudio MP3
       },
       body: JSON.stringify(ttsPayload),
     });
 
     if (!ttsResponse.ok) {
       const errorText = await ttsResponse.text();
-      console.error("TTS API Error:", errorText);
-      return new Response(JSON.stringify({ error: 'Failed to synthesize speech', details: errorText }), {
+      console.error("ElevenLabs API Error:", errorText);
+      return new Response(JSON.stringify({ error: 'Failed to synthesize speech with ElevenLabs', details: errorText }), {
         status: ttsResponse.status,
         headers: corsHeaders,
       });
     }
 
-    const ttsData = await ttsResponse.json();
+    // 4. Read the audio stream as ArrayBuffer
+    const audioBuffer = await ttsResponse.arrayBuffer();
     
-    // 4. Return the audio content (base64 encoded MP3)
-    return new Response(JSON.stringify({ audioContent: ttsData.audioContent }), {
+    // 5. Convert ArrayBuffer to Base64
+    const audioBase64 = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
+    
+    // 6. Return the audio content (base64 encoded MP3)
+    return new Response(JSON.stringify({ audioContent: audioBase64 }), {
       headers: corsHeaders,
       status: 200,
     });
 
   } catch (error) {
     console.error(error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    return new Response(JSON.stringify({ error: 'Internal server error during ElevenLabs TTS generation' }), {
       status: 500,
       headers: corsHeaders,
     });

@@ -23,7 +23,7 @@ const SettingsPage: React.FC = () => {
                 <div>
                     <p className="font-semibold text-indigo-800">Chave da API Gemini</p>
                     <p className="text-sm text-gray-700">
-                        Sua chave é usada de forma segura no backend para todas as funcionalidades de IA.
+                        Sua chave é usada de forma segura no backend para todas as funcionalidades de IA (texto, roteiro, imagem).
                     </p>
                 </div>
             </div>
@@ -37,21 +37,20 @@ const SettingsPage: React.FC = () => {
             </ol>
         </div>
 
-        {/* Google Cloud TTS API Key */}
+        {/* ElevenLabs API Key */}
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-3">
             <div className="flex items-center gap-3">
                 <Key size={24} className="text-green-600" />
                 <div>
-                    <p className="font-semibold text-green-800">Chave da API Google Cloud Text-to-Speech</p>
+                    <p className="font-semibold text-green-800">Chave da API ElevenLabs (Locução)</p>
                     <p className="text-sm text-gray-700">
-                        Necessária para a funcionalidade de geração de áudio (locução).
+                        Necessária para a funcionalidade de geração de áudio (locução) de alta qualidade.
                     </p>
                 </div>
             </div>
              <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1 pl-2">
-                <li>Habilite a API Text-to-Speech no seu projeto Google Cloud.</li>
-                <li>Crie uma chave de API.</li>
-                <li>No Supabase, adicione um novo segredo com o nome <code className="font-mono bg-green-100 p-0.5 rounded">GOOGLE_CLOUD_TTS_API_KEY</code> e cole sua chave.</li>
+                <li>Crie uma conta e obtenha sua chave de API no <a href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer" className="text-green-600 underline hover:text-green-800">ElevenLabs</a>.</li>
+                <li>No Supabase, adicione um novo segredo com o nome <code className="font-mono bg-green-100 p-0.5 rounded">ELEVENLABS_API_KEY</code> e cole sua chave.</li>
             </ol>
         </div>
         
