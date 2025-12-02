@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import { PosterTheme } from '../types';
 
 interface PriceDisplayProps {
@@ -24,6 +24,32 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, whol
 
   const scale = fontScale || 1;
   const landscape = isLandscape || false;
+  
+  const wholesaleRef = useRef<HTMLDivElement>(null);
+  const wholesaleTextRef = useRef<HTMLSpanElement>(null);
+
+  // Lógica para ajustar o tamanho do texto de atacado
+  useLayoutEffect(() => {
+    const containerEl = wholesaleRef.current;
+    const textEl = wholesaleTextRef.current;
+
+    if (containerEl && textEl) {
+      // 1. Resetar a escala
+      textEl.style.transform = 'scale(1)';
+      textEl.style.transformOrigin = 'left center';
+
+      // 2. Medir
+      const containerWidth = containerEl.clientWidth;
+      const textWidth = textEl.scrollWidth;
+
+      // 3. Aplicar escala se o texto for maior que o contêiner
+      if (textWidth > containerWidth) {
+        const scaleFactor = (containerWidth / textWidth) * 0.95; // 95% para margem
+        textEl.style.transform = `scale(${scaleFactor})`;
+      }
+    }
+  }, [wholesalePriceFormatted, wholesaleUnit, isHero, isCompact, scale]);
+
 
   // Dynamic styles based on context
   const oldPriceStyle = { fontSize: isHero ? '1.5rem' : (isCompact ? '0.9rem' : '1.125rem') };
@@ -32,11 +58,12 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, whol
   const priceDecStyle = { fontSize: isHero ? (landscape ? 3 : 3.5) * scale + 'rem' : (isCompact ? '1rem' : '1.25rem') };
   const unitStyle = { fontSize: isHero ? '1.25rem' : (isCompact ? '0.65rem' : '0.75rem') };
   
-  // Estilos para Atacado: Usando a cor secundária como fundo e a cor do texto principal para contraste.
+  // Estilos para Atacado
   const wholesaleTextStyle = { 
     fontSize: isHero ? 1.5 * scale + 'rem' : (isCompact ? '0.7rem' : '0.9rem'),
-    color: theme.textColor, // Usando a cor do texto principal para garantir contraste com o fundo secundário
+    color: theme.textColor,
     fontWeight: 500,
+    whiteSpace: 'nowrap' as const, // Força o texto a ficar em uma linha
   };
 
   const priceContent = (
@@ -83,7 +110,8 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, whol
       {/* Preço de Atacado (NOVO) - Com Destaque */}
       {hasWholesale && wholesalePriceFormatted && (
         <div 
-          className={`mt-1 ${isHero ? 'mt-4' : 'mt-1'} w-full`}
+          ref={wholesaleRef}
+          className={`mt-1 ${isHero ? 'mt-4' : 'mt-1'} w-full overflow-hidden`}
           style={{ 
             backgroundColor: theme.secondaryColor, 
             padding: isHero ? '0.5rem 1rem' : '0.25rem 0.5rem',
@@ -91,7 +119,7 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, whol
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
           }}
         >
-          <span className="font-bold tracking-wider" style={wholesaleTextStyle}>
+          <span ref={wholesaleTextRef} className="font-bold tracking-wider block" style={wholesaleTextStyle}>
             ATACADO: R$ {wholesalePriceFormatted} / {wholesaleUnit}
           </span>
         </div>
