@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Users, Loader2, Edit, Search, UserX, UserCheck } from 'lucide-react';
+import { Users, Loader2, Edit, Search, UserX, UserCheck, LogIn } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { Profile, AdminProfileView } from '../../types';
 import { showSuccess, showError } from '../utils/toast';
@@ -13,13 +13,13 @@ const UserManagementPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [impersonatingId, setImpersonatingId] = useState<string | null>(null);
   const { hasPermission } = useAuth();
 
   const canManageUsers = hasPermission('manage_users');
 
   const fetchProfiles = useCallback(async () => {
     setLoading(true);
-    // Alterado de rpc() para from() para usar a nova view segura
     const { data, error } = await supabase
       .from('admin_users_view')
       .select('*');
@@ -79,6 +79,45 @@ const UserManagementPage: React.FC = () => {
     } else {
       showSuccess("Usuário ativado com sucesso.");
       fetchProfiles();
+    }
+  };
+
+  const handleImpersonate = async (profile: AdminProfileView) => {
+    if (!profile.email) {
+      showError("Este usuário não possui um email para gerar o link de acesso.");
+      return;
+    }
+    
+    setImpersonatingId(profile.id);
+    
+    try {
+      // 1. Salvar a sessão atual do admin no localStorage
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        localStorage.setItem('admin_impersonation_token', JSON.stringify(session));
+      } else {
+        throw new Error("Não foi possível obter a sessão do administrador.");
+      }
+
+      // 2. Chamar a Edge Function para gerar o link
+      const { data, error } = await supabase.functions.invoke('impersonate-user', {
+        body: { 
+          userIdToImpersonate: profile.id,
+          userEmailToImpersonate: profile.email,
+        },
+      });
+
+      if (error) throw error;
+
+      // 3. Redirecionar para o link de login mágico
+      window.location.href = data.signInLink;
+
+    } catch (error) {
+      console.error("Falha ao personificar usuário:", error);
+      showError("Erro ao tentar acessar o painel do cliente.");
+      localStorage.removeItem('admin_impersonation_token'); // Limpa em caso de erro
+    } finally {
+      setImpersonatingId(null);
     }
   };
 
@@ -154,6 +193,14 @@ const UserManagementPage: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                       {canManageUsers && (
                         <>
+                          <button 
+                            onClick={() => handleImpersonate(profile)} 
+                            className="text-green-600 hover:text-green-900 disabled:opacity-50" 
+                            title="Acessar Painel do Cliente"
+                            disabled={impersonatingId === profile.id}
+                          >
+                            {impersonatingId === profile.id ? <Loader2 size={18} className="animate-spin" /> : <LogIn size={18} />}
+                          </button>
                           <button onClick={() => handleEditClick(profile)} className="text-indigo-600 hover:text-indigo-900" title="Editar Plano"><Edit size={18} /></button>
                           {profile.deleted_at ? (
                             <button onClick={() => handleActivate(profile)} className="text-green-600 hover:text-green-900" title="Ativar Usuário"><UserCheck size={18} /></button>

@@ -13,6 +13,7 @@ import LoginPage from './src/pages/LoginPage';
 import AdminPage from './src/pages/AdminPage';
 import ReportsPage from './src/pages/ReportsPage';
 import UpgradeOverlay from './src/components/UpgradeOverlay';
+import ReturnToAdminBanner from './src/components/ReturnToAdminBanner'; // Importando o novo componente
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
 import { PosterTheme, Product, PosterFormat, SavedImage, Permission } from './types';
@@ -191,6 +192,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="flex h-screen w-full overflow-hidden font-sans">
+      <ReturnToAdminBanner />
       <SidebarNav activeModule={activeModule} setActiveModule={setActiveModule} />
       <main className="flex-1 relative h-full overflow-hidden">
          <div className="relative w-full h-full">
