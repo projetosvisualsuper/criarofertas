@@ -12,6 +12,12 @@ async function invokeGeminiProxy(task: string, data: any) {
     throw new Error(error.message);
   }
   
+  // CRITICAL CHECK: Ensure the result object and the nested response exist
+  if (!result || !result.response) {
+    console.error(`Edge function returned empty or malformed result for task "${task}":`, result);
+    throw new Error("Edge function returned an empty or malformed response (missing 'response' field).");
+  }
+  
   // The actual Gemini response is nested inside the function's response
   return result.response;
 }
