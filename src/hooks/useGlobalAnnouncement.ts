@@ -4,7 +4,7 @@ import { showError } from '../utils/toast';
 
 export interface GlobalAnnouncement {
   id: string;
-  message: string;
+  message: string | string[]; // Pode ser string ou array de strings
   is_active: boolean;
   created_at: string;
 }
@@ -28,7 +28,12 @@ export function useGlobalAnnouncement() {
       console.error('Error fetching global announcement:', error);
       setAnnouncement(null);
     } else if (data) {
-      setAnnouncement(data as GlobalAnnouncement);
+      // Garante que a mensagem seja um array de strings, dividindo por quebra de linha se for uma string única
+      const messageArray = Array.isArray(data.message) 
+        ? data.message 
+        : (data.message as string).split('\n').map(line => line.trim()).filter(line => line.length > 0);
+        
+      setAnnouncement({ ...data, message: messageArray } as GlobalAnnouncement);
     } else {
       setAnnouncement(null);
     }

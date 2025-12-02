@@ -11,7 +11,7 @@ const AdminSettingsPage: React.FC = () => {
   const { settings, loading: loadingSettings, updateMaintenanceMode } = useGlobalSettings(isAdmin);
 
   const [announcementMessage, setAnnouncementMessage] = useState('');
-  const [activeAnnouncement, setActiveAnnouncement] = useState<{ id: string; message: string } | null>(null);
+  const [activeAnnouncement, setActiveAnnouncement] = useState<{ id: string; message: string | string[] } | null>(null);
   const [isSavingAnnouncement, setIsSavingAnnouncement] = useState(false);
   const [loadingAnnouncement, setLoadingAnnouncement] = useState(true);
 
@@ -37,7 +37,9 @@ const AdminSettingsPage: React.FC = () => {
       console.error('Error fetching active announcement:', error);
     } else if (data) {
       setActiveAnnouncement(data);
-      setAnnouncementMessage(data.message);
+      // Se a mensagem for um array, junta com quebras de linha para edição
+      const messageToEdit = Array.isArray(data.message) ? data.message.join('\n') : data.message;
+      setAnnouncementMessage(messageToEdit);
     } else {
       setActiveAnnouncement(null);
       setAnnouncementMessage('');
@@ -60,7 +62,18 @@ const AdminSettingsPage: React.FC = () => {
     setIsSavingAnnouncement(true);
     
     try {
-      // 1. Desativar anúncios antigos (se houver)
+      // 1. Processar a mensagem: dividir por linha e filtrar vazias
+      const lines = announcementMessage.split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+        
+      if (lines.length === 0) {
+        showError("A mensagem do anúncio não pode ser vazia.");
+        setIsSavingAnnouncement(false);
+        return;
+      }
+      
+      // 2. Desativar anúncios antigos (se houver)
       if (activeAnnouncement) {
         await supabase
           .from('global_announcements')
@@ -68,10 +81,10 @@ const AdminSettingsPage: React.FC = () => {
           .eq('is_active', true);
       }
       
-      // 2. Inserir o novo anúncio ativo
+      // 3. Inserir o novo anúncio ativo (salvando como array de strings)
       const { error } = await supabase
         .from('global_announcements')
-        .insert({ message: announcementMessage.trim(), is_active: true });
+        .insert({ message: lines, is_active: true });
         
       if (error) throw error;
       
@@ -118,6 +131,11 @@ const AdminSettingsPage: React.FC = () => {
     );
   }
 
+  // Prepara a mensagem ativa para exibição no painel
+  const activeMessageDisplay = activeAnnouncement?.message 
+    ? (Array.isArray(activeAnnouncement.message) ? activeAnnouncement.message.join(' | ') : activeAnnouncement.message)
+    : 'Nenhum anúncio ativo.';
+
   return (
     <div className="flex-1 flex flex-col p-8 bg-gray-100 overflow-y-auto">
       <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
@@ -158,7 +176,7 @@ const AdminSettingsPage: React.FC = () => {
                 <Bell size={20} className="text-yellow-600" /> Anúncios Globais
               </h3>
               <p className="text-sm text-gray-600 mb-4">
-                Publique uma mensagem que será exibida como um banner no topo do aplicativo para todos os usuários.
+                Publique uma ou mais mensagens (uma por linha) que serão exibidas em rotação no banner superior.
               </p>
               
               {loadingAnnouncement ? (
@@ -170,7 +188,9 @@ const AdminSettingsPage: React.FC = () => {
                   <p className="text-sm font-bold text-yellow-800 flex items-center gap-2">
                     <Bell size={16} /> Anúncio Ativo:
                   </p>
-                  <p className="text-sm text-gray-700 italic border-l-4 border-yellow-500 pl-3">{activeAnnouncement.message}</p>
+                  <p className="text-sm text-gray-700 italic border-l-4 border-yellow-500 pl-3 whitespace-pre-wrap">
+                    {activeMessageDisplay}
+                  </p>
                   <button
                     onClick={handleDeactivateAnnouncement}
                     disabled={isSavingAnnouncement}
@@ -190,7 +210,7 @@ const AdminSettingsPage: React.FC = () => {
                   onChange={(e) => setAnnouncementMessage(e.target.value)}
                   className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
                   rows={3}
-                  placeholder="Digite a nova mensagem de anúncio global aqui..."
+                  placeholder="Digite a nova mensagem de anúncio global aqui. Use ENTER para criar uma nova linha que será exibida em rotação."
                   disabled={isSavingAnnouncement}
                 />
                 <button
