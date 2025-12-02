@@ -11,8 +11,8 @@ interface AdScriptGeneratorProps {
 }
 
 // Hardcoded URL for the Edge Function (replace with your project ID)
-// MUDANDO PARA CHAMAR A FUNÇÃO DO GOOGLE TTS
-const TTS_FUNCTION_URL = "https://otezhjcvagcikwagjgem.supabase.co/functions/v1/google-tts"; 
+// CORRIGINDO PARA APONTAR PARA A FUNÇÃO DA ELEVENLABS
+const TTS_FUNCTION_URL = "https://otezhjcvagcikwagjgem.supabase.co/functions/v1/elevenlabs-tts"; 
 
 const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>(products.length > 0 ? [products[0].id] : []);
@@ -78,10 +78,10 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     
     setIsGeneratingAudio(true);
     setAudioUrl(null);
-    const loadingToast = showLoading("Gerando áudio com Google TTS...");
+    const loadingToast = showLoading("Gerando áudio com ElevenLabs...");
 
     try {
-      // Chamada direta à Edge Function do Google TTS
+      // Chamada direta à Edge Function da ElevenLabs
       const response = await fetch(TTS_FUNCTION_URL, {
         method: 'POST',
         headers: {
@@ -104,7 +104,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
 
       const audioBase64 = data.audioContent;
       
-      // O Google TTS retorna Base64 puro, que precisa ser decodificado para Blob
+      // O ElevenLabs retorna Base64 puro, que precisa ser decodificado para Blob
       const audioBlob = new Blob([Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0))], { type: 'audio/mp3' });
       const url = URL.createObjectURL(audioBlob);
       setAudioUrl(url);
@@ -113,9 +113,9 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
 
     } catch (error) {
       console.error("TTS Generation Error:", error);
-      // Mencionando a chave correta para o usuário (Google TTS usa GOOGLE_TTS_API_KEY)
+      // Corrigindo a mensagem de erro para a chave correta
       const errorMessage = (error as Error).message;
-      updateToast(loadingToast, `Falha ao gerar áudio. Verifique a chave GOOGLE_TTS_API_KEY e se o serviço está configurado. Detalhe: ${errorMessage}`, 'error');
+      updateToast(loadingToast, `Falha ao gerar áudio. Verifique a chave ELEVENLABS_API_KEY e se a Voice ID padrão está disponível. Detalhe: ${errorMessage}`, 'error');
     } finally {
       setIsGeneratingAudio(false);
     }
