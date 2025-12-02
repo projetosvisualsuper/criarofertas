@@ -14,7 +14,7 @@ import AdminPage from './src/pages/AdminPage';
 import ReportsPage from './src/pages/ReportsPage';
 import UpgradeOverlay from './src/components/UpgradeOverlay';
 import ReturnToAdminBanner from './src/components/ReturnToAdminBanner';
-import GlobalAnnouncementBanner from './src/components/GlobalAnnouncementBanner'; // NOVO IMPORT
+import GlobalAnnouncementBanner from './src/components/GlobalAnnouncementBanner';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
 import { PosterTheme, Product, PosterFormat, SavedImage, Permission } from './types';
@@ -23,6 +23,7 @@ import { useProductDatabase } from './src/hooks/useProductDatabase';
 import { useSavedImages } from './src/hooks/useSavedImages';
 import { usePosterProducts } from './src/hooks/usePosterProducts';
 import { useGlobalSettings } from './src/hooks/useGlobalSettings';
+import { useLocalStorageState } from './src/hooks/useLocalStorageState'; // NOVO IMPORT
 import { Loader2, AlertTriangle } from 'lucide-react';
 
 const defaultLayout = {
@@ -66,7 +67,8 @@ const AppContent: React.FC = () => {
   const { session, profile, hasPermission } = useAuth();
   const userId = session?.user?.id;
   
-  const [activeModule, setActiveModule] = useState('profile');
+  // Usando useLocalStorageState para persistir o módulo ativo
+  const [activeModule, setActiveModule] = useLocalStorageState('activeModule', 'profile');
   
   const { theme, setTheme, loading: loadingTheme } = useUserSettings(userId);
   const { products, setProducts, loading: loadingProducts } = usePosterProducts(userId);
@@ -116,6 +118,7 @@ const AppContent: React.FC = () => {
       
       const currentModulePermission = MODULE_PERMISSIONS[activeModule];
       
+      // Verifica se o módulo ativo atual é permitido. Se não for, redireciona para o primeiro permitido.
       if (!hasPermission(currentModulePermission)) {
         const firstAllowedModule = Object.entries(MODULE_PERMISSIONS).find(([_, permission]) => hasPermission(permission));
         if (firstAllowedModule) {
@@ -127,7 +130,7 @@ const AppContent: React.FC = () => {
       
       setIsReady(true);
     }
-  }, [theme, products, setTheme, setProducts, loadingTheme, loadingRegisteredProducts, loadingSavedImages, loadingProducts, loadingGlobalSettings, profile, hasPermission, activeModule]);
+  }, [theme, products, setTheme, setProducts, loadingTheme, loadingRegisteredProducts, loadingSavedImages, loadingProducts, loadingGlobalSettings, profile, hasPermission, activeModule, setActiveModule]);
 
   const formats: PosterFormat[] = POSTER_FORMATS;
   
