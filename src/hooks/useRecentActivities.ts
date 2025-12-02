@@ -36,24 +36,30 @@ export function useRecentActivities() {
         user_id: user.id,
         details: user.email || undefined,
       }));
+      
+      // Cria um mapa de ID de usuário para username para referência rápida
+      const userMap = new Map(usersData.map(user => [user.id, user.username || user.email]));
 
-      // 2. Buscar as 5 artes salvas mais recentes
+      // 2. Buscar as 5 artes salvas mais recentes (sem junção implícita)
       const { data: artsData, error: artsError } = await supabase
         .from('saved_images')
-        .select('id, created_at, format_name, user_id, profiles(username)')
+        .select('id, created_at, format_name, user_id') // Removido profiles(username)
         .order('created_at', { ascending: false })
         .limit(5);
 
       if (artsError) throw artsError;
 
-      const savedArtActivities: Activity[] = artsData.map(art => ({
-        id: art.id,
-        type: 'saved_art',
-        description: `Arte salva (${art.format_name}) por ${art.profiles?.username || 'Usuário'}`,
-        timestamp: art.created_at,
-        user_id: art.user_id,
-        details: art.format_name,
-      }));
+      const savedArtActivities: Activity[] = artsData.map(art => {
+        const username = userMap.get(art.user_id) || 'Usuário Desconhecido';
+        return {
+          id: art.id,
+          type: 'saved_art',
+          description: `Arte salva (${art.format_name}) por ${username}`,
+          timestamp: art.created_at,
+          user_id: art.user_id,
+          details: art.format_name,
+        };
+      });
 
       // 3. Combinar e ordenar por timestamp
       const combinedActivities = [...signupActivities, ...savedArtActivities]
