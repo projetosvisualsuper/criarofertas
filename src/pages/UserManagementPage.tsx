@@ -4,14 +4,20 @@ import { supabase } from '@/src/integrations/supabase/client';
 import { Profile } from '../../types';
 import { showError } from '../utils/toast';
 import { PLAN_NAMES } from '../config/constants';
+import { useAuth } from '../context/AuthContext';
+import AdminEditUserModal from '../components/admin/AdminEditUserModal';
 
 const UserManagementPage: React.FC = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const { hasPermission } = useAuth();
+
+  const canManageUsers = hasPermission('manage_users');
 
   const fetchProfiles = useCallback(async () => {
     setLoading(true);
-    // Busca perfis ordenados por função
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -30,8 +36,20 @@ const UserManagementPage: React.FC = () => {
   useEffect(() => {
     fetchProfiles();
   }, [fetchProfiles]);
-  
-  // Futuramente, aqui será implementada a lógica de edição de perfis.
+
+  const handleEditClick = (profile: Profile) => {
+    setSelectedProfile(profile);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedProfile(null);
+  };
+
+  const handleUserUpdated = () => {
+    fetchProfiles(); // Recarrega a lista de usuários após a atualização
+  };
 
   return (
     <div className="flex-1 flex flex-col p-8 bg-gray-100 h-full overflow-y-auto">
@@ -66,14 +84,15 @@ const UserManagementPage: React.FC = () => {
                   <p className="text-xs text-gray-500 mt-1">{profile.permissions.length} Permissões</p>
                 </div>
                 
-                {/* Placeholder for Edit Button */}
-                <button 
-                  className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors ml-4"
-                  title="Editar Perfil (Em Breve)"
-                  disabled
-                >
-                  <Edit size={18} />
-                </button>
+                {canManageUsers && (
+                  <button 
+                    onClick={() => handleEditClick(profile)}
+                    className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-full transition-colors ml-4"
+                    title="Editar Perfil"
+                  >
+                    <Edit size={18} />
+                  </button>
+                )}
               </div>
             ))}
             {profiles.length === 0 && (
@@ -84,6 +103,15 @@ const UserManagementPage: React.FC = () => {
           </div>
         )}
       </div>
+      
+      {selectedProfile && (
+        <AdminEditUserModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          profile={selectedProfile}
+          onUserUpdated={handleUserUpdated}
+        />
+      )}
     </div>
   );
 };
