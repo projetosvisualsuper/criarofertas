@@ -135,6 +135,15 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
     }
+    
+    // VERIFICAÇÃO CRÍTICA: Se a resposta do Gemini não tiver texto, algo deu errado na geração.
+    if (!response || !response.text) {
+        console.error("Gemini API returned no text response for task:", task, response);
+        return new Response(JSON.stringify({ error: 'Gemini API returned empty response. Check safety settings or prompt.' }), {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+    }
 
     return new Response(JSON.stringify({ response }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
