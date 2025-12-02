@@ -11,6 +11,8 @@ interface ProductDB {
   defaultPrice: string;
   defaultOldPrice?: string;
   defaultUnit: string;
+  wholesalePrice?: string; // NOVO
+  wholesaleUnit?: string; // NOVO
   image?: string;
   created_at: string;
   updated_at: string;
@@ -25,6 +27,8 @@ const mapFromDB = (item: ProductDB): RegisteredProduct => ({
   defaultPrice: item.defaultPrice,
   defaultOldPrice: item.defaultOldPrice,
   defaultUnit: item.defaultUnit,
+  wholesalePrice: item.wholesalePrice, // Mapeamento de atacado
+  wholesaleUnit: item.wholesaleUnit,   // Mapeamento de atacado
   image: item.image,
 });
 
@@ -35,6 +39,8 @@ const mapToDB = (product: Partial<Omit<RegisteredProduct, 'id'>>): Partial<Omit<
   defaultPrice: product.defaultPrice,
   defaultOldPrice: product.defaultOldPrice,
   defaultUnit: product.defaultUnit,
+  wholesalePrice: product.wholesalePrice, // Mapeamento de atacado
+  wholesaleUnit: product.wholesaleUnit,   // Mapeamento de atacado
   image: product.image,
 });
 

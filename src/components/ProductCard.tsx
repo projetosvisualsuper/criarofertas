@@ -48,7 +48,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
         priceEl.style.transform = `scale(${scale})`;
       }
     }
-  }, [product.name, product.price, product.oldPrice, layoutCols, baseNameSize, theme.priceCardStyle, isStory]);
+  }, [product.name, product.price, product.oldPrice, product.wholesalePrice, product.wholesaleUnit, layoutCols, baseNameSize, theme.priceCardStyle, isStory]);
 
   const imageContainerHeight = isCompact ? '50%' : '60%';
 
@@ -121,6 +121,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
               price={product.price}
               oldPrice={product.oldPrice}
               unit={product.unit}
+              wholesalePrice={product.wholesalePrice} // NOVO
+              wholesaleUnit={product.wholesaleUnit}   // NOVO
               theme={theme}
               isCompact={isCompact}
               isHero={false}

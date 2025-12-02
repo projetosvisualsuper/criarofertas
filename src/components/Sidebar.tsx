@@ -114,6 +114,8 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     price: baseProduct?.defaultPrice || '0.00', 
     oldPrice: baseProduct?.defaultOldPrice,
     unit: baseProduct?.defaultUnit || 'un', 
+    wholesalePrice: baseProduct?.wholesalePrice, // NOVO
+    wholesaleUnit: baseProduct?.wholesaleUnit,   // NOVO
     image: baseProduct?.image,
     layouts: {
       'a4': JSON.parse(JSON.stringify(defaultLayout)),
@@ -902,10 +904,18 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                    <div className="flex-1 space-y-2">
                      <input className="w-full border rounded px-2 py-1 text-sm font-semibold focus:ring-2 focus:ring-indigo-500 outline-none" value={product.name} onChange={(e) => handleProductChange(product.id, 'name', e.target.value)} placeholder="Título do Produto"/>
                       <textarea className="w-full border rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 outline-none resize-none" value={product.description || ''} onChange={(e) => handleProductChange(product.id, 'description', e.target.value)} placeholder="Descrição (opcional)" rows={2}/>
-                      <div className="flex gap-2">
-                        <div className="flex-1"><label className="text-[10px] text-gray-500 uppercase font-bold">Preço</label><input className="w-full border rounded px-2 py-1 text-sm outline-none" value={product.price} onChange={(e) => handleProductChange(product.id, 'price', e.target.value)}/></div>
+                      
+                      {/* Preços de Varejo */}
+                      <div className="flex gap-2 border-t pt-2">
+                        <div className="flex-1"><label className="text-[10px] text-gray-500 uppercase font-bold">Preço Varejo</label><input className="w-full border rounded px-2 py-1 text-sm outline-none" value={product.price} onChange={(e) => handleProductChange(product.id, 'price', e.target.value)}/></div>
                         <div className="flex-1"><label className="text-[10px] text-gray-500 uppercase font-bold">Preço Antigo</label><input className="w-full border rounded px-2 py-1 text-sm outline-none" value={product.oldPrice || ''} onChange={(e) => handleProductChange(product.id, 'oldPrice', e.target.value)}/></div>
                         <div className="w-16"><label className="text-[10px] text-gray-500 uppercase font-bold">Unid.</label><select className="w-full border rounded px-1 py-1 text-sm outline-none bg-white" value={product.unit} onChange={(e) => handleProductChange(product.id, 'unit', e.target.value)}><option value="un">un</option><option value="kg">kg</option><option value="g">g</option><option value="lt">lt</option><option value="ml">ml</option><option value="cx">cx</option></select></div>
+                      </div>
+                      
+                      {/* Preços de Atacado */}
+                      <div className="flex gap-2 border-t border-dashed pt-2">
+                        <div className="flex-1"><label className="text-[10px] text-gray-500 uppercase font-bold">Preço Atacado</label><input className="w-full border rounded px-2 py-1 text-sm outline-none" value={product.wholesalePrice || ''} onChange={(e) => handleProductChange(product.id, 'wholesalePrice', e.target.value)} placeholder="0.00 (opcional)"/></div>
+                        <div className="flex-1"><label className="text-[10px] text-gray-500 uppercase font-bold">Unid. Atacado</label><input className="w-full border rounded px-2 py-1 text-sm outline-none" value={product.wholesaleUnit || ''} onChange={(e) => handleProductChange(product.id, 'wholesaleUnit', e.target.value)} placeholder="3un, cx, fardo"/></div>
                       </div>
                    </div>
                    <button onClick={() => removeProduct(product.id)} className="text-gray-400 hover:text-red-500" title="Remover"><Trash2 size={16} /></button>

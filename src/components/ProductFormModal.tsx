@@ -17,6 +17,8 @@ const defaultNewProduct: Omit<RegisteredProduct, 'id'> = {
   defaultUnit: 'un',
   description: '',
   image: undefined,
+  wholesalePrice: undefined, // NOVO
+  wholesaleUnit: 'un',       // NOVO
 };
 
 const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialProduct, onSave, onDelete }) => {
@@ -27,7 +29,12 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
 
   useEffect(() => {
     if (isOpen) {
-      setProduct(initialProduct || defaultNewProduct);
+      // Garante que os campos de atacado sejam inicializados corretamente
+      setProduct({
+        ...defaultNewProduct,
+        ...initialProduct,
+        wholesaleUnit: initialProduct?.wholesaleUnit || 'un',
+      });
     }
   }, [isOpen, initialProduct]);
 
@@ -72,7 +79,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] bg-white rounded-xl">
+      <DialogContent className="sm:max-w-[600px] bg-white rounded-xl">
         <DialogHeader>
           <DialogTitle>{isEditing ? `Editar Produto: ${initialProduct?.name}` : 'Cadastrar Novo Produto'}</DialogTitle>
           <DialogDescription>
@@ -121,9 +128,10 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
             </button>
           )}
 
+          {/* Seção de Preços de Varejo */}
           <div className="flex gap-2 pt-2 border-t">
             <div className="flex-1">
-              <label className="text-[10px] text-gray-500 uppercase font-bold">Preço Padrão</label>
+              <label className="text-[10px] text-gray-500 uppercase font-bold">Preço Varejo (Padrão)</label>
               <input 
                 className="w-full border rounded px-2 py-1 text-sm outline-none" 
                 value={product.defaultPrice} 
@@ -132,7 +140,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
               />
             </div>
             <div className="flex-1">
-              <label className="text-[10px] text-gray-500 uppercase font-bold">Preço Antigo</label>
+              <label className="text-[10px] text-gray-500 uppercase font-bold">Preço Antigo (Varejo)</label>
               <input 
                 className="w-full border rounded px-2 py-1 text-sm outline-none" 
                 value={product.defaultOldPrice || ''} 
@@ -141,7 +149,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
               />
             </div>
             <div className="w-16">
-              <label className="text-[10px] text-gray-500 uppercase font-bold">Unid.</label>
+              <label className="text-[10px] text-gray-500 uppercase font-bold">Unid. Varejo</label>
               <select 
                 className="w-full border rounded px-1 py-1 text-sm outline-none bg-white" 
                 value={product.defaultUnit} 
@@ -154,6 +162,28 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
                 <option value="ml">ml</option>
                 <option value="cx">cx</option>
               </select>
+            </div>
+          </div>
+          
+          {/* Seção de Preços de Atacado */}
+          <div className="flex gap-2 pt-2 border-t border-dashed">
+            <div className="flex-1">
+              <label className="text-[10px] text-gray-500 uppercase font-bold">Preço Atacado (Opcional)</label>
+              <input 
+                className="w-full border rounded px-2 py-1 text-sm outline-none" 
+                value={product.wholesalePrice || ''} 
+                onChange={(e) => setProduct(prev => ({ ...prev, wholesalePrice: e.target.value }))} 
+                placeholder="0.00"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="text-[10px] text-gray-500 uppercase font-bold">Unid. Atacado (Ex: 3un)</label>
+              <input 
+                className="w-full border rounded px-2 py-1 text-sm outline-none" 
+                value={product.wholesaleUnit || ''} 
+                onChange={(e) => setProduct(prev => ({ ...prev, wholesaleUnit: e.target.value }))} 
+                placeholder="3un, cx, fardo"
+              />
             </div>
           </div>
         </div>
