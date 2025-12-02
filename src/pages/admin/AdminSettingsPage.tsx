@@ -37,8 +37,12 @@ const AdminSettingsPage: React.FC = () => {
       console.error('Error fetching active announcement:', error);
     } else if (data) {
       setActiveAnnouncement(data);
-      // Se a mensagem for um array, junta com quebras de linha para edição
-      const messageToEdit = Array.isArray(data.message) ? data.message.join('\n') : data.message;
+      
+      // Converte o array de strings (jsonb) de volta para texto com quebras de linha para edição
+      const messageToEdit = Array.isArray(data.message) 
+        ? data.message.join('\n') 
+        : (typeof data.message === 'string' ? data.message : ''); // Fallback se for string simples
+        
       setAnnouncementMessage(messageToEdit);
     } else {
       setActiveAnnouncement(null);
@@ -74,12 +78,13 @@ const AdminSettingsPage: React.FC = () => {
       }
       
       // 2. Desativar anúncios antigos (se houver)
-      if (activeAnnouncement) {
-        await supabase
+      // Usamos o update sem where para desativar todos os ativos, garantindo que apenas um esteja ativo.
+      const { error: deactivateError } = await supabase
           .from('global_announcements')
           .update({ is_active: false })
           .eq('is_active', true);
-      }
+          
+      if (deactivateError) console.warn("Warning: Failed to deactivate old announcements:", deactivateError);
       
       // 3. Inserir o novo anúncio ativo (salvando como array de strings)
       const { error } = await supabase
