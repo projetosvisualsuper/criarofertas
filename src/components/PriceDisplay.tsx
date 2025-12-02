@@ -32,11 +32,11 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, whol
   const priceDecStyle = { fontSize: isHero ? (landscape ? 3 : 3.5) * scale + 'rem' : (isCompact ? '1rem' : '1.25rem') }; // Reduced from 4.5rem/3.5rem to 3rem/3.5rem
   const unitStyle = { fontSize: isHero ? '1.25rem' : (isCompact ? '0.65rem' : '0.75rem') };
   
-  // Estilos para Atacado: Usando a cor primária do tema para garantir contraste em fundos claros.
+  // Estilos para Atacado: Usando a cor primária do tema e peso de fonte mais leve.
   const wholesaleStyle = { 
     fontSize: isHero ? 1.5 * scale + 'rem' : (isCompact ? '0.7rem' : '0.9rem'),
-    color: theme.primaryColor, // Alterado para primaryColor
-    fontFamily: theme.fontFamilyDisplay,
+    color: theme.primaryColor,
+    fontWeight: 500, // Semi-bold para melhor leitura, mas mais leve que o preço principal
   };
 
   const priceContent = (
@@ -83,7 +83,7 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, whol
       {/* Preço de Atacado (NOVO) */}
       {hasWholesale && wholesalePriceFormatted && (
         <div className={`mt-1 ${isHero ? 'mt-4' : 'mt-1'}`}>
-          <span className="font-bold tracking-wider" style={wholesaleStyle}>
+          <span className="tracking-wider" style={wholesaleStyle}>
             LEVE MAIS: R$ {wholesalePriceFormatted} / {wholesaleUnit}
           </span>
         </div>
