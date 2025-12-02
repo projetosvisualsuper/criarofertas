@@ -19,7 +19,10 @@ const UserManagementPage: React.FC = () => {
 
   const fetchProfiles = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.rpc('get_all_user_profiles');
+    // Alterado de rpc() para from() para usar a nova view segura
+    const { data, error } = await supabase
+      .from('admin_users_view')
+      .select('*');
 
     if (error) {
       console.error('Error fetching profiles:', error);
