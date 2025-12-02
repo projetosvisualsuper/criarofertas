@@ -25,7 +25,7 @@ export const DEFAULT_PERMISSIONS_BY_ROLE: Record<string, Permission[]> = {
     'access_builder', 'manage_products', 'manage_company_info', 'access_signage', 'access_social_media', 'access_ads', 'access_settings', 'view_reports', 'manage_users',
   ],
   premium: [ 
-    'access_builder', 'manage_products', 'manage_company_info', 'access_signage', 'access_social_media', 'access_ads',
+    'access_builder', 'manage_products', 'manage_company_info', 'access_signage', 'access_social_media', // Removido 'access_ads'
   ],
   free: [ 
     'access_builder', 'access_social_media', 'manage_products',
