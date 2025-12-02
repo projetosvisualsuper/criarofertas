@@ -6,9 +6,8 @@ const corsHeaders = {
   'Content-Type': 'application/json',
 };
 
-// ID de uma voz em Português (Brasil) da ElevenLabs (ex: 'Antoni' ou 'Rachel' com sotaque)
-// Usaremos uma voz padrão que suporta pt-BR.
-const DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDz7Sg"; // Rachel (Multilingual) ou similar
+// Usando uma voz conhecida por suportar pt-BR no modelo multilingual
+const DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDz7Sg"; // Rachel (Multilingual)
 const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
 
 serve(async (req) => {
@@ -59,7 +58,17 @@ serve(async (req) => {
     if (!ttsResponse.ok) {
       const errorText = await ttsResponse.text();
       console.error("ElevenLabs TTS API Error:", ttsResponse.status, errorText);
-      return new Response(JSON.stringify({ error: 'Failed to synthesize speech with ElevenLabs', details: errorText }), {
+      
+      // Tenta extrair a mensagem de erro da ElevenLabs para dar mais detalhes ao usuário
+      let details = errorText;
+      try {
+          const errorJson = JSON.parse(errorText);
+          details = errorJson.detail || errorText;
+      } catch (e) {
+          // Ignora erro de parse se não for JSON
+      }
+      
+      return new Response(JSON.stringify({ error: 'Failed to synthesize speech with ElevenLabs', details: details }), {
         status: ttsResponse.status,
         headers: corsHeaders,
       });
