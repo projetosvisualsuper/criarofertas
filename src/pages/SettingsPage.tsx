@@ -37,21 +37,20 @@ const SettingsPage: React.FC = () => {
             </ol>
         </div>
 
-        {/* Google Cloud TTS API Key */}
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-3">
+        {/* ElevenLabs TTS API Key */}
+        <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg space-y-3">
             <div className="flex items-center gap-3">
-                <Key size={24} className="text-green-600" />
+                <Key size={24} className="text-purple-600" />
                 <div>
-                    <p className="font-semibold text-green-800">Chave da API Google Cloud TTS (Locução)</p>
+                    <p className="font-semibold text-purple-800">Chave da API ElevenLabs (Locução)</p>
                     <p className="text-sm text-gray-700">
-                        Necessária para a funcionalidade de geração de áudio de alta qualidade. Esta chave é diferente da chave Gemini.
+                        Necessária para a funcionalidade de geração de áudio de alta qualidade.
                     </p>
                 </div>
             </div>
              <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1 pl-2">
-                <li>Crie um projeto no <a href="https://cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-green-600 underline hover:text-green-800">Google Cloud Platform (GCP)</a> e ative a <strong>Cloud Text-to-Speech API</strong>.</li>
-                <li>Gere uma <strong>Chave de API</strong> no console do GCP.</li>
-                <li>No Supabase, adicione um novo segredo com o nome <code className="font-mono bg-green-100 p-0.5 rounded">GOOGLE_TTS_API_KEY</code> e cole sua chave.</li>
+                <li>Obtenha sua chave de API no painel de desenvolvedor da <a href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer" className="text-purple-600 underline hover:text-purple-800">ElevenLabs</a>.</li>
+                <li>No Supabase, adicione um novo segredo com o nome <code className="font-mono bg-purple-100 p-0.5 rounded">ELEVENLABS_API_KEY</code> e cole sua chave.</li>
             </ol>
         </div>
         
