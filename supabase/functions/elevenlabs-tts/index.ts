@@ -62,7 +62,8 @@ serve(async (req) => {
       let details = errorText;
       try {
           const errorJson = JSON.parse(errorText);
-          details = errorJson.detail || errorText;
+          // Tenta extrair a mensagem de erro mais útil
+          details = errorJson.detail?.message || errorJson.detail || errorText;
       } catch (e) {
           // Ignora erro de parse se não for JSON
       }
@@ -87,7 +88,8 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("TTS Catch Error:", error);
-    return new Response(JSON.stringify({ error: 'Internal server error during ElevenLabs TTS generation' }), {
+    // Retorna o erro de forma mais clara
+    return new Response(JSON.stringify({ error: 'Internal server error during ElevenLabs TTS generation', details: error.message }), {
       status: 500,
       headers: corsHeaders,
     });
