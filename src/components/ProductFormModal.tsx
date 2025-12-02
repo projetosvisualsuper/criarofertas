@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { RegisteredProduct } from '../../types';
-import { Plus, Save, Loader2, XCircle, Image as ImageIcon, Trash2, Wand2, Database } from 'lucide-react';
+import { Plus, Save, Loader2, XCircle, Image as ImageIcon, Trash2, Database } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from './ui/dialog';
 import { showSuccess, showError } from '../utils/toast';
-import { generateProductImageAndUpload } from '../../services/openAiService';
 import ImageSelectorModal from './ImageSelectorModal'; // NOVO IMPORT
 
 interface ProductFormModalProps {
@@ -28,7 +27,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
   const [product, setProduct] = useState<Omit<RegisteredProduct, 'id'>>(initialProduct || defaultNewProduct);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  // Removendo isGeneratingImage, pois a IA foi removida
 
   useEffect(() => {
     if (isOpen) {
@@ -58,27 +57,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
     setProduct(prev => ({ ...prev, image: undefined }));
   };
 
-  const handleGenerateImage = async () => {
-    if (!product.name.trim()) {
-      showError("Por favor, insira o nome do produto antes de gerar a imagem.");
-      return;
-    }
-    
-    setIsGeneratingImage(true);
-    const loadingToast = showSuccess(`Gerando imagem para "${product.name}"...`);
-    
-    try {
-      // generateProductImageAndUpload já salva no Storage e retorna o URL público
-      const imageUrl = await generateProductImageAndUpload(product.name);
-      setProduct(prev => ({ ...prev, image: imageUrl }));
-      showSuccess("Imagem gerada e salva com sucesso!");
-    } catch (error) {
-      console.error("AI Image Generation Error:", error);
-      showError(`Falha ao gerar imagem: ${(error as Error).message}`);
-    } finally {
-      setIsGeneratingImage(false);
-    }
-  };
+  // Removendo handleGenerateImage
   
   const handleSelectImage = (url: string) => {
     setProduct(prev => ({ ...prev, image: url }));
@@ -122,9 +101,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
           <div className="flex gap-4 items-start">
             {/* Image Upload / Generation */}
             <div className="w-24 h-24 bg-gray-100 border border-dashed border-gray-300 rounded flex items-center justify-center shrink-0 overflow-hidden relative hover:border-indigo-400 transition-colors">
-              {isGeneratingImage ? (
-                <Loader2 size={32} className="text-indigo-500 animate-spin" />
-              ) : product.image ? (
+              {product.image ? (
                 <img src={product.image} className="w-full h-full object-contain" />
               ) : (
                 <div className="text-center">
@@ -155,8 +132,8 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
           </div>
           
           <div className="flex gap-2">
-            <input type="file" id="product-image-upload" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isGeneratingImage} />
-            <label htmlFor="product-image-upload" className={`flex-1 flex items-center justify-center gap-1 text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isGeneratingImage ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
+            <input type="file" id="product-image-upload" accept="image/*" className="hidden" onChange={handleImageUpload} />
+            <label htmlFor="product-image-upload" className={`flex-1 flex items-center justify-center gap-1 text-xs py-2 px-3 border rounded cursor-pointer transition-colors bg-white hover:bg-gray-50`}>
                 <ImageIcon size={14} /> {product.image ? 'Trocar Imagem' : 'Fazer Upload'}
             </label>
             
@@ -166,7 +143,6 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
                 <button 
                   type="button"
                   className="flex-1 flex items-center justify-center gap-1 text-xs py-2 px-3 rounded font-bold transition-colors disabled:opacity-50 bg-indigo-100 hover:bg-indigo-200 text-indigo-700"
-                  disabled={isGeneratingImage}
                 >
                   <Database size={14} />
                   Banco de Imagens
@@ -174,14 +150,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
               }
             />
             
-            <button 
-              onClick={handleGenerateImage}
-              disabled={isGeneratingImage || !product.name.trim()}
-              className="flex-1 flex items-center justify-center gap-1 text-xs py-2 px-3 rounded font-bold transition-colors disabled:opacity-50 bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              {isGeneratingImage ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
-              {isGeneratingImage ? 'Gerando...' : 'Gerar Imagem IA'}
-            </button>
+            {/* Botão de IA removido */}
             
             {product.image && (
               <button onClick={handleRemoveImage} className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 px-2 py-1 rounded border transition-colors">
@@ -264,7 +233,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
           
           <button 
             onClick={handleSave}
-            disabled={isLoading || isGeneratingImage || !product.name.trim() || !product.defaultPrice.trim()}
+            disabled={isLoading || !product.name.trim() || !product.defaultPrice.trim()}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
           >
             {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}

@@ -122,54 +122,6 @@ export const generateAdScript = async (products: Product[]): Promise<AdScript> =
 };
 
 /**
- * Gera uma imagem de produto com IA e faz o upload para o Supabase Storage.
- * @param productName O nome do produto para gerar a imagem.
- * @returns A URL pública da imagem salva.
+ * NOTA: A função generateProductImageAndUpload foi removida conforme solicitado.
+ * O upload de imagens de produto agora deve ser feito manualmente pelo usuário.
  */
-export const generateProductImageAndUpload = async (productName: string): Promise<string> => {
-    const userResponse = await supabase.auth.getUser();
-    const userId = userResponse.data.user?.id;
-
-    if (!userId) {
-        throw new Error("Usuário não autenticado.");
-    }
-    
-    // 1. Chamar a Edge Function (openai-proxy) para gerar a imagem
-    const edgeData = await invokeOpenAIProxy('generateProductImage', { productName });
-    
-    const { imageBase64, mimeType } = edgeData;
-    if (!imageBase64) {
-        throw new Error("A IA não retornou uma imagem válida.");
-    }
-    
-    const dataUrl = `data:${mimeType};base64,${imageBase64}`;
-    
-    // 2. Converter Base64 para Blob
-    const imageBlob = dataURLtoBlob(dataUrl);
-    const fileName = `${productName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}-${crypto.randomUUID()}.png`;
-    const filePath = `${userId}/${fileName}`; 
-
-    // 3. Upload para o Supabase Storage (Bucket 'product_images')
-    const { error: uploadError } = await supabase.storage
-        .from('product_images')
-        .upload(filePath, imageBlob, {
-            cacheControl: '3600',
-            upsert: true,
-        });
-
-    if (uploadError) {
-        console.error("Storage Upload Error:", uploadError);
-        throw new Error(`Falha no upload da imagem: ${uploadError.message}`);
-    }
-
-    // 4. Obter URL pública
-    const { data: urlData } = supabase.storage
-        .from('product_images')
-        .getPublicUrl(filePath);
-        
-    if (!urlData.publicUrl) {
-        throw new Error("Falha ao obter URL pública do Storage.");
-    }
-    
-    return urlData.publicUrl;
-};
