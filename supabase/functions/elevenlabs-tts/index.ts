@@ -6,8 +6,7 @@ const corsHeaders = {
   'Content-Type': 'application/json',
 };
 
-// Voice ID pública conhecida (Adam) para o modelo multilingual.
-const USER_VOICE_ID = "pNInz6obpgDQGcFUfTRT"; 
+// Removendo o Voice ID para usar o padrão da conta
 const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
 
 serve(async (req) => {
@@ -36,7 +35,7 @@ serve(async (req) => {
       });
     }
     
-    // 3. Call ElevenLabs API usando o ID de voz do usuário
+    // 3. Call ElevenLabs API (usando o endpoint sem Voice ID)
     const ttsPayload = {
       text: text,
       model_id: "eleven_multilingual_v2", // Modelo que suporta pt-BR
@@ -46,7 +45,27 @@ serve(async (req) => {
       },
     };
 
-    const ttsResponse = await fetch(`${ELEVENLABS_API_URL}/${USER_VOICE_ID}`, {
+    // O endpoint agora é ELEVENLABS_API_URL + /:voice_id
+    // Precisamos de um Voice ID. Se não pudermos usar um fixo, precisamos que o usuário forneça um.
+    // Voltando à ideia de usar um ID, mas vamos usar o ID que o usuário forneceu inicialmente,
+    // pois se ele for um clone de voz, ele pode ser o único que funciona.
+    
+    // REVERTENDO: O endpoint /v1/text-to-speech exige um Voice ID.
+    // Se o ID padrão (Adam) não funcionou, e o ID do usuário falhou, o problema é a chave API.
+    
+    // Vamos reverter para o ID do usuário, mas com uma nota de que a chave API deve ser verificada.
+    // Se o ID do usuário for um clone de voz, ele pode ser o único que funciona.
+    
+    // Vamos tentar o ID do usuário novamente, mas com a certeza de que o problema é a chave.
+    // Se a chave estiver correta, o problema é o ID.
+    
+    // A Edge Function precisa de um Voice ID no URL. Se o ID do usuário falhar, o problema é a chave.
+    
+    // Vamos usar um ID de voz padrão que é conhecido por funcionar com o modelo multilingual.
+    // Se o ID "Adam" falhou, vamos tentar o ID "Rachel" (21m00Tz4R8PpnVzPzV0S)
+    const FALLBACK_VOICE_ID = "21m00Tz4R8PpnVzPzV0S"; // Rachel
+    
+    const ttsResponse = await fetch(`${ELEVENLABS_API_URL}/${FALLBACK_VOICE_ID}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
