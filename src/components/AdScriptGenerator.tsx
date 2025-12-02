@@ -54,9 +54,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
       const errorMessage = (error as Error).message;
       console.error("Detailed Script Generation Error:", errorMessage); 
       
-      // Se o erro for de chave API, a mensagem será "GEMINI_API_KEY is not set..."
-      // Se for de invocação, será "Edge function returned an empty..."
-      
+      // Exibe a mensagem de erro exata no toast
       updateToast(loadingToast, `Erro ao gerar roteiro: ${errorMessage}`, 'error');
       
       // Define um script de erro para exibição na tela

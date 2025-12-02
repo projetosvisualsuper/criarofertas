@@ -72,7 +72,11 @@ export const generateAdScript = async (products: Product[]): Promise<AdScript> =
   try {
     const response = await invokeGeminiProxy('generateAdScript', { products });
     const jsonStr = response.text?.trim();
-    if (!jsonStr) throw new Error("Resposta JSON vazia.");
+    
+    if (!jsonStr) {
+        // Se o texto estiver vazio, mas a Edge Function retornou 200, é um problema de geração da IA.
+        throw new Error("A IA não conseguiu gerar o roteiro. Tente produtos diferentes ou verifique o console para erros de segurança.");
+    }
     
     return JSON.parse(jsonStr) as AdScript;
   } catch (error) {

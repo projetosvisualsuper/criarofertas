@@ -137,7 +137,8 @@ serve(async (req) => {
     }
     
     // VERIFICAÇÃO CRÍTICA: Se a resposta do Gemini não tiver texto, algo deu errado na geração.
-    if (!response || !response.text) {
+    // Adicionando .trim() para capturar respostas que são apenas espaços em branco.
+    if (!response || !response.text || response.text.trim() === "") {
         console.error("Gemini API returned no text response for task:", task, response);
         return new Response(JSON.stringify({ error: 'Gemini API returned empty response. Check safety settings or prompt.' }), {
             status: 500,
