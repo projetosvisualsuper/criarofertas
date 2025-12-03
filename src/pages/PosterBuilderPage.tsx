@@ -195,26 +195,32 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
             </div>
             
             {/* Botões de Ação Lateral e Banner */}
-            <div className="flex flex-col gap-4 flex-shrink-0 w-48">
-                <button
-                  onClick={handleSaveToGallery}
-                  disabled={isSaving || isDownloading}
-                  className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-full"
-                >
-                  <Save size={20} />
-                  {isSaving ? 'Salvando...' : `Salvar Arte`}
-                </button>
-                <button
-                  onClick={handleDownload}
-                  disabled={isSaving || isDownloading}
-                  className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-full"
-                >
-                  <Download size={20} />
-                  Baixar {theme.format.label}
-                </button>
+            <div className="flex flex-col flex-shrink-0 w-48 h-full"> {/* Adicionado h-full para ocupar a altura total */}
                 
-                {/* NOVO: Banner do WooCommerce */}
-                <WooCommerceBanner />
+                {/* Área Vermelha: Botões de Ação */}
+                <div className="flex flex-col gap-4 flex-shrink-0 mb-4">
+                    <button
+                      onClick={handleSaveToGallery}
+                      disabled={isSaving || isDownloading}
+                      className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-full"
+                    >
+                      <Save size={20} />
+                      {isSaving ? 'Salvando...' : `Salvar Arte`}
+                    </button>
+                    <button
+                      onClick={handleDownload}
+                      disabled={isSaving || isDownloading}
+                      className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-full"
+                    >
+                      <Download size={20} />
+                      Baixar {theme.format.label}
+                    </button>
+                </div>
+                
+                {/* Área Amarela: Banner do WooCommerce (flex-1 para ocupar o restante) */}
+                <div className="flex-1 min-h-0 overflow-y-auto">
+                    <WooCommerceBanner />
+                </div>
             </div>
          </div>
       </main>
