@@ -12,6 +12,64 @@ interface HeaderTemplatesTabProps {
   setTheme: React.Dispatch<React.SetStateAction<PosterTheme>>;
 }
 
+// Componente auxiliar para renderizar a pré-visualização do template
+const TemplatePreview: React.FC<{ template: HeaderTemplate; isCustom: boolean; onApply: () => void; onDelete?: () => void; isFreePlan: boolean }> = ({ template, isCustom, onApply, onDelete, isFreePlan }) => {
+    const { primaryColor, secondaryColor, headerTextColor } = template.theme;
+    const isLocked = isFreePlan && !isCustom; // Bloqueia presets prontos para Free
+
+    return (
+        <div className="relative group">
+            <button
+                onClick={onApply}
+                className={`w-full border rounded-lg overflow-hidden bg-white transition-all ${
+                    isLocked ? 'opacity-50 cursor-not-allowed' : 'hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500'
+                }`}
+                disabled={isLocked}
+            >
+                {/* Área de Pré-visualização de Cor */}
+                <div 
+                    className="w-full h-24 flex items-center justify-center"
+                    style={{ 
+                        backgroundColor: primaryColor || '#333', 
+                        backgroundImage: template.theme.headerImage ? `url(${template.theme.headerImage})` : 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        position: 'relative',
+                    }}
+                >
+                    {/* Overlay de cor secundária para dar um toque de design */}
+                    <div 
+                        className="absolute inset-0 opacity-30" 
+                        style={{ backgroundColor: secondaryColor || '#fff' }}
+                    />
+                    {/* Nome do Template no centro */}
+                    <span 
+                        className="relative z-10 text-center text-sm font-bold p-1 rounded"
+                        style={{ color: headerTextColor || '#fff', textShadow: '0 0 5px rgba(0,0,0,0.5)' }}
+                    >
+                        {template.name}
+                    </span>
+                </div>
+                
+                <div className="p-2 text-center">
+                    <p className="text-xs font-semibold text-gray-800 group-hover:text-indigo-700 truncate">{template.name}</p>
+                </div>
+            </button>
+            
+            {isCustom && onDelete && (
+                <button
+                    onClick={onDelete}
+                    className="absolute top-0 right-0 p-1 text-red-500 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity -mt-2 -mr-2 shadow-md"
+                    title="Excluir Template"
+                >
+                    <Trash2 size={14} />
+                </button>
+            )}
+        </div>
+    );
+};
+
+
 const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme }) => {
   const { profile, session } = useAuth();
   const isFreePlan = profile?.role === 'free';
@@ -177,26 +235,14 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
           </h3>
           <div className={`grid grid-cols-2 gap-3 ${isFreePlan ? 'opacity-50 pointer-events-none' : ''}`}>
             {customTemplates.map(template => (
-              <div key={template.id} className="relative group">
-                <button
-                  onClick={() => applyCustomTemplate(template)}
-                  className="w-full border rounded-lg overflow-hidden bg-white hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500 transition-all"
-                  disabled={isFreePlan}
-                >
-                  <img src={template.thumbnail} alt={template.name} className="w-full h-24 object-cover" />
-                  <div className="p-2 text-center">
-                    <p className="text-xs font-semibold text-gray-800 group-hover:text-indigo-700 truncate">{template.name}</p>
-                  </div>
-                </button>
-                <button
-                  onClick={() => handleDeleteClick(template.id)}
-                  className="absolute top-0 right-0 p-1 text-red-500 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity -mt-2 -mr-2 shadow-md"
-                  title="Excluir Template"
-                  disabled={isFreePlan}
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
+              <TemplatePreview
+                key={template.id}
+                template={template}
+                isCustom={true}
+                onApply={() => applyCustomTemplate(template)}
+                onDelete={() => handleDeleteClick(template.id)}
+                isFreePlan={isFreePlan}
+              />
             ))}
           </div>
         </div>
@@ -209,17 +255,13 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
         </h3>
         <div className={`grid grid-cols-2 gap-3 ${isFreePlan ? 'opacity-50 pointer-events-none' : ''}`}>
           {HEADER_TEMPLATE_PRESETS.map(template => (
-            <button
+            <TemplatePreview
               key={template.id}
-              onClick={() => applyPresetTemplate(template.theme)}
-              className="border rounded-lg overflow-hidden group bg-white hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500 transition-all"
-              disabled={isFreePlan}
-            >
-              <img src={template.thumbnail} alt={template.name} className="w-full h-24 object-cover bg-gray-200" />
-              <div className="p-2 text-center">
-                <p className="text-xs font-semibold text-gray-800 group-hover:text-indigo-700">{template.name}</p>
-              </div>
-            </button>
+              template={template}
+              isCustom={false}
+              onApply={() => applyPresetTemplate(template.theme)}
+              isFreePlan={isFreePlan}
+            />
           ))}
         </div>
       </div>
