@@ -3,7 +3,8 @@ import { RegisteredProduct } from '../../types';
 import { Plus, Save, Loader2, XCircle, Image as ImageIcon, Trash2, Database } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from './ui/dialog';
 import { showSuccess, showError } from '../utils/toast';
-import ImageSelectorModal from './ImageSelectorModal'; // NOVO IMPORT
+import ImageSelectorModal from './ImageSelectorModal';
+import { supabase } from '@/src/integrations/supabase/client'; // Importando supabase para upload
 
 interface ProductFormModalProps {
   trigger: React.ReactNode;
@@ -22,16 +23,17 @@ const defaultNewProduct: Omit<RegisteredProduct, 'id'> = {
   wholesaleUnit: 'un',
 };
 
+// Diretório compartilhado para imagens de produto
+const SHARED_IMAGE_DIR = 'shared';
+
 const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialProduct, onSave, onDelete }) => {
   const isEditing = !!initialProduct;
   const [product, setProduct] = useState<Omit<RegisteredProduct, 'id'>>(initialProduct || defaultNewProduct);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  // Removendo isGeneratingImage, pois a IA foi removida
 
   useEffect(() => {
     if (isOpen) {
-      // Garante que os campos de atacado sejam inicializados corretamente
       setProduct({
         ...defaultNewProduct,
         ...initialProduct,
@@ -40,24 +42,61 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
     }
   }, [isOpen, initialProduct]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        // Nota: Se o usuário fizer upload de um arquivo local, ele será salvo como Data URL.
-        // Isso é OK para o preview, mas não será salvo no Storage até que o produto seja salvo.
-        setProduct(prev => ({ ...prev, image: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+    const user = await supabase.auth.getUser();
+    const userId = user.data.user?.id;
+
+    if (!file || !userId) {
+      showError("Erro: Usuário não autenticado ou arquivo não selecionado.");
+      return;
+    }
+    
+    if (!product.name.trim()) {
+        showError("Por favor, preencha o nome do produto antes de fazer o upload da imagem.");
+        return;
+    }
+
+    setIsLoading(true);
+    
+    // 1. Criar um nome de arquivo seguro e único no diretório compartilhado
+    const safeName = product.name.trim().replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase();
+    const fileExtension = file.name.split('.').pop();
+    const filePath = `${SHARED_IMAGE_DIR}/${safeName}-${crypto.randomUUID()}.${fileExtension}`;
+
+    try {
+      // 2. Upload para o Storage (no diretório 'shared')
+      const { error: uploadError } = await supabase.storage
+        .from('product_images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // 3. Obter URL pública
+      const { data: urlData } = supabase.storage
+        .from('product_images')
+        .getPublicUrl(filePath);
+        
+      if (!urlData.publicUrl) throw new Error("Falha ao obter URL pública.");
+
+      // 4. Atualizar o estado do produto com o URL público
+      setProduct(prev => ({ ...prev, image: urlData.publicUrl }));
+      showSuccess(`Imagem enviada e adicionada ao banco de imagens!`);
+
+    } catch (error) {
+      console.error("Erro no upload da imagem:", error);
+      showError("Falha ao enviar a imagem. Verifique as permissões do Storage.");
+    } finally {
+      setIsLoading(false);
     }
   };
   
   const handleRemoveImage = () => {
     setProduct(prev => ({ ...prev, image: undefined }));
   };
-
-  // Removendo handleGenerateImage
   
   const handleSelectImage = (url: string) => {
     setProduct(prev => ({ ...prev, image: url }));
@@ -99,9 +138,11 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
         
         <div className="space-y-4 py-2">
           <div className="flex gap-4 items-start">
-            {/* Image Upload / Generation */}
+            {/* Image Preview */}
             <div className="w-24 h-24 bg-gray-100 border border-dashed border-gray-300 rounded flex items-center justify-center shrink-0 overflow-hidden relative hover:border-indigo-400 transition-colors">
-              {product.image ? (
+              {isLoading ? (
+                <Loader2 size={32} className="text-indigo-500 animate-spin" />
+              ) : product.image ? (
                 <img src={product.image} className="w-full h-full object-contain" />
               ) : (
                 <div className="text-center">
@@ -118,6 +159,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
                 value={product.name} 
                 onChange={(e) => setProduct(prev => ({ ...prev, name: e.target.value }))} 
                 placeholder="Nome do Produto"
+                disabled={isLoading}
               />
               
               <label className="text-xs font-semibold text-gray-700 block pt-1">Descrição (Opcional)</label>
@@ -127,14 +169,15 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
                 onChange={(e) => setProduct(prev => ({ ...prev, description: e.target.value }))} 
                 placeholder="Descrição detalhada" 
                 rows={2}
+                disabled={isLoading}
               />
             </div>
           </div>
           
           <div className="flex gap-2">
-            <input type="file" id="product-image-upload" accept="image/*" className="hidden" onChange={handleImageUpload} />
-            <label htmlFor="product-image-upload" className={`flex-1 flex items-center justify-center gap-1 text-xs py-2 px-3 border rounded cursor-pointer transition-colors bg-white hover:bg-gray-50`}>
-                <ImageIcon size={14} /> {product.image ? 'Trocar Imagem' : 'Fazer Upload'}
+            <input type="file" id="product-image-upload" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isLoading} />
+            <label htmlFor="product-image-upload" className={`flex-1 flex items-center justify-center gap-1 text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isLoading ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
+                <ImageIcon size={14} /> {isLoading ? 'Enviando...' : product.image ? 'Trocar Imagem (Upload)' : 'Fazer Upload'}
             </label>
             
             <ImageSelectorModal 
@@ -143,6 +186,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
                 <button 
                   type="button"
                   className="flex-1 flex items-center justify-center gap-1 text-xs py-2 px-3 rounded font-bold transition-colors disabled:opacity-50 bg-indigo-100 hover:bg-indigo-200 text-indigo-700"
+                  disabled={isLoading}
                 >
                   <Database size={14} />
                   Banco de Imagens
@@ -150,10 +194,8 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
               }
             />
             
-            {/* Botão de IA removido */}
-            
             {product.image && (
-              <button onClick={handleRemoveImage} className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 px-2 py-1 rounded border transition-colors">
+              <button onClick={handleRemoveImage} className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 px-2 py-1 rounded border transition-colors" disabled={isLoading}>
                   <Trash2 size={12} /> Remover
               </button>
             )}
@@ -168,6 +210,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
                 value={product.defaultPrice} 
                 onChange={(e) => setProduct(prev => ({ ...prev, defaultPrice: e.target.value }))} 
                 placeholder="0.00"
+                disabled={isLoading}
               />
             </div>
             <div className="flex-1">
@@ -177,6 +220,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
                 value={product.defaultOldPrice || ''} 
                 onChange={(e) => setProduct(prev => ({ ...prev, defaultOldPrice: e.target.value }))} 
                 placeholder="0.00 (opcional)"
+                disabled={isLoading}
               />
             </div>
             <div className="w-16">
@@ -185,6 +229,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
                 className="w-full border rounded px-1 py-1 text-sm outline-none bg-white" 
                 value={product.defaultUnit} 
                 onChange={(e) => setProduct(prev => ({ ...prev, defaultUnit: e.target.value }))}
+                disabled={isLoading}
               >
                 <option value="un">un</option>
                 <option value="kg">kg</option>
@@ -205,6 +250,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
                 value={product.wholesalePrice || ''} 
                 onChange={(e) => setProduct(prev => ({ ...prev, wholesalePrice: e.target.value }))} 
                 placeholder="0.00"
+                disabled={isLoading}
               />
             </div>
             <div className="flex-1">
@@ -214,6 +260,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
                 value={product.wholesaleUnit || ''} 
                 onChange={(e) => setProduct(prev => ({ ...prev, wholesaleUnit: e.target.value }))} 
                 placeholder="3un, cx, fardo"
+                disabled={isLoading}
               />
             </div>
           </div>

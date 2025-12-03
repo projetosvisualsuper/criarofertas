@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Home, Users, Zap, Settings, ArrowLeft, BarChart3, ListOrdered } from 'lucide-react';
+import { Home, Users, Zap, Settings, ArrowLeft, BarChart3, ListOrdered, Image } from 'lucide-react';
 import AdminDashboardPage from './admin/AdminDashboardPage';
 import AdminUserManagementPage from './admin/AdminUserManagementPage';
 import AdminPlanManagementPage from './admin/AdminPlanManagementPage';
 import AdminSettingsPage from './admin/AdminSettingsPage';
 import AdminReportsPage from './admin/AdminReportsPage';
-import AdminOrderManagementPage from './admin/AdminOrderManagementPage'; // NOVO IMPORT
+import AdminOrderManagementPage from './admin/AdminOrderManagementPage';
+import AdminImageUploadPage from './admin/AdminImageUploadPage'; // NOVO IMPORT
 
-type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'orders'; // NOVO MÓDULO 'orders'
+type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'orders' | 'images'; // NOVO MÓDULO 'images'
 
 interface AdminPageProps {
   setActiveHubModule: (module: string) => void;
@@ -18,9 +19,10 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
 
   const modules = [
     { id: 'dashboard', name: 'Dashboard', icon: Home },
-    { id: 'orders', name: 'Pedidos', icon: ListOrdered }, // NOVO MÓDULO AQUI
+    { id: 'orders', name: 'Pedidos', icon: ListOrdered },
     { id: 'users', name: 'Clientes', icon: Users },
     { id: 'plans', name: 'Planos', icon: Zap },
+    { id: 'images', name: 'Banco de Imagens', icon: Image }, // NOVO MÓDULO AQUI
     { id: 'reports', name: 'Relatórios SaaS', icon: BarChart3 },
     { id: 'settings', name: 'Configurações', icon: Settings },
   ];
@@ -28,9 +30,10 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
   const renderContent = () => {
     switch (activeAdminModule) {
       case 'dashboard': return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;
-      case 'orders': return <AdminOrderManagementPage />; // NOVO RENDER
+      case 'orders': return <AdminOrderManagementPage />;
       case 'users': return <AdminUserManagementPage />;
       case 'plans': return <AdminPlanManagementPage />;
+      case 'images': return <AdminImageUploadPage />; // NOVO RENDER
       case 'reports': return <AdminReportsPage />;
       case 'settings': return <AdminSettingsPage />;
       default: return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;

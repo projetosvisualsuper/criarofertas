@@ -7,7 +7,11 @@ export interface ProductImage {
   url: string;
   path: string;
   lastModified: Date;
+  isShared: boolean; // Novo campo para identificar se é compartilhada
 }
+
+// Diretório compartilhado para todas as imagens de produto
+const SHARED_DIR = 'shared';
 
 export function useProductImages(userId: string | undefined) {
   const [images, setImages] = useState<ProductImage[]>([]);
@@ -22,29 +26,52 @@ export function useProductImages(userId: string | undefined) {
     setLoading(true);
     
     try {
-      // 1. Listar arquivos no bucket 'product_images' sob o diretório do usuário
-      const { data: files, error: listError } = await supabase.storage
-        .from('product_images')
-        .list(userId, {
-          limit: 100, // Limite razoável para imagens de produto
-          sortBy: { column: 'updated_at', order: 'desc' },
-        });
-
-      if (listError) throw listError;
+      const limit = 100;
+      const sortBy = { column: 'updated_at', order: 'desc' } as const;
       
-      // 2. Obter URLs públicas para cada arquivo
-      const imageList: ProductImage[] = files
-        .filter(file => file.name !== '.emptyFolderPlaceholder') // Ignora placeholder
-        .map(file => {
+      // 1. Buscar imagens do diretório do usuário (privado)
+      const { data: userFiles, error: userListError } = await supabase.storage
+        .from('product_images')
+        .list(userId, { limit, sortBy });
+
+      if (userListError) throw userListError;
+      
+      // 2. Buscar imagens do diretório compartilhado (público)
+      const { data: sharedFiles, error: sharedListError } = await supabase.storage
+        .from('product_images')
+        .list(SHARED_DIR, { limit, sortBy });
+        
+      if (sharedListError) throw sharedListError;
+
+      const allFiles = [...userFiles, ...sharedFiles];
+      const uniqueFiles = new Map<string, any>();
+      
+      // Filtra duplicatas e placeholders
+      allFiles.forEach(file => {
+        if (file.name !== '.emptyFolderPlaceholder') {
+          // Usa o nome do arquivo como chave para garantir unicidade (embora o path seja mais seguro)
+          const path = file.id ? file.id : file.name; 
+          uniqueFiles.set(path, file);
+        }
+      });
+      
+      const imageList: ProductImage[] = Array.from(uniqueFiles.values()).map(file => {
+          const isShared = file.name.includes(SHARED_DIR) || file.name.includes('shared'); // Heurística simples
+          const filePath = file.id ? file.id : `${file.name.includes('/') ? '' : userId + '/'}${file.name}`; // Tenta reconstruir o path se o ID não estiver presente
+          
+          // Se o arquivo veio do sharedFiles, ajustamos o path para garantir que o getPublicUrl funcione
+          const finalPath = sharedFiles.includes(file) ? `${SHARED_DIR}/${file.name}` : `${userId}/${file.name}`;
+
           const { data: urlData } = supabase.storage
             .from('product_images')
-            .getPublicUrl(`${userId}/${file.name}`);
+            .getPublicUrl(finalPath);
             
           return {
             name: file.name,
             url: urlData.publicUrl,
-            path: `${userId}/${file.name}`,
+            path: finalPath,
             lastModified: new Date(file.updated_at),
+            isShared: finalPath.startsWith(SHARED_DIR),
           };
         });
 
