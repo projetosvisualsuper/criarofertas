@@ -12,7 +12,7 @@ interface ImageSelectorModalProps {
 }
 
 const ImageSelectorModal: React.FC<ImageSelectorModalProps> = ({ trigger, onSelectImage }) => {
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   const userId = session?.user?.id;
   const { productImages, loadingImages, deleteImage, fetchImages } = useProductImages(userId);
   
@@ -23,6 +23,8 @@ const ImageSelectorModal: React.FC<ImageSelectorModalProps> = ({ trigger, onSele
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [imageToDelete, setImageToDelete] = useState<ProductImage | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  const isAdmin = profile?.role === 'admin'; // Verifica se é admin
 
   const filteredImages = useMemo(() => {
     if (!searchTerm) return productImages;
@@ -40,6 +42,7 @@ const ImageSelectorModal: React.FC<ImageSelectorModalProps> = ({ trigger, onSele
   };
   
   const handleDeleteClick = (image: ProductImage) => {
+    if (!isAdmin) return; // Bloqueio de segurança extra
     setImageToDelete(image);
     setIsConfirmDeleteOpen(true);
   };
@@ -110,13 +113,16 @@ const ImageSelectorModal: React.FC<ImageSelectorModalProps> = ({ trigger, onSele
                       <Check size={20} className="absolute top-1 left-1 text-white bg-indigo-600 rounded-full p-0.5" />
                     )}
                     
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleDeleteClick(image); }}
-                      className="absolute top-1 right-1 p-1 text-red-500 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
-                      title="Excluir Imagem"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    {/* Botão de exclusão visível apenas para Admin */}
+                    {isAdmin && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteClick(image); }}
+                        className="absolute top-1 right-1 p-1 text-red-500 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                        title="Excluir Imagem"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
