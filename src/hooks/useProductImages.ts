@@ -91,18 +91,23 @@ export function useProductImages(userId: string | undefined) {
   
   const deleteImage = async (path: string) => {
     try {
+      // Loga o caminho que está sendo deletado para debug
+      console.log("Attempting to delete storage path:", path);
+      
       const { error } = await supabase.storage
         .from('product_images')
         .remove([path]);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Storage Delete Error:", error);
+        throw error;
+      }
       
       // Remove do estado local para feedback imediato
       setImages(prev => prev.filter(img => img.path !== path));
       showSuccess("Imagem removida do banco de imagens.");
       
-      // Força a recarga da lista do Storage para garantir que o cache seja ignorado
-      await fetchImages(); 
+      // REMOVIDO: await fetchImages(); 
       
     } catch (error) {
       console.error("Error deleting image:", error);
