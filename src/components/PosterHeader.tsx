@@ -82,7 +82,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
   );
 
   const HeaderContent = () => {
-    if (isHeroImageMode) return null; 
+    // REMOVIDO: if (isHeroImageMode) return null; 
 
     switch (effectiveHeaderLayout) {
       case 'logo-left':
@@ -98,7 +98,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
   };
 
   const renderGeometricArt = () => {
-    // CORREÇÃO: Se houver uma imagem de cabeçalho definida, NUNCA renderize a arte geométrica.
+    // Se houver uma imagem de cabeçalho definida, NUNCA renderize a arte geométrica.
     if (theme.headerImage) { 
       return null;
     }
@@ -241,13 +241,24 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
         backgroundColor: 'transparent',
       }}
     >
+      {/* Renderiza a arte geométrica SOMENTE se não houver imagem de cabeçalho */}
       {renderGeometricArt()}
+      
+      {/* Renderiza a imagem de cabeçalho (z-index 10 ou 20) */}
       {renderHeaderImage()}
+      
+      {/* Renderiza o overlay de cor primária (apenas em modo background) */}
       {renderPrimaryColorOverlay()}
-      {theme.headerImage && !isHeroImageMode && (
+      
+      {/* Renderiza o conteúdo de texto e logo (z-index 30) */}
+      {theme.headerImage ? (
+        // Se houver imagem, renderiza o conteúdo de texto por cima (z-index 30)
         <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
           <HeaderContent />
         </div>
+      ) : (
+        // Se não houver imagem, o HeaderContent já foi renderizado dentro de renderGeometricArt
+        null
       )}
     </header>
   );
