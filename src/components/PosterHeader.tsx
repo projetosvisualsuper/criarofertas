@@ -98,7 +98,8 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
   };
 
   const renderGeometricArt = () => {
-    if (theme.headerImage) {
+    // CORREÇÃO: Se houver uma imagem de cabeçalho definida, NUNCA renderize a arte geométrica.
+    if (theme.headerImage) { 
       return null;
     }
     
@@ -236,7 +237,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
     <header 
       className="relative z-10 w-full flex-shrink-0"
       style={{ 
-        minHeight: minHeight || (isLandscape ? '25%' : '20%'), // Usando minHeight
+        minHeight: minHeight || (isLandscape ? '25%' : '20%'), 
         backgroundColor: 'transparent',
       }}
     >
