@@ -115,8 +115,12 @@ const UserManagementPage: React.FC = () => {
         throw new Error("Não foi possível obter a sessão do administrador.");
       }
 
-      // Salva a sessão do admin para poder restaurá-la depois
-      localStorage.setItem('admin_impersonation_token', JSON.stringify(session));
+      // SALVANDO APENAS OS TOKENS ESSENCIAIS PARA EVITAR EXCEDER A COTA
+      const adminTokens = {
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+      };
+      localStorage.setItem('admin_impersonation_token', JSON.stringify(adminTokens));
 
       // 2. Chamar a Edge Function para gerar o link de login mágico
       const { data: edgeData, error } = await supabase.functions.invoke('impersonate-user', {

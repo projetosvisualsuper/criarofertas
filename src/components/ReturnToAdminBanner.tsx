@@ -4,27 +4,29 @@ import { Shield, LogIn } from 'lucide-react';
 import { showSuccess } from '../utils/toast';
 
 const ReturnToAdminBanner: React.FC = () => {
-  const [adminSession, setAdminSession] = useState<any>(null);
+  // Armazena apenas os tokens necessários
+  const [adminTokens, setAdminTokens] = useState<{ access_token: string; refresh_token: string } | null>(null);
 
   useEffect(() => {
-    const storedSession = localStorage.getItem('admin_impersonation_token');
-    if (storedSession) {
+    const storedTokens = localStorage.getItem('admin_impersonation_token');
+    if (storedTokens) {
       try {
-        setAdminSession(JSON.parse(storedSession));
+        // Espera um objeto com access_token e refresh_token
+        setAdminTokens(JSON.parse(storedTokens));
       } catch (e) {
-        console.error("Failed to parse admin session from localStorage", e);
+        console.error("Failed to parse admin tokens from localStorage", e);
         localStorage.removeItem('admin_impersonation_token');
       }
     }
   }, []);
 
   const handleReturnToAdmin = async () => {
-    if (!adminSession) return;
+    if (!adminTokens) return;
 
-    // Restaura a sessão do administrador
+    // Restaura a sessão do administrador usando setSession com os tokens
     const { error } = await supabase.auth.setSession({
-      access_token: adminSession.access_token,
-      refresh_token: adminSession.refresh_token,
+      access_token: adminTokens.access_token,
+      refresh_token: adminTokens.refresh_token,
     });
 
     if (error) {
@@ -40,7 +42,7 @@ const ReturnToAdminBanner: React.FC = () => {
     }
   };
 
-  if (!adminSession) {
+  if (!adminTokens) {
     return null;
   }
 
