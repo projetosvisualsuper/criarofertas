@@ -4,7 +4,13 @@ import { useWooCommerceProducts } from '../hooks/useWooCommerceProducts';
 import { WooProduct } from '../../types';
 
 const ProductCard: React.FC<{ product: WooProduct }> = ({ product }) => {
-    const price = product.sale_price || product.regular_price;
+    // Garante que o preço seja um número e formatado para 2 casas decimais
+    const rawPrice = parseFloat(product.sale_price || product.regular_price || product.price);
+    const priceFormatted = isNaN(rawPrice) ? '0.00' : rawPrice.toFixed(2).replace('.', ',');
+    
+    const rawRegularPrice = parseFloat(product.regular_price || product.price);
+    const regularPriceFormatted = isNaN(rawRegularPrice) ? '0.00' : rawRegularPrice.toFixed(2).replace('.', ',');
+    
     const isSale = !!product.sale_price && product.sale_price !== product.regular_price;
     
     return (
@@ -12,25 +18,27 @@ const ProductCard: React.FC<{ product: WooProduct }> = ({ product }) => {
             href={product.permalink} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all border border-gray-200 hover:border-indigo-400"
+            className="flex items-center p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-all border border-gray-200 hover:border-indigo-400"
         >
-            <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center shrink-0 mr-3">
+            <div className="w-10 h-10 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center shrink-0 mr-2">
                 {product.image_url ? (
                     <img src={product.image_url} alt={product.name} className="w-full h-full object-contain" />
                 ) : (
-                    <ShoppingCart size={16} className="text-gray-400" />
+                    <ShoppingCart size={14} className="text-gray-400" />
                 )}
             </div>
             <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-gray-800 truncate">{product.name}</p>
-                <div className="flex items-center mt-0.5">
+                {/* Reduzindo o tamanho da fonte para caber */}
+                <p className="text-[11px] font-semibold text-gray-800 truncate leading-tight">{product.name}</p>
+                <div className="flex items-center mt-0.5 leading-none">
                     {isSale && (
-                        <span className="text-xs text-red-500 line-through mr-2">R$ {product.regular_price}</span>
+                        <span className="text-[10px] text-red-500 line-through mr-1">R$ {regularPriceFormatted}</span>
                     )}
-                    <span className="text-sm font-bold text-green-600">R$ {price}</span>
+                    {/* Preço principal em destaque */}
+                    <span className="text-sm font-bold text-green-600 whitespace-nowrap">R$ {priceFormatted}</span>
                 </div>
             </div>
-            <ExternalLink size={14} className="text-gray-400 ml-2 shrink-0" />
+            <ExternalLink size={12} className="text-gray-400 ml-1 shrink-0" />
         </a>
     );
 };
@@ -69,9 +77,9 @@ const WooCommerceBanner: React.FC = () => {
   }
 
   return (
-    <div className="p-4 bg-indigo-50 rounded-xl shadow-lg space-y-3">
-      <h3 className="text-sm font-bold text-indigo-800 flex items-center gap-2">
-        <ShoppingCart size={16} /> Ofertas da Sua Loja (WooCommerce)
+    <div className="p-2 bg-indigo-50 rounded-xl shadow-lg space-y-2">
+      <h3 className="text-xs font-bold text-indigo-800 flex items-center gap-1 px-2 pt-1">
+        <ShoppingCart size={14} /> Ofertas da Sua Loja
       </h3>
       <div className="space-y-2">
         {products.map(p => (
