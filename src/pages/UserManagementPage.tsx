@@ -109,18 +109,18 @@ const UserManagementPage: React.FC = () => {
     setImpersonatingId(profile.id);
     
     try {
-      // 1. Salvar a sessão atual do admin no localStorage
+      // 1. Salvar a sessão atual do admin no sessionStorage (mais seguro e evita persistência de cota)
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error("Não foi possível obter a sessão do administrador.");
       }
 
-      // SALVANDO APENAS OS TOKENS ESSENCIAIS PARA EVITAR EXCEDER A COTA
       const adminTokens = {
           access_token: session.access_token,
           refresh_token: session.refresh_token,
       };
-      localStorage.setItem('admin_impersonation_token', JSON.stringify(adminTokens));
+      // MUDANÇA AQUI: Usando sessionStorage
+      sessionStorage.setItem('admin_impersonation_token', JSON.stringify(adminTokens));
 
       // 2. Chamar a Edge Function para gerar o link de login mágico
       const { data: edgeData, error } = await supabase.functions.invoke('impersonate-user', {
@@ -150,7 +150,8 @@ const UserManagementPage: React.FC = () => {
       console.error("Falha ao personificar usuário:", error);
       // Exibe a mensagem de erro detalhada
       showError((error as Error).message || "Erro ao tentar acessar o painel do cliente. Verifique o console.");
-      localStorage.removeItem('admin_impersonation_token'); // Limpa em caso de erro
+      // MUDANÇA AQUI: Limpando sessionStorage em caso de erro
+      sessionStorage.removeItem('admin_impersonation_token'); 
     } finally {
       setImpersonatingId(null);
     }

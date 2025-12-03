@@ -8,14 +8,15 @@ const ReturnToAdminBanner: React.FC = () => {
   const [adminTokens, setAdminTokens] = useState<{ access_token: string; refresh_token: string } | null>(null);
 
   useEffect(() => {
-    const storedTokens = localStorage.getItem('admin_impersonation_token');
+    // MUDANÇA AQUI: Lendo do sessionStorage
+    const storedTokens = sessionStorage.getItem('admin_impersonation_token');
     if (storedTokens) {
       try {
         // Espera um objeto com access_token e refresh_token
         setAdminTokens(JSON.parse(storedTokens));
       } catch (e) {
-        console.error("Failed to parse admin tokens from localStorage", e);
-        localStorage.removeItem('admin_impersonation_token');
+        console.error("Failed to parse admin tokens from sessionStorage", e);
+        sessionStorage.removeItem('admin_impersonation_token');
       }
     }
   }, []);
@@ -32,11 +33,11 @@ const ReturnToAdminBanner: React.FC = () => {
     if (error) {
       console.error("Failed to restore admin session:", error);
       // Se falhar, limpe e force o logout
-      localStorage.removeItem('admin_impersonation_token');
+      sessionStorage.removeItem('admin_impersonation_token');
       await supabase.auth.signOut();
     } else {
       // Limpa o token de personificação e recarrega a página
-      localStorage.removeItem('admin_impersonation_token');
+      sessionStorage.removeItem('admin_impersonation_token');
       showSuccess("Sessão de administrador restaurada.");
       window.location.reload();
     }
