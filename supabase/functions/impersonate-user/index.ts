@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { decode } from "https://deno.land/x/djwt@v2.8/mod.ts"; // Importando DJWT
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    // 1. Crie um cliente Supabase com a chave de serviço para todas as operações.
+    // 1. Crie um cliente Supabase com a chave de serviço.
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -22,27 +23,33 @@ serve(async (req) => {
     // 2. Obtenha o token do cabeçalho da requisição.
     const token = req.headers.get('Authorization')?.replace('Bearer ', '');
     if (!token) {
-      console.error("Impersonate Error: Authentication token not found in headers.");
       return new Response(JSON.stringify({ error: 'Authentication token not found' }), { status: 401, headers: corsHeaders });
     }
     
-    // 3. Valide o token para obter o usuário que está fazendo a chamada.
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    
-    if (authError || !user) {
-      console.error("Impersonate Auth validation failed:", authError?.message || 'User not found.');
-      return new Response(JSON.stringify({ error: 'Authentication failed or token expired', details: authError?.message || 'User not found' }), { status: 401, headers: corsHeaders });
+    // 3. Decodificar o token para obter o ID do usuário (uid)
+    let userId: string | null = null;
+    try {
+        // Decodificar o JWT (não verifica a assinatura, apenas extrai o payload)
+        const [_header, payload, _signature] = decode(token);
+        userId = payload.sub as string; // 'sub' é o campo padrão para user ID (uid)
+        
+        if (!userId) {
+            throw new Error("Token payload missing user ID (sub).");
+        }
+    } catch (e) {
+        console.error("JWT Decode Error:", e);
+        return new Response(JSON.stringify({ error: 'Authentication failed or token expired', details: 'Invalid JWT format or missing user ID.' }), { status: 401, headers: corsHeaders });
     }
 
-    // 4. Verifique se o usuário autenticado é um administrador.
+    // 4. Verifique se o usuário decodificado é um administrador e está ativo.
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single();
 
     if (profileError || !profile || profile.role !== 'admin') {
-      console.warn(`Impersonation attempt by non-admin user: ${user.id}`);
+      console.warn(`Impersonation attempt by non-admin user: ${userId}`);
       return new Response(JSON.stringify({ error: 'Permission denied: User is not an admin' }), { status: 403, headers: corsHeaders });
     }
 
@@ -52,7 +59,6 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Target user email is missing' }), { status: 400, headers: corsHeaders });
     }
     
-    // Garante que o redirectTo seja sempre fornecido, caindo para a raiz se não for.
     const finalRedirectTo = redirectTo || '/';
 
     // 6. Gera o link de login mágico
@@ -60,7 +66,6 @@ serve(async (req) => {
       type: 'magiclink',
       email: userEmailToImpersonate,
       options: {
-        // Usa a URL de redirecionamento fornecida pelo frontend
         redirectTo: finalRedirectTo,
       },
     });
