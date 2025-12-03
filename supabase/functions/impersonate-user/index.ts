@@ -22,15 +22,16 @@ serve(async (req) => {
     // 2. Obtenha o token do cabeçalho da requisição.
     const token = req.headers.get('Authorization')?.replace('Bearer ', '');
     if (!token) {
+      console.error("Impersonate Error: Authentication token not found in headers.");
       return new Response(JSON.stringify({ error: 'Authentication token not found' }), { status: 401, headers: corsHeaders });
     }
-
+    
     // 3. Valide o token para obter o usuário que está fazendo a chamada.
-    // Nota: Usamos o cliente Admin para validar o token, pois o cliente normal pode falhar em Edge Functions.
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    
     if (authError || !user) {
-      console.error("Auth validation failed:", authError?.message);
-      return new Response(JSON.stringify({ error: 'Authentication failed or token expired' }), { status: 401, headers: corsHeaders });
+      console.error("Impersonate Auth validation failed:", authError?.message || 'User not found.');
+      return new Response(JSON.stringify({ error: 'Authentication failed or token expired', details: authError?.message || 'User not found' }), { status: 401, headers: corsHeaders });
     }
 
     // 4. Verifique se o usuário autenticado é um administrador.
