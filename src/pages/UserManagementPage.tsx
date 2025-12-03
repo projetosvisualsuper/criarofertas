@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Users, Loader2, Edit, Search, UserX, UserCheck, LogIn } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
-import { Profile, AdminProfileView } from '../../types';
 import { showSuccess, showError } from '../utils/toast';
 import { PLAN_NAMES } from '../config/constants';
 import { useAuth } from '../context/AuthContext';
@@ -128,7 +127,11 @@ const UserManagementPage: React.FC = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Tenta extrair a mensagem de erro da Edge Function
+        const errorMessage = error.message || "Erro desconhecido na Edge Function.";
+        throw new Error(`Erro na personificação: ${errorMessage}`);
+      }
       
       // A Edge Function retorna o link de login mágico em edgeData.signInLink
       const signInLink = edgeData.signInLink;
@@ -141,7 +144,8 @@ const UserManagementPage: React.FC = () => {
 
     } catch (error) {
       console.error("Falha ao personificar usuário:", error);
-      showError("Erro ao tentar acessar o painel do cliente. Verifique o console.");
+      // Exibe a mensagem de erro detalhada
+      showError((error as Error).message || "Erro ao tentar acessar o painel do cliente. Verifique o console.");
       localStorage.removeItem('admin_impersonation_token'); // Limpa em caso de erro
     } finally {
       setImpersonatingId(null);
