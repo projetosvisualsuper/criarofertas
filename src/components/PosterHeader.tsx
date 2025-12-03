@@ -82,7 +82,8 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
   );
 
   const HeaderContent = () => {
-    // REMOVIDO: if (isHeroImageMode) return null; 
+    // CORREÇÃO: Se estiver no modo HERO (imagem pura), não renderize o texto do usuário.
+    if (isHeroImageMode) return null; 
 
     switch (effectiveHeaderLayout) {
       case 'logo-left':
@@ -251,15 +252,15 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
       {renderPrimaryColorOverlay()}
       
       {/* Renderiza o conteúdo de texto e logo (z-index 30) */}
-      {theme.headerImage ? (
-        // Se houver imagem, renderiza o conteúdo de texto por cima (z-index 30)
+      {theme.headerImage && !isHeroImageMode && (
+        // Se houver imagem, e NÃO for modo HERO, renderiza o conteúdo de texto por cima (z-index 30)
         <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
           <HeaderContent />
         </div>
-      ) : (
-        // Se não houver imagem, o HeaderContent já foi renderizado dentro de renderGeometricArt
-        null
       )}
+      
+      {/* Se não houver imagem, o HeaderContent já foi renderizado dentro de renderGeometricArt */}
+      {/* Se for modo HERO, o texto é suprimido (HeaderContent retorna null) */}
     </header>
   );
 };
