@@ -23,7 +23,7 @@ import { useProductDatabase } from './src/hooks/useProductDatabase';
 import { useSavedImages } from './src/hooks/useSavedImages';
 import { usePosterProducts } from './src/hooks/usePosterProducts';
 import { useGlobalSettings } from './src/hooks/useGlobalSettings';
-import { useLocalStorageState } from './src/hooks/useLocalStorageState'; // NOVO IMPORT
+import { useLocalStorageState } from './src/hooks/useLocalStorageState';
 import { Loader2, AlertTriangle } from 'lucide-react';
 
 const defaultLayout = {
@@ -68,7 +68,8 @@ const AppContent: React.FC = () => {
   const userId = session?.user?.id;
   
   // Usando useLocalStorageState para persistir o módulo ativo
-  const [activeModule, setActiveModule] = useLocalStorageState('activeModule', 'profile');
+  // ALTERADO: Módulo inicial agora é 'poster'
+  const [activeModule, setActiveModule] = useLocalStorageState('activeModule', 'poster');
   
   const { theme, setTheme, loading: loadingTheme } = useUserSettings(userId);
   const { products, setProducts, loading: loadingProducts } = usePosterProducts(userId);
