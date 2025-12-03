@@ -94,23 +94,24 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
   const allReadyTemplates = [...HEADER_TEMPLATE_PRESETS, ...globalTemplates];
 
   // For applying default templates from the gallery
-  const applyPresetTemplate = (templateTheme: Partial<PosterTheme>) => {
+  const applyPresetTemplate = (template: HeaderTemplate) => { // <-- AGORA RECEBE HeaderTemplate
     if (isFreePlan) {
         showError("A Galeria de Templates Prontos é exclusiva para planos Premium e Pro.");
         return;
     }
     
+    const templateTheme = template.theme;
     // Verifica se o template tem uma imagem de cabeçalho (thumbnail ou headerImage)
-    const hasHeaderImage = templateTheme.thumbnail || templateTheme.headerImage;
+    const hasHeaderImage = template.thumbnail || templateTheme.headerImage;
 
     if (hasHeaderImage) {
         setTheme(prevTheme => ({
             ...prevTheme,
-            // Mescla as propriedades do template
+            // Mescla as propriedades do tema do template
             ...templateTheme, 
             
             // FORÇA O COMPORTAMENTO DE IMAGEM DE CABEÇALHO
-            headerImage: templateTheme.thumbnail || templateTheme.headerImage, 
+            headerImage: template.thumbnail || templateTheme.headerImage, 
             headerImageMode: 'hero', // Modo Hero para garantir que a imagem seja a principal
             headerArtStyleId: 'block', // Desativa a arte geométrica
             
@@ -300,7 +301,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
                   key={template.id}
                   template={template}
                   isCustom={false}
-                  onApply={() => applyPresetTemplate(template.theme)}
+                  onApply={() => applyPresetTemplate(template)} // <-- PASSANDO O OBJETO COMPLETO
                   isFreePlan={isFreePlan}
                 />
               ))}
