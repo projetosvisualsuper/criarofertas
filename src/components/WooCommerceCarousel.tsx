@@ -34,9 +34,11 @@ const CarouselCard: React.FC<{ product: WooProduct }> = ({ product }) => {
                 )}
             </div>
             
-            <p className="text-sm font-bold text-gray-800 line-clamp-2 leading-tight mb-1">{product.name}</p>
+            {/* Removendo mb-1 */}
+            <p className="text-sm font-bold text-gray-800 line-clamp-2 leading-tight">{product.name}</p>
             
-            <div className="mt-auto pt-2 w-full">
+            {/* Removendo pt-2 */}
+            <div className="mt-auto w-full"> 
                 {isSale && (
                     <p className="text-xs text-gray-500 line-through leading-none">De R$ {regularPriceFormatted}</p>
                 )}

@@ -25,8 +25,8 @@ serve(async (req) => {
     // Usamos a autenticação básica via URL para a API REST do WooCommerce
     const authQuery = `consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`;
     
-    // 2. Endpoint para buscar produtos (limitado a 3 para o banner)
-    const productsEndpoint = `${WOOCOMMERCE_URL}/wp-json/wc/v3/products?per_page=3&status=publish&${authQuery}`;
+    // 2. Endpoint para buscar produtos: 10 produtos aleatórios (orderby=rand)
+    const productsEndpoint = `${WOOCOMMERCE_URL}/wp-json/wc/v3/products?per_page=10&status=publish&orderby=rand&${authQuery}`;
 
     const response = await fetch(productsEndpoint, {
         method: 'GET',
