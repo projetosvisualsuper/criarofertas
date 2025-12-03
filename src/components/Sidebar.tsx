@@ -32,6 +32,10 @@ const defaultLayout: ProductLayout = {
   description: { x: 0, y: 0, scale: 1 },
 };
 
+// Constantes de Limite
+const MAX_FILE_SIZE_MB = 5;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
 // Componente extraído para evitar re-renderização e perda de foco
 interface InputWithResetProps {
   element: keyof HeaderAndFooterElements;
@@ -227,6 +231,10 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   const handleImageUpload = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        showError(`O arquivo é muito grande. O limite é de ${MAX_FILE_SIZE_MB}MB.`);
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         handleProductChange(id, 'image', reader.result as string);
@@ -244,6 +252,11 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     if (!file || !userId) {
       showError("Erro: Usuário não autenticado ou arquivo não selecionado.");
       return;
+    }
+    
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+        showError(`O arquivo é muito grande. O limite é de ${MAX_FILE_SIZE_MB}MB.`);
+        return;
     }
     
     if (isFreePlan) {

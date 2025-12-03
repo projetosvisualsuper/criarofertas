@@ -6,6 +6,10 @@ import { useProductImages, ProductImage } from '../../hooks/useProductImages';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import { useAuth } from '../../context/AuthContext';
 
+// Constantes de Limite
+const MAX_FILE_SIZE_MB = 5;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
 const AdminImageUploadPage: React.FC = () => {
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
@@ -26,6 +30,11 @@ const AdminImageUploadPage: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        showError(`O arquivo é muito grande. O limite é de ${MAX_FILE_SIZE_MB}MB.`);
+        setFileToUpload(null);
+        return;
+      }
       setFileToUpload(file);
       // Sugere o nome do arquivo como nome do produto
       setImageName(file.name.split('.').slice(0, -1).join('.'));
@@ -134,6 +143,7 @@ const AdminImageUploadPage: React.FC = () => {
               </div>
             )}
           </div>
+          <p className="text-xs text-gray-500">Limite de arquivo: {MAX_FILE_SIZE_MB}MB. Recomendamos imagens com alta resolução (mínimo 2000px) para impressão.</p>
           
           <button
             onClick={handleUpload}

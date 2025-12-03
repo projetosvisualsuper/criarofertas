@@ -23,6 +23,10 @@ const defaultNewProduct: Omit<RegisteredProduct, 'id'> = {
   wholesaleUnit: 'un',
 };
 
+// Constantes de Limite
+const MAX_FILE_SIZE_MB = 5;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
 // Diretório compartilhado para imagens de produto
 const SHARED_IMAGE_DIR = 'shared';
 
@@ -50,6 +54,11 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
     if (!file || !userId) {
       showError("Erro: Usuário não autenticado ou arquivo não selecionado.");
       return;
+    }
+    
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+        showError(`O arquivo é muito grande. O limite é de ${MAX_FILE_SIZE_MB}MB.`);
+        return;
     }
     
     if (!product.name.trim()) {
@@ -200,6 +209,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
               </button>
             )}
           </div>
+          <p className="text-xs text-gray-500">Limite de arquivo: {MAX_FILE_SIZE_MB}MB. Recomendamos imagens com alta resolução (mínimo 2000px) para impressão.</p>
 
           {/* Seção de Preços de Varejo */}
           <div className="flex gap-2 pt-2 border-t">
