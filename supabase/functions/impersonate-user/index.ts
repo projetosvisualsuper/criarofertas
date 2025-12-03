@@ -43,18 +43,21 @@ serve(async (req) => {
     }
 
     // 5. Se for um admin, gere o link de personificação para o usuário alvo.
-    const { userEmailToImpersonate } = await req.json();
+    const { userEmailToImpersonate, redirectTo } = await req.json();
     if (!userEmailToImpersonate) {
       return new Response(JSON.stringify({ error: 'Target user email is missing' }), { status: 400, headers: corsHeaders });
     }
+    
+    // Garante que o redirectTo seja sempre fornecido, caindo para a raiz se não for.
+    const finalRedirectTo = redirectTo || '/';
 
     // Gera o link de login mágico
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
       email: userEmailToImpersonate,
       options: {
-        // Redireciona para a raiz do aplicativo
-        redirectTo: '/',
+        // Usa a URL de redirecionamento fornecida pelo frontend
+        redirectTo: finalRedirectTo,
       },
     });
 

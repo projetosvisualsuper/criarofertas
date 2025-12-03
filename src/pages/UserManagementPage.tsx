@@ -123,6 +123,8 @@ const UserManagementPage: React.FC = () => {
       const { data: edgeData, error } = await supabase.functions.invoke('impersonate-user', {
         body: { 
           userEmailToImpersonate: profile.email,
+          // Envia a URL de origem atual (ex: https://ofertaflash.vercel.app/)
+          redirectTo: window.location.origin, 
         },
       });
 
@@ -135,7 +137,6 @@ const UserManagementPage: React.FC = () => {
       }
 
       // 3. Redirecionar para o link de login mágico
-      // Isso fará com que o navegador complete o fluxo de login e defina a sessão do usuário alvo.
       window.location.href = signInLink;
 
     } catch (error) {
