@@ -2,8 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // POR FAVOR, FORNEÇA O NOVO URL E CHAVE AQUI
-const SUPABASE_URL = "https://SEU_NOVO_URL.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "SUA_NOVA_CHAVE_ANONIMA";
+const SUPABASE_URL = "https://cdktwczejznbqfzmizpu.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNka3R3Y3planpuYnFmem1penB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3ODAxMDYsImV4cCI6MjA4MDM1NjEwNn0._00XPOEzPeruSYf-gj2sLbrYgSO7KIpT3T_LjW1OW8Y";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
