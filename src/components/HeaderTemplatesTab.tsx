@@ -94,17 +94,20 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
   const allReadyTemplates = [...HEADER_TEMPLATE_PRESETS, ...globalTemplates];
 
   // For applying default templates from the gallery
-  const applyPresetTemplate = (template: HeaderTemplate) => { // <-- AGORA RECEBE HeaderTemplate
+  const applyPresetTemplate = (template: HeaderTemplate) => { 
     if (isFreePlan) {
         showError("A Galeria de Templates Prontos é exclusiva para planos Premium e Pro.");
         return;
     }
     
     const templateTheme = template.theme;
-    // Verifica se o template tem uma imagem de cabeçalho (thumbnail ou headerImage)
-    const hasHeaderImage = template.thumbnail || templateTheme.headerImage;
+    
+    // 1. Determinar se é um template baseado em imagem (hero) ou em design (arte geométrica/cor)
+    // Se o template tiver uma imagem de cabeçalho definida no tema OU se a thumbnail for uma imagem real (não placeholder)
+    const isImageTemplate = templateTheme.headerImage || (template.thumbnail && !template.thumbnail.includes('placeholder'));
 
-    if (hasHeaderImage) {
+    if (isImageTemplate) {
+        // Caso 1: Template baseado em Imagem (Hero)
         setTheme(prevTheme => ({
             ...prevTheme,
             // Mescla as propriedades do tema do template
@@ -112,7 +115,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
             
             // FORÇA O COMPORTAMENTO DE IMAGEM DE CABEÇALHO
             headerImage: template.thumbnail || templateTheme.headerImage, 
-            headerImageMode: 'hero', // Modo Hero para garantir que a imagem seja a principal
+            headerImageMode: 'hero', 
             headerArtStyleId: 'block', // Desativa a arte geométrica
             
             // Garante que as cores e textos do usuário sejam mantidos se não estiverem no templateTheme
@@ -125,12 +128,13 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
             backgroundImage: undefined,
         }));
     } else {
-        // Se não tiver imagem, aplica o tema normalmente (pode usar arte geométrica)
+        // Caso 2: Template baseado em Design/Cor (Arte Geométrica)
         setTheme(prevTheme => ({
             ...prevTheme,
             ...templateTheme,
-            headerImage: undefined,
+            headerImage: undefined, // Garante que a imagem seja limpa
             headerImageMode: 'none',
+            // headerArtStyleId será aplicado pelo templateTheme
         }));
     }
   };
