@@ -18,6 +18,9 @@ const mapFromDB = (item: GlobalHeaderTemplateDB): HeaderTemplate => ({
   theme: item.theme,
 });
 
+const CACHE_KEY = 'global_header_templates_cache';
+const CACHE_EXPIRY_MS = 60 * 60 * 1000; // 1 hora de cache
+
 export function useGlobalHeaderTemplates(isAdmin: boolean = false) {
   const [globalTemplates, setGlobalTemplates] = useState<HeaderTemplate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +28,23 @@ export function useGlobalHeaderTemplates(isAdmin: boolean = false) {
   const fetchTemplates = useCallback(async () => {
     setLoading(true);
     
-    // Busca todos os templates globais (RLS garante que todos podem ler)
+    // 1. Tentar carregar do cache
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    if (cachedData) {
+      try {
+        const { data, timestamp } = JSON.parse(cachedData);
+        if (Date.now() - timestamp < CACHE_EXPIRY_MS) {
+          setGlobalTemplates(data);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        console.warn("Failed to parse global templates cache.");
+        localStorage.removeItem(CACHE_KEY); // Limpa cache inválido
+      }
+    }
+
+    // 2. Buscar do Supabase
     const { data, error } = await supabase
       .from('global_header_templates')
       .select('*')
@@ -36,7 +55,14 @@ export function useGlobalHeaderTemplates(isAdmin: boolean = false) {
       showError('Falha ao carregar templates de cabeçalho globais.');
       setGlobalTemplates([]);
     } else {
-      setGlobalTemplates(data.map(mapFromDB));
+      const templates = data.map(mapFromDB);
+      setGlobalTemplates(templates);
+      
+      // 3. Salvar no cache
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        data: templates,
+        timestamp: Date.now(),
+      }));
     }
     setLoading(false);
   }, []);
@@ -45,6 +71,7 @@ export function useGlobalHeaderTemplates(isAdmin: boolean = false) {
     fetchTemplates();
   }, [fetchTemplates]);
 
+  // Funções de mutação (add/delete) devem invalidar o cache
   const addGlobalTemplate = async (template: Omit<HeaderTemplate, 'id'>) => {
     if (!isAdmin) return null;
     
@@ -66,6 +93,8 @@ export function useGlobalHeaderTemplates(isAdmin: boolean = false) {
       return null;
     }
     
+    // Invalida o cache e recarrega
+    localStorage.removeItem(CACHE_KEY);
     const newTemplate = mapFromDB(data);
     setGlobalTemplates(prev => [newTemplate, ...prev]);
     return newTemplate;
@@ -83,6 +112,8 @@ export function useGlobalHeaderTemplates(isAdmin: boolean = false) {
       console.error('Error deleting global header template:', error);
       showError('Falha ao excluir o template global.');
     } else {
+      // Invalida o cache e atualiza o estado
+      localStorage.removeItem(CACHE_KEY);
       setGlobalTemplates(prev => prev.filter(t => t.id !== id));
       showSuccess('Template global excluído com sucesso.');
     }
