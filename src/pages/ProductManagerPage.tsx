@@ -5,9 +5,13 @@ import { RegisteredProduct } from '../../types';
 import { showSuccess, showError } from '../utils/toast';
 import ProductFormModal from '../components/ProductFormModal';
 import ConfirmationModal from '../components/ConfirmationModal'; // Importando o modal
+import { useAuth } from '../context/AuthContext'; // Importando useAuth
 
 const ProductManagerPage: React.FC = () => {
-  const { registeredProducts, addProduct, updateProduct, deleteProduct, loading } = useProductDatabase();
+  const { session } = useAuth();
+  const userId = session?.user?.id;
+  
+  const { registeredProducts, addProduct, updateProduct, deleteProduct, loading } = useProductDatabase(userId);
   
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<{ id: string, name: string } | null>(null);
