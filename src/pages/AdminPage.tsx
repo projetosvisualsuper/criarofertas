@@ -5,10 +5,9 @@ import AdminUserManagementPage from './admin/AdminUserManagementPage';
 import AdminPlanManagementPage from './admin/AdminPlanManagementPage';
 import AdminSettingsPage from './admin/AdminSettingsPage';
 import AdminReportsPage from './admin/AdminReportsPage';
-import AdminOrderManagementPage from './admin/AdminOrderManagementPage';
-import AdminImageUploadPage from './admin/AdminImageUploadPage'; // NOVO IMPORT
+import AdminImageUploadPage from './admin/AdminImageUploadPage';
 
-type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'orders' | 'images'; // NOVO MÓDULO 'images'
+type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'images'; // 'orders' removido
 
 interface AdminPageProps {
   setActiveHubModule: (module: string) => void;
@@ -19,10 +18,10 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
 
   const modules = [
     { id: 'dashboard', name: 'Dashboard', icon: Home },
-    { id: 'orders', name: 'Pedidos', icon: ListOrdered },
+    // { id: 'orders', name: 'Pedidos', icon: ListOrdered }, // Removido
     { id: 'users', name: 'Clientes', icon: Users },
     { id: 'plans', name: 'Planos', icon: Zap },
-    { id: 'images', name: 'Banco de Imagens', icon: Image }, // NOVO MÓDULO AQUI
+    { id: 'images', name: 'Banco de Imagens', icon: Image },
     { id: 'reports', name: 'Relatórios SaaS', icon: BarChart3 },
     { id: 'settings', name: 'Configurações', icon: Settings },
   ];
@@ -30,10 +29,10 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
   const renderContent = () => {
     switch (activeAdminModule) {
       case 'dashboard': return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;
-      case 'orders': return <AdminOrderManagementPage />;
+      // case 'orders': return <AdminOrderManagementPage />; // Removido
       case 'users': return <AdminUserManagementPage />;
       case 'plans': return <AdminPlanManagementPage />;
-      case 'images': return <AdminImageUploadPage />; // NOVO RENDER
+      case 'images': return <AdminImageUploadPage />;
       case 'reports': return <AdminReportsPage />;
       case 'settings': return <AdminSettingsPage />;
       default: return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;
