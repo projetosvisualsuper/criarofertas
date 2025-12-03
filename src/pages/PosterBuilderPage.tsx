@@ -8,6 +8,7 @@ import { toPng } from 'html-to-image';
 import { showSuccess, showError } from '../utils/toast';
 import { dataURLtoBlob } from '../utils/cn'; // Importando a função auxiliar
 import { supabase } from '@/src/integrations/supabase/client';
+import WooCommerceBanner from '../components/WooCommerceBanner'; // NOVO IMPORT
 
 interface PosterBuilderPageProps {
   theme: PosterTheme;
@@ -193,12 +194,12 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
                 />
             </div>
             
-            {/* Botões de Ação Lateral */}
-            <div className="flex flex-col gap-4 flex-shrink-0">
+            {/* Botões de Ação Lateral e Banner */}
+            <div className="flex flex-col gap-4 flex-shrink-0 w-48">
                 <button
                   onClick={handleSaveToGallery}
                   disabled={isSaving || isDownloading}
-                  className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-48"
+                  className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-full"
                 >
                   <Save size={20} />
                   {isSaving ? 'Salvando...' : `Salvar Arte`}
@@ -206,11 +207,14 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
                 <button
                   onClick={handleDownload}
                   disabled={isSaving || isDownloading}
-                  className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-48"
+                  className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-full"
                 >
                   <Download size={20} />
                   Baixar {theme.format.label}
                 </button>
+                
+                {/* NOVO: Banner do WooCommerce */}
+                <WooCommerceBanner />
             </div>
          </div>
       </main>

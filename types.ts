@@ -182,3 +182,14 @@ export interface AdminProfileView extends Profile {
   email: string | null;
   created_at: string;
 }
+
+// NOVO: Interface para o produto simplificado do WooCommerce
+export interface WooProduct {
+  id: number;
+  name: string;
+  price: string;
+  regular_price: string;
+  sale_price: string;
+  permalink: string;
+  image_url: string;
+}
