@@ -36,21 +36,18 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
   // Busca as configurações de planos dinamicamente
   const { plans, loading: loadingPlans } = usePlanConfigurations(false); 
 
-  // Função de simulação de upgrade (mantida para o Plano Grátis)
+  // Função de simulação de upgrade (mantida APENAS para o Plano Grátis)
   const handleSimulateUpgrade = async (newRole: string) => {
     if (newRole === currentPlan) {
-        setIsLoading(false); // Adicionado: Redefine se o plano for o mesmo
+        setIsLoading(false);
         return;
     }
 
     setIsLoading(true);
     
-    // 1. Obter as novas permissões (usando o DEFAULT_PERMISSIONS_BY_ROLE como fallback, 
-    // mas idealmente, as permissões viriam do objeto 'plans' se o role for encontrado)
     const planConfig = plans.find(p => p.role === newRole);
     const newPermissions = planConfig?.permissions || DEFAULT_PERMISSIONS_BY_ROLE[newRole] || DEFAULT_PERMISSIONS_BY_ROLE.free;
     
-    // 2. Atualizar o perfil no Supabase
     const { error } = await supabase
       .from('profiles')
       .update({ 
@@ -67,7 +64,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
       showError('Falha ao atualizar o plano. Tente novamente.');
     } else {
       showSuccess(`Parabéns! Seu plano foi atualizado para ${PLAN_NAMES[newRole]}.`);
-      onPlanUpdated(newRole); // Notifica o App para recarregar o perfil
+      onPlanUpdated(newRole);
       setIsOpen(false);
     }
   };
@@ -75,6 +72,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
   // Função para iniciar o checkout real
   const handleCheckout = async (planRole: string) => {
     if (planRole === 'free') {
+        // O Plano Grátis usa a simulação para garantir que o perfil seja atualizado para 'free'
         handleSimulateUpgrade(planRole);
         return;
     }
@@ -101,30 +99,23 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
         // 2. Redirecionar o usuário para o link de checkout real
         window.location.href = checkoutLink;
         
-        // Nota: O toast de sucesso/atualização será tratado pelo webhook após o pagamento.
         updateToast(loadingToast, "Redirecionando para o Mercado Pago...", 'success');
 
     } catch (error) {
         const errorMessage = (error as Error).message;
         console.error("Checkout Error:", errorMessage);
         updateToast(loadingToast, `Falha ao iniciar o checkout: ${errorMessage}`, 'error');
-        setIsLoading(false); // Adicionado: Redefine o estado de carregamento em caso de erro
+        setIsLoading(false);
     }
   };
   
   // Mapeia as configurações dinâmicas para o formato de exibição
   const displayPlans = plans.map(plan => {
-      // Mapeia as permissões para nomes amigáveis usando o objeto de tradução
       const features = plan.permissions.map(p => PERMISSION_TRANSLATIONS[p] || p);
       
-      // Adiciona features básicas que não são permissões (ex: suporte)
       if (plan.role === 'pro') {
           features.push(PERMISSION_TRANSLATIONS['Suporte Prioritário']);
       }
-      // A permissão 'manage_company_info' já cobre 'Dados da Empresa', mas se quisermos adicionar um item extra:
-      // if (plan.role === 'premium') {
-      //     features.push(PERMISSION_TRANSLATIONS['Dados da Empresa']);
-      // }
       
       return {
           id: plan.role,
@@ -134,10 +125,9 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
           role: plan.role,
       };
   }).sort((a, b) => {
-      // Ordena para garantir que Free, Premium, Pro apareçam na ordem correta
       const order = { 'free': 1, 'premium': 2, 'pro': 3, 'admin': 4 };
       return (order[a.role as keyof typeof order] || 5) - (order[b.role as keyof typeof order] || 5);
-  }).filter(plan => plan.role !== 'admin'); // Admins não precisam de upgrade
+  }).filter(plan => plan.role !== 'admin');
 
   if (loadingPlans) {
       return (
@@ -179,7 +169,6 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
                 } flex flex-col`}
               >
                 <h4 className="text-2xl font-bold mb-2" style={{ color: isCurrent ? '#4f46e5' : '#1f2937' }}>{plan.name}</h4>
-                {/* Ajuste de tamanho da fonte para caber em uma linha */}
                 <p className="text-3xl font-black mb-4">{plan.price}</p>
                 
                 <div className="flex-1 space-y-2 mb-6">
@@ -215,26 +204,14 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
                   )}
                 </button>
                 
-                {/* NOVO BOTÃO DE SIMULAÇÃO PARA TESTE */}
-                {isUpgrade && (
-                    <button
-                      onClick={() => handleSimulateUpgrade(plan.role)}
-                      disabled={isLoading}
-                      className="w-full mt-2 py-2 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20"
-                    >
-                      <Zap size={14} /> Simular Upgrade Imediato (Teste)
-                    </button>
-                )}
-                
+                {/* Botão de Simulação removido */}
                 {isDowngrade && <p className="text-xs text-center text-red-500 mt-2">Atenção: Isso simula um downgrade.</p>}
               </div>
             );
           })}
         </div>
         
-        <div className="mt-4 text-center text-xs text-gray-500">
-            * Este é um ambiente de demonstração. O upgrade simula a alteração do seu plano no banco de dados ou redireciona para um checkout simulado.
-        </div>
+        {/* Mensagem de demonstração removida */}
       </DialogContent>
     </Dialog>
   );
