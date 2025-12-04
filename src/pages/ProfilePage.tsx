@@ -5,7 +5,8 @@ import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../utils/toast';
 import { PLAN_NAMES, DEFAULT_PERMISSIONS_BY_ROLE, Permission } from '../config/constants';
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
-import ConfirmationModal from '../components/ConfirmationModal'; // Importando o modal
+import ConfirmationModal from '../components/ConfirmationModal';
+import SocialMediaIntegration from '../components/SocialMediaIntegration'; // NOVO IMPORT
 
 const ProfilePage: React.FC = () => {
   const { profile, session, refreshProfile } = useAuth();
@@ -231,6 +232,7 @@ const ProfilePage: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
             <ProfileSection />
             <PasswordSection />
+            <SocialMediaIntegration /> {/* NOVO: Integração de Redes Sociais */}
         </div>
       </div>
       
