@@ -69,24 +69,45 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
     }
   };
   
-  // Função para simular o redirecionamento para o Mercado Pago
-  const handleCheckout = (planRole: string) => {
+  // Função para iniciar o checkout real
+  const handleCheckout = async (planRole: string) => {
     if (planRole === 'free') {
-        // Permite o downgrade/seleção do plano grátis via simulação
         handleSimulateUpgrade(planRole);
         return;
     }
     
-    // Em uma aplicação real, você chamaria uma Edge Function aqui para:
-    // 1. Criar uma preferência de pagamento no Mercado Pago
-    // 2. Retornar o link de checkout e redirecionar o usuário.
-    
-    const checkoutLink = `https://mercadopago.com.br/checkout/simulado?plan=${planRole}&user=${profile.id}`;
-    
-    alert(`Simulação de Checkout Mercado Pago para o plano ${PLAN_NAMES[planRole]}.\n\nEm uma aplicação real, você seria redirecionado para:\n${checkoutLink}\n\nApós o pagamento, o Mercado Pago Webhook atualizaria seu plano automaticamente.`);
-    
-    // Simula o redirecionamento (apenas para demonstração)
-    window.open(checkoutLink, '_blank');
+    setIsLoading(true);
+    const loadingToast = showLoading(`Iniciando checkout para o plano ${PLAN_NAMES[planRole]}...`);
+
+    try {
+        // 1. Chamar a Edge Function para criar a preferência de pagamento
+        const { data, error } = await supabase.functions.invoke('mercadopago-checkout', {
+            method: 'POST',
+            body: { 
+                planRole: planRole,
+                userId: profile.id,
+            },
+        });
+
+        if (error) throw error;
+        if (data.error) throw new Error(data.error);
+        
+        const checkoutLink = data.checkoutLink;
+        if (!checkoutLink) throw new Error("A Edge Function não retornou o link de checkout.");
+
+        // 2. Redirecionar o usuário para o link de checkout real
+        window.location.href = checkoutLink;
+        
+        // Nota: O toast de sucesso/atualização será tratado pelo webhook após o pagamento.
+        updateToast(loadingToast, "Redirecionando para o Mercado Pago...", 'success');
+
+    } catch (error) {
+        const errorMessage = (error as Error).message;
+        console.error("Checkout Error:", errorMessage);
+        updateToast(loadingToast, `Falha ao iniciar o checkout: ${errorMessage}`, 'error');
+    } finally {
+        setIsLoading(false);
+    }
   };
   
   // Mapeia as configurações dinâmicas para o formato de exibição
