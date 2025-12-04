@@ -10,18 +10,14 @@ export interface PlanConfiguration {
   permissions: Permission[];
 }
 
-export function usePlanConfigurations(isAdmin: boolean) {
+export function usePlanConfigurations(isAdmin: boolean = false) {
   const [plans, setPlans] = useState<PlanConfiguration[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchPlans = useCallback(async () => {
-    if (!isAdmin) {
-      setLoading(false);
-      return;
-    }
-    
     setLoading(true);
     
+    // Busca todos os planos (RLS permite leitura pública)
     const { data, error } = await supabase
       .from('plan_configurations')
       .select('*')
@@ -29,7 +25,10 @@ export function usePlanConfigurations(isAdmin: boolean) {
 
     if (error) {
       console.error('Error fetching plan configurations:', error);
-      showError('Falha ao carregar configurações de planos.');
+      // Não mostra erro para o usuário final se não for admin, apenas usa lista vazia
+      if (isAdmin) {
+        showError('Falha ao carregar configurações de planos.');
+      }
       setPlans([]);
     } else {
       setPlans(data as PlanConfiguration[]);
@@ -42,7 +41,10 @@ export function usePlanConfigurations(isAdmin: boolean) {
   }, [fetchPlans]);
   
   const updatePlan = async (role: string, updates: Partial<PlanConfiguration>) => {
-    if (!isAdmin) return;
+    if (!isAdmin) {
+      showError("Apenas administradores podem atualizar configurações de planos.");
+      return;
+    }
     
     const { error } = await supabase
       .from('plan_configurations')
@@ -55,7 +57,6 @@ export function usePlanConfigurations(isAdmin: boolean) {
       throw new Error(`Falha ao atualizar o plano ${role}.`); // Lança erro para o modal capturar
     } else {
       showSuccess(`Plano ${updates.name || role} atualizado com sucesso!`);
-      // AGUARDA o recarregamento dos dados antes de resolver a promessa
       await fetchPlans(); 
     }
   };

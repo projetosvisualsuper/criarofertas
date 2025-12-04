@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '../ui/dialog';
 import { Zap, Check, Loader2, ArrowRight, ExternalLink } from 'lucide-react';
 import { PLAN_NAMES, DEFAULT_PERMISSIONS_BY_ROLE, Permission } from '../config/constants';
 import { Profile } from '../../types';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../utils/toast';
+import { usePlanConfigurations } from '../hooks/usePlanConfigurations'; // NOVO IMPORT
 
 interface PlanUpgradeModalProps {
   profile: Profile;
@@ -12,16 +13,13 @@ interface PlanUpgradeModalProps {
   onPlanUpdated: (newRole: string) => void;
 }
 
-const PLANS = [
-  { id: 'free', name: PLAN_NAMES.free, price: 'R$ 0 / mês', features: ['Acesso ao Builder', 'Artes para Redes Sociais', 'Banco de Produtos (Básico)'], role: 'free' },
-  { id: 'premium', name: PLAN_NAMES.premium, price: 'R$ 99 / mês', features: ['Tudo do Grátis', 'TV Digital (Slides)', 'Anúncios Áudio/Vídeo', 'Dados da Empresa', 'Relatórios (Visualização)'], role: 'premium' },
-  { id: 'pro', name: PLAN_NAMES.pro, price: 'R$ 199 / mês', features: ['Tudo do Premium', 'Gerenciamento de Usuários', 'Configurações de Integração', 'Suporte Prioritário'], role: 'pro' },
-];
-
 const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, onPlanUpdated }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const currentPlan = profile.role;
+  
+  // Busca as configurações de planos dinamicamente
+  const { plans, loading: loadingPlans } = usePlanConfigurations(false); 
 
   // Função de simulação de upgrade (mantida para o Plano Grátis)
   const handleSimulateUpgrade = async (newRole: string) => {
@@ -29,8 +27,10 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
 
     setIsLoading(true);
     
-    // 1. Obter as novas permissões
-    const newPermissions = DEFAULT_PERMISSIONS_BY_ROLE[newRole] || DEFAULT_PERMISSIONS_BY_ROLE.free;
+    // 1. Obter as novas permissões (usando o DEFAULT_PERMISSIONS_BY_ROLE como fallback, 
+    // mas idealmente, as permissões viriam do objeto 'plans' se o role for encontrado)
+    const planConfig = plans.find(p => p.role === newRole);
+    const newPermissions = planConfig?.permissions || DEFAULT_PERMISSIONS_BY_ROLE[newRole] || DEFAULT_PERMISSIONS_BY_ROLE.free;
     
     // 2. Atualizar o perfil no Supabase
     const { error } = await supabase
@@ -74,6 +74,42 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
     // Simula o redirecionamento (apenas para demonstração)
     window.open(checkoutLink, '_blank');
   };
+  
+  // Mapeia as configurações dinâmicas para o formato de exibição
+  const displayPlans = plans.map(plan => {
+      // Para o modal, precisamos de uma lista de features. 
+      // Como o DB armazena apenas as permissões (chaves), vamos mapear as permissões para nomes amigáveis.
+      // Esta é uma simplificação, em produção, o DB deveria ter um campo 'features_list'.
+      const features = plan.permissions.map(p => p.replace(/_/g, ' ').replace('access', 'Acesso').replace('manage', 'Gerenciamento'));
+      
+      // Adiciona features básicas que não são permissões (ex: suporte)
+      if (plan.role === 'pro') {
+          features.push('Suporte Prioritário');
+      }
+      if (plan.role === 'premium') {
+          features.push('Dados da Empresa');
+      }
+      
+      return {
+          id: plan.role,
+          name: plan.name,
+          price: plan.price,
+          features: features,
+          role: plan.role,
+      };
+  }).sort((a, b) => {
+      // Ordena para garantir que Free, Premium, Pro apareçam na ordem correta
+      const order = { 'free': 1, 'premium': 2, 'pro': 3, 'admin': 4 };
+      return (order[a.role as keyof typeof order] || 5) - (order[b.role as keyof typeof order] || 5);
+  }).filter(plan => plan.role !== 'admin'); // Admins não precisam de upgrade
+
+  if (loadingPlans) {
+      return (
+          <div className="flex items-center justify-center p-4">
+              <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+          </div>
+      );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -90,7 +126,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
         </DialogHeader>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-          {PLANS.map((plan) => {
+          {displayPlans.map((plan) => {
             const isCurrent = plan.role === currentPlan;
             const isUpgrade = !isCurrent && (plan.role === 'premium' || plan.role === 'pro');
             const isDowngrade = !isCurrent && plan.role === 'free' && currentPlan !== 'free';
