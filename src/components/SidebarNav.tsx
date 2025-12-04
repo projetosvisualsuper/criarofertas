@@ -29,12 +29,17 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
   
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
+    
     if (error) {
       console.error('Logout Error:', error);
       showError('Falha ao sair. Tente novamente.');
+      // Em caso de falha, forçamos a limpeza da sessão local e o refresh
+      // Isso deve forçar o redirecionamento para a página de login no App.tsx
+      await supabase.auth.setSession({ access_token: '', refresh_token: '' });
     } else {
       showSuccess('Sessão encerrada com sucesso.');
     }
+    // O App.tsx deve lidar com o redirecionamento quando a sessão for nula.
   };
   
   return (
@@ -105,7 +110,7 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
           <LogOut size={20} />
           <span className="text-sm font-semibold">Sair (Logout)</span>
         </button>
-        <p className="text-xs text-gray-500">Powered by Gemini AI</p>
+        <p className="text-xs text-gray-500">Powered by OpenAI</p>
       </div>
     </div>
   );
