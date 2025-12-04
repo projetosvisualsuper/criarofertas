@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import OpenAI from "npm:openai";
 
 const corsHeaders = {
@@ -35,6 +34,11 @@ serve(async (req) => {
 
     // 2. Obter o ArrayBuffer do áudio
     const audioBuffer = await response.arrayBuffer();
+    
+    if (audioBuffer.byteLength === 0) {
+        console.error("OpenAI TTS returned an empty audio buffer.");
+        throw new Error("OpenAI returned an empty audio file. Check API usage limits or input text.");
+    }
     
     // 3. Retornar o áudio como Blob/ArrayBuffer
     return new Response(audioBuffer, {
