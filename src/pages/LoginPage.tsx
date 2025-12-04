@@ -5,21 +5,24 @@ import { supabase } from '@/src/integrations/supabase/client';
 import { Zap, Check, Loader2 } from 'lucide-react';
 import { useLoginBannerSettings } from '../hooks/useLoginBannerSettings';
 
+// Cor do banner: #007bff
+const BANNER_COLOR = '#007bff';
+
 const customTheme = {
   default: {
     colors: {
-      // Cores primárias da aplicação (Indigo)
-      brand: '#4f46e5', // Indigo-600
-      brandAccent: '#4338ca', // Indigo-700
+      // Cores primárias da aplicação (usando a cor do banner)
+      brand: BANNER_COLOR, 
+      brandAccent: '#0056b3', // Um tom mais escuro para hover/foco
       
       // Botões
-      defaultButtonBackground: '#007bff', // Azul mais claro para combinar com o banner
+      defaultButtonBackground: BANNER_COLOR, 
       defaultButtonBackgroundHover: '#0056b3',
       defaultButtonText: 'white',
       
       // Links e Foco
-      anchorTextColor: '#007bff',
-      inputFocusBorder: '#007bff',
+      anchorTextColor: BANNER_COLOR,
+      inputFocusBorder: BANNER_COLOR,
     },
   },
 };
@@ -28,7 +31,7 @@ const LoginPage: React.FC = () => {
   const { settings, loading } = useLoginBannerSettings();
 
   const BannerContent = () => (
-    <div className="p-10 text-white h-full flex flex-col justify-center" style={{ backgroundColor: '#007bff' }}>
+    <div className="p-10 text-white h-full flex flex-col justify-center" style={{ backgroundColor: BANNER_COLOR }}>
       <h2 className="text-4xl font-black mb-4 leading-tight">
         {settings.title.split(' ').map((word, index) => (
           <span key={index} className={index === 0 ? 'text-white' : 'text-green-300'}>
@@ -56,7 +59,7 @@ const LoginPage: React.FC = () => {
         {/* Coluna Esquerda: Formulário de Login */}
         <div className="w-full lg:w-1/2 p-12 flex flex-col justify-center">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mt-2">Bem-vindo de volta</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mt-2">OfertaFlash Builder</h1>
             <p className="text-gray-600">Entre com suas credenciais para acessar sua conta</p>
           </div>
           <Auth
@@ -99,7 +102,7 @@ const LoginPage: React.FC = () => {
         {/* Coluna Direita: Banner de Destaque */}
         <div className="hidden lg:block lg:w-1/2 relative">
           {loading ? (
-            <div className="h-full flex items-center justify-center" style={{ backgroundColor: '#007bff' }}>
+            <div className="h-full flex items-center justify-center" style={{ backgroundColor: BANNER_COLOR }}>
               <Loader2 className="w-8 h-8 text-white animate-spin" />
             </div>
           ) : (

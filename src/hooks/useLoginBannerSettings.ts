@@ -8,9 +8,9 @@ export interface LoginBannerSettings {
 }
 
 const defaultSettings: LoginBannerSettings = {
-  title: 'OfertaFlash Builder',
-  subtitle: 'Entre para criar suas campanhas de marketing com IA.',
-  features: ['Criação Rápida', 'Templates Profissionais', 'Exportação para Redes Sociais'],
+  title: 'Sistema de Criação de Ofertas',
+  subtitle: 'Crie cartazes, posts para redes sociais e anúncios de áudio/vídeo em minutos, usando ferramentas de marketing avançadas.',
+  features: ['Criação Rápida e Intuitiva', 'Banco de Produtos Integrado', 'Templates Profissionais', 'Exportação para TV Digital'],
 };
 
 export function useLoginBannerSettings() {
@@ -41,7 +41,7 @@ export function useLoginBannerSettings() {
       });
     }
     setLoading(false);
-  }, []);
+  }, [fetchSettings]);
 
   useEffect(() => {
     fetchSettings();
