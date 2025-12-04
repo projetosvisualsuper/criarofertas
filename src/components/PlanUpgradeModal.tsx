@@ -24,7 +24,6 @@ const PERMISSION_TRANSLATIONS: Record<Permission | string, string> = {
     'access_settings': 'Acesso a Configurações',
     'view_reports': 'Visualização de Relatórios',
     'manage_users': 'Gerenciamento de Clientes',
-    // Features adicionais que não são chaves de permissão
     'Suporte Prioritário': 'Suporte Prioritário',
     'Dados da Empresa': 'Dados da Empresa',
 };
@@ -192,6 +191,18 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
                     'Selecionar Plano'
                   )}
                 </button>
+                
+                {/* NOVO BOTÃO DE SIMULAÇÃO PARA TESTE */}
+                {isUpgrade && (
+                    <button
+                      onClick={() => handleSimulateUpgrade(plan.role)}
+                      disabled={isLoading}
+                      className="w-full mt-2 py-2 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20"
+                    >
+                      <Zap size={14} /> Simular Upgrade Imediato (Teste)
+                    </button>
+                )}
+                
                 {isDowngrade && <p className="text-xs text-center text-red-500 mt-2">Atenção: Isso simula um downgrade.</p>}
               </div>
             );
