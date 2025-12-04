@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std/http/server.ts";
 import OpenAI from "npm:openai";
 
 const corsHeaders = {
@@ -12,54 +12,53 @@ serve(async (req) => {
   }
   
   try {
-    const apiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!apiKey) {
-      console.error("FATAL ERROR: OPENAI_API_KEY is missing.");
-      throw new Error("OPENAI_API_KEY is not set in Supabase secrets.");
-    }
-    
+    // O frontend envia 'text'
     const { text } = await req.json();
+
     if (!text) {
-      return new Response(JSON.stringify({ error: 'Missing text parameter' }), { status: 400, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "Texto não enviado" }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const openai = new OpenAI({ apiKey });
-
-    // 1. Chamar a API de TTS da OpenAI
-    const response = await openai.audio.speech.create({
-      model: "tts-1",
-      voice: "alloy",
-      input: text,
-      response_format: "mp3"
+    const openai = new OpenAI({
+      apiKey: Deno.env.get("OPENAI_API_KEY"),
     });
 
-    // 2. Obter o ArrayBuffer do áudio
-    const audioBuffer = await response.arrayBuffer();
-    
-    if (audioBuffer.byteLength === 0) {
-        console.error("OpenAI TTS returned an empty audio buffer.");
-        throw new Error("OpenAI returned an empty audio file. Check API usage limits or input text.");
+    const result = await openai.audio.speech.create({
+      // Usando o modelo sugerido pelo usuário
+      model: "gpt-4o-mini-tts", 
+      voice: "alloy",
+      input: text,
+      format: "mp3",
+    });
+
+    const arrayBuffer = await result.arrayBuffer();
+
+    // Validação de buffer (byteLength < 100)
+    if (!arrayBuffer || arrayBuffer.byteLength < 100) {
+      console.error("TTS Generation failed: Empty or too small buffer.");
+      return new Response(JSON.stringify({ error: "Falha ao gerar áudio: Buffer vazio ou corrompido. Verifique a chave API e o modelo." }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
-    
-    // 3. Retornar o áudio como ArrayBuffer
-    return new Response(audioBuffer, {
-      headers: { 
-        ...corsHeaders, 
-        'Content-Type': 'audio/mpeg',
-        'Content-Length': audioBuffer.byteLength.toString(),
-        'Content-Disposition': 'attachment; filename="speech.mp3"',
+
+    // Usando Uint8Array para Deno
+    const bytes = new Uint8Array(arrayBuffer);
+
+    return new Response(bytes, {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "audio/mpeg",
+        "Content-Length": bytes.byteLength.toString(), // Adicionando Content-Length
+        "Cache-Control": "no-cache",
       },
       status: 200,
     });
 
-  } catch (error) {
-    const errorMessage = error.message || 'Internal server error during audio generation.';
-    console.error("Error in OpenAI TTS Edge Function:", errorMessage);
-    
-    // Garante que a resposta de erro seja sempre JSON para que o frontend possa decodificá-la
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  } catch (err) {
+    const errorMessage = err.message || "Erro interno desconhecido.";
+    console.error("Erro interno na Edge Function:", errorMessage);
+    // Retorna erro JSON para o frontend
+    return new Response(JSON.stringify({ error: "Erro interno na Edge Function: " + errorMessage }), { 
+      status: 500, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   }
 });
