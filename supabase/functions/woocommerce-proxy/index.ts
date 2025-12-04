@@ -24,8 +24,11 @@ serve(async (req) => {
       });
     }
     
+    // Garante que a URL base não termine com barra
+    const baseUrl = WOOCOMMERCE_URL.endsWith('/') ? WOOCOMMERCE_URL.slice(0, -1) : WOOCOMMERCE_URL;
+    
     const authQuery = `consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`;
-    const productsEndpoint = `${WOOCOMMERCE_URL}/wp-json/wc/v3/products?per_page=10&status=publish&orderby=rand&${authQuery}`;
+    const productsEndpoint = `${baseUrl}/wp-json/wc/v3/products?per_page=10&status=publish&orderby=rand&${authQuery}`;
 
     let response: Response;
     
@@ -35,6 +38,8 @@ serve(async (req) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                // Adicionando um User-Agent para evitar bloqueios simples de firewall/CDN
+                'User-Agent': 'OfertaFlash-Supabase-Client/1.0',
             },
         });
     } catch (fetchError) {
