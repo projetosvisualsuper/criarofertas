@@ -122,15 +122,13 @@ export const generateAdScript = async (products: Product[]): Promise<AdScript> =
 };
 
 /**
- * NOVO: Função para gerar áudio usando a Edge Function da OpenAI.
+ * Função para gerar áudio usando a Edge Function de TTS da OpenAI.
  * Retorna um URL de objeto local (Blob URL) para reprodução.
  */
 export const generateAudioFromText = async (text: string): Promise<string> => {
-  // A Edge Function 'gerar-audio' retorna o ArrayBuffer do MP3 diretamente.
   const { data, error } = await supabase.functions.invoke('gerar-audio', {
     method: 'POST',
     body: { text },
-    // O responseType deve ser 'arraybuffer' para lidar com o MP3 binário
     options: { responseType: 'arraybuffer' } 
   });
 
@@ -143,6 +141,22 @@ export const generateAudioFromText = async (text: string): Promise<string> => {
   
   if (!data) {
       throw new Error("A Edge Function retornou dados vazios.");
+  }
+  
+  // NOVO TRATAMENTO DE ERRO: Verifica se o ArrayBuffer é, na verdade, um erro JSON
+  // Isso acontece se a Edge Function retornar um erro 500 com corpo JSON.
+  try {
+    const decoder = new TextDecoder('utf-8');
+    const textData = decoder.decode(data);
+    const errorJson = JSON.parse(textData);
+    
+    if (errorJson.error) {
+        // Se conseguirmos decodificar e encontrar um campo 'error', lançamos o erro.
+        throw new Error(errorJson.error);
+    }
+    // Se não for um erro, mas for JSON, algo está errado, mas continuamos.
+  } catch (e) {
+    // Se a decodificação falhar, é provável que seja um ArrayBuffer binário (o MP3), o que é bom.
   }
 
   // Cria um Blob a partir do ArrayBuffer retornado
