@@ -43,13 +43,20 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
     }
     
     setIsLoading(true);
-    await onSave(localPlan.role, {
-      name: localPlan.name,
-      price: localPlan.price,
-      permissions: localPlan.permissions,
-    });
-    setIsLoading(false);
-    onClose();
+    
+    try {
+        await onSave(localPlan.role, {
+          name: localPlan.name,
+          price: localPlan.price,
+          permissions: localPlan.permissions,
+        });
+        onClose();
+    } catch (error) {
+        // O erro já deve ser tratado e exibido pelo hook usePlanConfigurations
+        console.error("Error during plan save process:", error);
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
