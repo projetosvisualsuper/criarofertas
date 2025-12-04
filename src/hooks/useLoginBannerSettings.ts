@@ -5,12 +5,14 @@ export interface LoginBannerSettings {
   title: string;
   subtitle: string;
   features: string[];
+  bannerColor: string; // NOVO CAMPO
 }
 
 const defaultSettings: LoginBannerSettings = {
   title: 'Sistema de Criação de Ofertas',
   subtitle: 'Crie cartazes, posts para redes sociais e anúncios de áudio/vídeo em minutos, usando ferramentas de marketing avançadas.',
   features: ['Criação Rápida e Intuitiva', 'Banco de Produtos Integrado', 'Templates Profissionais', 'Exportação para TV Digital'],
+  bannerColor: '#007bff', // Cor padrão
 };
 
 export function useLoginBannerSettings() {
@@ -24,7 +26,7 @@ export function useLoginBannerSettings() {
       // Busca o primeiro (e único) registro
       const { data, error } = await supabase
         .from('login_banner_settings')
-        .select('title, subtitle, features')
+        .select('title, subtitle, features, bannerColor') // Incluindo bannerColor
         .limit(1)
         .single();
 
@@ -39,6 +41,7 @@ export function useLoginBannerSettings() {
           subtitle: data.subtitle || defaultSettings.subtitle,
           // Garante que features seja um array de strings
           features: Array.isArray(data.features) ? data.features.filter(f => typeof f === 'string') : defaultSettings.features,
+          bannerColor: data.bannerColor || defaultSettings.bannerColor, // Usando a cor salva ou padrão
         });
       }
       setLoading(false);

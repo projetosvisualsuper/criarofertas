@@ -21,10 +21,18 @@ serve(async (req) => {
       });
     }
     
-    const { planRole, userId } = await req.json();
+    let planRole, userId;
+    try {
+        const body = await req.json();
+        planRole = body.planRole;
+        userId = body.userId;
+    } catch (e) {
+        console.error("Failed to parse request body:", e);
+        return new Response(JSON.stringify({ error: 'Invalid JSON body received.' }), { status: 400, headers: corsHeaders });
+    }
     
     if (!planRole || !userId) {
-        return new Response(JSON.stringify({ error: 'Missing planRole or userId' }), { status: 400, headers: corsHeaders });
+        return new Response(JSON.stringify({ error: 'Missing planRole or userId in request body' }), { status: 400, headers: corsHeaders });
     }
     
     // 1. Criar cliente Admin para buscar dados da tabela plan_configurations

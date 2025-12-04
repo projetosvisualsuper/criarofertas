@@ -5,30 +5,30 @@ import { supabase } from '@/src/integrations/supabase/client';
 import { Zap, Check, Loader2 } from 'lucide-react';
 import { useLoginBannerSettings } from '../hooks/useLoginBannerSettings';
 
-// Cor do banner: #007bff
-const BANNER_COLOR = '#007bff';
-
-const customTheme = {
-  default: {
-    colors: {
-      // Cores primárias da aplicação (usando a cor do banner)
-      brand: BANNER_COLOR, 
-      brandAccent: '#0056b3', // Um tom mais escuro para hover/foco
-      
-      // Botões
-      defaultButtonBackground: BANNER_COLOR, 
-      defaultButtonBackgroundHover: '#0056b3',
-      defaultButtonText: 'white',
-      
-      // Links e Foco
-      anchorTextColor: BANNER_COLOR,
-      inputFocusBorder: BANNER_COLOR,
-    },
-  },
-};
-
 const LoginPage: React.FC = () => {
   const { settings, loading } = useLoginBannerSettings();
+  
+  // Usa a cor dinâmica do hook
+  const BANNER_COLOR = settings.bannerColor || '#007bff'; 
+
+  const customTheme = {
+    default: {
+      colors: {
+        // Cores primárias da aplicação (usando a cor do banner)
+        brand: BANNER_COLOR, 
+        brandAccent: BANNER_COLOR, // Usando a mesma cor para foco/hover
+        
+        // Botões
+        defaultButtonBackground: BANNER_COLOR, 
+        defaultButtonBackgroundHover: BANNER_COLOR,
+        defaultButtonText: 'white',
+        
+        // Links e Foco
+        anchorTextColor: BANNER_COLOR,
+        inputFocusBorder: BANNER_COLOR,
+      },
+    },
+  };
 
   const BannerContent = () => (
     <div className="p-10 text-white h-full flex flex-col justify-center" style={{ backgroundColor: BANNER_COLOR }}>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, Loader2, List, Trash2, Plus } from 'lucide-react';
+import { Settings, Save, Loader2, List, Trash2, Plus, Palette } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLoginBannerSettings, LoginBannerSettings } from '../../hooks/useLoginBannerSettings';
 import { supabase } from '@/src/integrations/supabase/client';
@@ -63,6 +63,7 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
         title: localSettings.title,
         subtitle: localSettings.subtitle,
         features: localSettings.features.filter(f => f.trim().length > 0), // Filtra recursos vazios
+        bannerColor: localSettings.bannerColor, // NOVO CAMPO
         updated_at: new Date().toISOString(),
     };
 
@@ -128,6 +129,30 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
               disabled={isSaving}
             />
           </div>
+        </div>
+        
+        {/* Cor do Banner */}
+        <div className="space-y-4 border-b pb-4">
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+                <Palette size={20} className="text-indigo-600" /> Cor do Banner
+            </h3>
+            <div className="flex items-center gap-4">
+                <input
+                    type="color"
+                    value={localSettings.bannerColor}
+                    onChange={(e) => setLocalSettings(prev => ({ ...prev, bannerColor: e.target.value }))}
+                    className="w-16 h-16 border rounded-lg cursor-pointer"
+                    disabled={isSaving}
+                />
+                <input
+                    type="text"
+                    value={localSettings.bannerColor}
+                    onChange={(e) => setLocalSettings(prev => ({ ...prev, bannerColor: e.target.value }))}
+                    className="flex-1 border rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none"
+                    placeholder="#RRGGBB"
+                    disabled={isSaving}
+                />
+            </div>
         </div>
         
         {/* Lista de Recursos */}
