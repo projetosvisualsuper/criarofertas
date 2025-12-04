@@ -21,7 +21,8 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
   const [previewImage, setPreviewImage] = useState<SavedImage | null>(null); // Novo estado para a imagem estática
   const posterRef = useRef<PosterPreviewRef>(null);
   
-  const socialFormats = formats.filter(f => f.id === 'story' || f.id === 'feed');
+  // Inclui todos os formatos, exceto 'tv' (que é para slides)
+  const availableFormats = formats.filter(f => f.id !== 'tv');
 
   const applyFormatPreset = useCallback((newFormat: PosterFormat) => {
     setTheme(prevTheme => ({
@@ -32,16 +33,16 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
   }, [setTheme]);
 
   useEffect(() => {
-    const isSocialFormat = socialFormats.some(f => f.id === theme.format.id);
+    const isAvailableFormat = availableFormats.some(f => f.id === theme.format.id);
     
-    // Se o formato atual não for um formato social, define o padrão como 'feed'
-    if (!isSocialFormat) {
-      const defaultFormat = socialFormats.find(f => f.id === 'feed');
+    // Se o formato atual não for um formato disponível (ex: se veio do TV/Slides), define o padrão como 'feed'
+    if (!isAvailableFormat) {
+      const defaultFormat = availableFormats.find(f => f.id === 'feed');
       if (defaultFormat) {
         applyFormatPreset(defaultFormat);
       }
     }
-  }, [theme.format.id, socialFormats, applyFormatPreset]);
+  }, [theme.format.id, availableFormats, applyFormatPreset]);
 
   const handleDownload = async () => { // Tornar a função assíncrona
     if (previewImage) {
@@ -147,7 +148,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
       <SocialMediaSidebar 
         theme={theme} 
         setTheme={setTheme} 
-        formats={socialFormats}
+        formats={availableFormats} // Passando todos os formatos disponíveis
         handleDownload={handleDownload}
         handleFormatChange={applyFormatPreset}
         savedImages={savedImages}

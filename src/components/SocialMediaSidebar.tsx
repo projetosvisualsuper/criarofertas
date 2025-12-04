@@ -98,7 +98,7 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
           <>
             <div className="space-y-3 p-3 bg-gray-50 rounded-lg border">
               <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><LayoutTemplate size={16}/> Escolha o Formato</label>
-              <p className="text-xs text-gray-500">Selecione o formato ideal para sua publicação. A galeria será filtrada.</p>
+              <p className="text-xs text-gray-500">Selecione o formato para filtrar as artes salvas na galeria.</p>
               <div className="grid grid-cols-2 gap-2">
                   {formats.map(fmt => (
                     <button 
