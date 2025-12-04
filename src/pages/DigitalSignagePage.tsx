@@ -120,7 +120,7 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
       // Trigger download
       const link = document.createElement('a');
       link.href = URL.createObjectURL(zipBlob);
-      link.download = `ofertaflash-slides-${Date.now()}.zip`;
+      link.download = `criar-ofertas-slides-${Date.now()}.zip`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -180,7 +180,7 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
               <div className="p-8">
                 <Loader2 size={48} className="text-indigo-400 mx-auto mb-4" />
                 <p className="text-xl font-semibold text-gray-600">Adicione produtos para criar slides.</p>
-                <p className="text-gray-500 mt-2">Use a aba "Produtos" no OfertaFlash Builder.</p>
+                <p className="text-gray-500 mt-2">Use a aba "Produtos" no Criar Ofertas Builder.</p>
               </div>
             </div>
           ) : (

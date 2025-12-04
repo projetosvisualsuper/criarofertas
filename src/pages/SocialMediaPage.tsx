@@ -49,7 +49,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
       // Caso 1: Baixar a imagem salva estática (Forçando download via Blob para cross-origin)
       setIsDownloading(true);
       try {
-        const fileName = `ofertaflash-${previewImage.formatName.replace(/\s+/g, '-').toLowerCase()}-${previewImage.id}.png`;
+        const fileName = `criar-ofertas-${previewImage.formatName.replace(/\s+/g, '-').toLowerCase()}-${previewImage.id}.png`;
         
         // 1. Fetch the cross-origin image as a Blob
         const response = await fetch(previewImage.imageUrl);
@@ -136,7 +136,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
             Vá para a aba <span className="font-semibold">Imagens</span> e clique em "Visualizar" em uma arte salva para vê-la aqui.
           </p>
           <p className="text-sm text-gray-400 mt-2">
-            O preview editável está disponível no módulo "OfertaFlash Builder".
+            O preview editável está disponível no módulo "Criar Ofertas Builder".
           </p>
         </div>
       </div>

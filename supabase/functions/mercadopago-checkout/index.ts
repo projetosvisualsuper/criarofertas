@@ -9,8 +9,8 @@ const MERCADOPAGO_ACCESS_TOKEN = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
 
 // Dados de planos simulados para o checkout (em um ambiente real, isso viria do DB)
 const PLAN_DETAILS: Record<string, { title: string, price: number }> = {
-    'premium': { title: 'Plano Premium OfertaFlash', price: 99.00 },
-    'pro': { title: 'Plano Pro OfertaFlash', price: 199.00 },
+    'premium': { title: 'Plano Premium Criar Ofertas', price: 99.00 },
+    'pro': { title: 'Plano Pro Criar Ofertas', price: 199.00 },
 };
 
 serve(async (req) => {
