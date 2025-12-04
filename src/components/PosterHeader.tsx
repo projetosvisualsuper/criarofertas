@@ -219,16 +219,8 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
     );
   };
 
-  const renderPrimaryColorOverlay = () => {
-    // Se for modo background, a cor primária é o fundo do header, e a imagem é o overlay.
-    // Se for modo hero, a imagem é o fundo, e não precisamos de overlay de cor primária.
-    if (!isBackgroundMode) return null;
-    
-    // No modo background, a imagem é a textura, e a cor primária é o fundo.
-    // Se a imagem tiver opacidade, ela se mistura com a cor primária.
-    // Não precisamos de um overlay de cor primária, pois a cor primária já é o fundo do <header>.
-    return null; 
-  };
+  // Define o padding do conteúdo do cabeçalho
+  const contentPaddingClass = isStory ? 'p-4' : (isLandscape ? 'p-6' : 'p-8');
 
   return (
     <header 
@@ -248,7 +240,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
       {/* Renderiza o conteúdo de texto e logo (z-index 30) */}
       {theme.headerImage && !isHeroImageMode && (
         // Se houver imagem, e NÃO for modo HERO, renderiza o conteúdo de texto por cima (z-index 30)
-        <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
+        <div className={`absolute inset-0 z-30 flex items-center justify-center ${contentPaddingClass}`}>
           <HeaderContent />
         </div>
       )}

@@ -103,40 +103,56 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
     const templateTheme = template.theme;
     
     // 1. Determinar se é um template baseado em imagem (hero) ou em design (arte geométrica/cor)
-    // Se o template tiver uma imagem de cabeçalho definida no tema OU se a thumbnail for uma imagem real (não placeholder)
     const isImageTemplate = templateTheme.headerImage || (template.thumbnail && !template.thumbnail.includes('placeholder'));
 
-    if (isImageTemplate) {
-        // Caso 1: Template baseado em Imagem (Hero)
-        setTheme(prevTheme => ({
-            ...prevTheme,
-            // Mescla as propriedades do tema do template
-            ...templateTheme, 
-            
-            // FORÇA O COMPORTAMENTO DE IMAGEM DE CABEÇALHO
-            headerImage: template.thumbnail || templateTheme.headerImage, 
-            headerImageMode: 'hero', 
-            headerArtStyleId: 'block', // Desativa a arte geométrica
-            
-            // Garante que as cores e textos do usuário sejam mantidos se não estiverem no templateTheme
-            primaryColor: templateTheme.primaryColor || prevTheme.primaryColor,
-            secondaryColor: templateTheme.secondaryColor || prevTheme.secondaryColor,
-            headerTextColor: templateTheme.headerTextColor || prevTheme.headerTextColor,
-            headerElements: templateTheme.headerElements || prevTheme.headerElements,
-            
-            // Limpa o fundo geral para evitar conflito
-            backgroundImage: undefined,
-        }));
-    } else {
-        // Caso 2: Template baseado em Design/Cor (Arte Geométrica)
-        setTheme(prevTheme => ({
+    setTheme(prevTheme => {
+        // Mescla o tema atual com o tema do template
+        let newTheme: PosterTheme = {
             ...prevTheme,
             ...templateTheme,
-            headerImage: undefined, // Garante que a imagem seja limpa
-            headerImageMode: 'none',
+            
+            // Garante que o formato e headerElements sejam mantidos se não forem sobrescritos
+            format: templateTheme.format || prevTheme.format,
+            headerElements: templateTheme.headerElements || prevTheme.headerElements,
+            
+            // Se o template não definir headerImageMode, ele é um template de design/cor
+            headerImageMode: templateTheme.headerImageMode || 'none',
+            headerImage: templateTheme.headerImage || undefined,
+            backgroundImage: templateTheme.backgroundImage || undefined,
+        };
+        
+        if (isImageTemplate && !templateTheme.headerImageMode) {
+            // Se for um template de imagem (com thumbnail) mas não definiu modo, assume 'hero'
+            newTheme.headerImage = template.thumbnail;
+            newTheme.headerImageMode = 'hero';
+            newTheme.headerArtStyleId = 'block'; // Desativa a arte geométrica
+        } else if (templateTheme.headerImageMode === 'hero') {
+            // Se for modo HERO, garante que a imagem seja a thumbnail (se não houver headerImage explícito)
+            newTheme.headerImage = templateTheme.headerImage || template.thumbnail;
+            newTheme.headerArtStyleId = 'block'; // Desativa a arte geométrica
+        } else if (templateTheme.headerImageMode === 'background') {
+            // Se for modo BACKGROUND, garante que a imagem seja a definida no template
+            newTheme.headerImage = templateTheme.headerImage || template.thumbnail;
+            // Mantém o headerArtStyleId do template (ex: 'brush' para Açougue do Chefe)
+        } else {
+            // Caso 3: Template baseado em Design/Cor (Arte Geométrica)
+            newTheme.headerImage = undefined;
+            newTheme.headerImageMode = 'none';
             // headerArtStyleId será aplicado pelo templateTheme
-        }));
-    }
+        }
+        
+        // Preserva os textos atuais (título, subtítulo, rodapé) no novo tema/formato
+        const currentFormatId = newTheme.format.id;
+        const prevElements = prevTheme.headerElements[prevTheme.format.id] || newTheme.headerElements[currentFormatId];
+        
+        if (newTheme.headerElements[currentFormatId] && prevElements) {
+            newTheme.headerElements[currentFormatId].headerTitle.text = prevElements.headerTitle.text;
+            newTheme.headerElements[currentFormatId].headerSubtitle.text = prevElements.headerSubtitle.text;
+            newTheme.headerElements[currentFormatId].footerText.text = prevElements.footerText.text;
+        }
+
+        return newTheme;
+    });
   };
 
   // For applying user-saved custom templates
