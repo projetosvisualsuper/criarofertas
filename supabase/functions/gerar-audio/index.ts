@@ -26,8 +26,8 @@ serve(async (req) => {
 
     // 1. Chamar a API de TTS da OpenAI
     const response = await openai.audio.speech.create({
-      model: "tts-1", // Modelo padrão de alta qualidade
-      voice: "alloy", // Voz padrão que soa bem
+      model: "tts-1",
+      voice: "alloy",
       input: text,
       response_format: "mp3"
     });
@@ -40,11 +40,12 @@ serve(async (req) => {
         throw new Error("OpenAI returned an empty audio file. Check API usage limits or input text.");
     }
     
-    // 3. Retornar o áudio como Blob/ArrayBuffer
+    // 3. Retornar o áudio como ArrayBuffer
     return new Response(audioBuffer, {
       headers: { 
         ...corsHeaders, 
         'Content-Type': 'audio/mpeg',
+        'Content-Length': audioBuffer.byteLength.toString(), // Adiciona o tamanho do conteúdo
         'Content-Disposition': 'attachment; filename="speech.mp3"',
       },
       status: 200,
