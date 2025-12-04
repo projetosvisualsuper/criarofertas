@@ -96,7 +96,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
             style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}
           >
             <h3 ref={nameRef} className="font-bold leading-tight text-gray-800 line-clamp-2" style={{ color: theme.textColor, fontSize: `${baseNameSize}rem` }}>
-              {product.name}
+              <span 
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                  boxDecorationBreak: 'clone',
+                  WebkitBoxDecorationBreak: 'clone',
+                  padding: '0.1em 0.2em',
+                  borderRadius: '0.15rem',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                }}
+              >
+                {product.name}
+              </span>
             </h3>
           </div>
           

@@ -69,7 +69,18 @@ const SlideContent: React.FC<SlideContentProps> = ({ product, theme, fontScale, 
               textTransform: 'none', 
             }}
           >
-            {product.name}
+            <span 
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                boxDecorationBreak: 'clone',
+                WebkitBoxDecorationBreak: 'clone',
+                padding: '0.1em 0.4em',
+                borderRadius: '0.25rem',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+              }}
+            >
+              {product.name}
+            </span>
           </h2>
         </div>
         
