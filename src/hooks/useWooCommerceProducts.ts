@@ -25,24 +25,24 @@ export function useWooCommerceProducts() {
     let data: any = null;
     let invokeError: any = null;
 
-    // 1. Chamada da Edge Function (sem try/catch externo para capturar o erro do SDK)
-    const result = await supabase.functions.invoke('woocommerce-proxy', {
-        method: 'GET',
-    });
-    
-    data = result.data;
-    invokeError = result.error;
-
-    if (!isMounted.current) return;
-
     try {
+      // 1. Chamada da Edge Function
+      const result = await supabase.functions.invoke('woocommerce-proxy', {
+          method: 'GET',
+      });
+      
+      data = result.data;
+      invokeError = result.error;
+
+      if (!isMounted.current) return;
+
       if (invokeError) {
         // Se o SDK retornou um erro de invocação (rede, CORS, etc.)
         throw new Error(invokeError.message); 
       }
       
       if (data.error) {
-        // Se a Edge Function retornou um erro (status 400/500)
+        // Se a Edge Function retornou um erro (ex: chaves não configuradas)
         throw new Error(data.error);
       }
       
