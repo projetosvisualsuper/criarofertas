@@ -14,6 +14,7 @@ serve(async (req) => {
   try {
     const apiKey = Deno.env.get('OPENAI_API_KEY');
     if (!apiKey) {
+      console.error("FATAL ERROR: OPENAI_API_KEY is missing.");
       throw new Error("OPENAI_API_KEY is not set in Supabase secrets.");
     }
     
@@ -45,15 +46,18 @@ serve(async (req) => {
       headers: { 
         ...corsHeaders, 
         'Content-Type': 'audio/mpeg',
-        'Content-Length': audioBuffer.byteLength.toString(), // Adiciona o tamanho do conteúdo
+        'Content-Length': audioBuffer.byteLength.toString(),
         'Content-Disposition': 'attachment; filename="speech.mp3"',
       },
       status: 200,
     });
 
   } catch (error) {
-    console.error("Error in OpenAI TTS Edge Function:", error);
-    return new Response(JSON.stringify({ error: error.message || 'Internal server error' }), {
+    const errorMessage = error.message || 'Internal server error during audio generation.';
+    console.error("Error in OpenAI TTS Edge Function:", errorMessage);
+    
+    // Garante que a resposta de erro seja sempre JSON para que o frontend possa decodificá-la
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
