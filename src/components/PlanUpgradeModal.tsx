@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from './ui/dialog';
-import { Zap, Check, Loader2, ArrowRight } from 'lucide-react';
+import { Zap, Check, Loader2, ArrowRight, ExternalLink } from 'lucide-react';
 import { PLAN_NAMES, DEFAULT_PERMISSIONS_BY_ROLE, Permission } from '../config/constants';
 import { Profile } from '../../types';
 import { supabase } from '@/src/integrations/supabase/client';
@@ -23,7 +23,8 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
   const [isLoading, setIsLoading] = useState(false);
   const currentPlan = profile.role;
 
-  const handleUpgrade = async (newRole: string) => {
+  // Função de simulação de upgrade (mantida para o Plano Grátis)
+  const handleSimulateUpgrade = async (newRole: string) => {
     if (newRole === currentPlan) return;
 
     setIsLoading(true);
@@ -51,6 +52,27 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
       onPlanUpdated(newRole); // Notifica o App para recarregar o perfil
       setIsOpen(false);
     }
+  };
+  
+  // Função para simular o redirecionamento para o Asaas
+  const handleCheckout = (planRole: string) => {
+    if (planRole === 'free') {
+        // Permite o downgrade/seleção do plano grátis via simulação
+        handleSimulateUpgrade(planRole);
+        return;
+    }
+    
+    // Em uma aplicação real, você chamaria uma Edge Function aqui para:
+    // 1. Criar um cliente no Asaas (se não existir)
+    // 2. Criar uma assinatura ou cobrança única para o plano
+    // 3. Retornar o link de pagamento do Asaas e redirecionar o usuário.
+    
+    const checkoutLink = `https://asaas.com/checkout/simulado?plan=${planRole}&user=${profile.id}`;
+    
+    alert(`Simulação de Checkout Asaas para o plano ${PLAN_NAMES[planRole]}.\n\nEm uma aplicação real, você seria redirecionado para:\n${checkoutLink}\n\nApós o pagamento, o Asaas Webhook atualizaria seu plano automaticamente.`);
+    
+    // Simula o redirecionamento (apenas para demonstração)
+    window.open(checkoutLink, '_blank');
   };
 
   return (
@@ -97,7 +119,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
                 </div>
                 
                 <button
-                  onClick={() => handleUpgrade(plan.role)}
+                  onClick={() => handleCheckout(plan.role)}
                   disabled={isCurrent || isLoading}
                   className={`w-full py-3 rounded-lg font-bold transition-colors flex items-center justify-center gap-2 ${
                     isCurrent
@@ -113,7 +135,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
                     'Plano Atual'
                   ) : isUpgrade ? (
                     <>
-                      Fazer Upgrade <ArrowRight size={16} />
+                      Fazer Upgrade (Asaas) <ExternalLink size={16} />
                     </>
                   ) : (
                     'Selecionar Plano'
@@ -126,7 +148,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
         </div>
         
         <div className="mt-4 text-center text-xs text-gray-500">
-            * Este é um ambiente de demonstração. O upgrade simula a alteração do seu plano no banco de dados.
+            * Este é um ambiente de demonstração. O upgrade simula a alteração do seu plano no banco de dados ou redireciona para um checkout simulado.
         </div>
       </DialogContent>
     </Dialog>

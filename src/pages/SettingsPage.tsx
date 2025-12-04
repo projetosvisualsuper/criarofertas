@@ -15,7 +15,37 @@ const SettingsPage: React.FC = () => {
       
       <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
         
-        <h3 className="text-xl font-semibold mb-4 border-b pb-2">Integrações de IA</h3>
+        <h3 className="text-xl font-semibold mb-4 border-b pb-2">Integrações de Pagamento</h3>
+        
+        {/* Asaas Webhook Settings */}
+        <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-3">
+            <div className="flex items-center gap-3">
+                <Key size={24} className="text-green-600" />
+                <div>
+                    <p className="font-semibold text-green-800">Integração Asaas (Webhooks)</p>
+                    <p className="text-sm text-gray-700">
+                        Configure o Asaas para notificar o sistema sobre pagamentos e gerenciar o status do plano.
+                    </p>
+                </div>
+            </div>
+            <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1 pl-2">
+                <li>Obtenha sua chave de API de Produção e o Token de Autenticação de Webhook no painel do Asaas.</li>
+                <li>No Supabase, adicione os seguintes segredos em <strong>Project Settings</strong> &gt; <strong>Edge Functions</strong>:
+                    <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
+                        <li><code className="font-mono bg-green-100 p-0.5 rounded">ASAAS_API_KEY</code>: Chave de API de Produção (para criar cobranças/assinaturas).</li>
+                        <li><code className="font-mono bg-green-100 p-0.5 rounded">ASAAS_WEBHOOK_AUTH_TOKEN</code>: Token secreto para autenticar webhooks.</li>
+                    </ul>
+                </li>
+                <li>Configure o Webhook no Asaas para enviar eventos para o endpoint da sua Edge Function:
+                    <code className="font-mono bg-green-100 p-0.5 rounded block mt-2 text-xs break-all">
+                        https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/asaas-webhook-handler
+                    </code>
+                </li>
+                <li>Certifique-se de que o ID do usuário do Supabase (`auth.uid()`) seja enviado como `externalReference` ao criar a cobrança/assinatura no Asaas.</li>
+            </ol>
+        </div>
+        
+        <h3 className="text-xl font-semibold mt-8 mb-4 border-b pb-2">Integrações de IA</h3>
         
         {/* Gemini API Key */}
         <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg space-y-3">
@@ -55,12 +85,12 @@ const SettingsPage: React.FC = () => {
             </ol>
         </div>
         
-        <h3 className="text-xl font-semibold mt-8 mb-4 border-b pb-2">Integrações de E-commerce</h3>
+        <h3 className="xl font-semibold mt-8 mb-4 border-b pb-2">Integrações de E-commerce</h3>
         
         {/* WooCommerce Settings */}
         <WooCommerceSettingsInstructions />
 
-        <h3 className="text-xl font-semibold mt-8 mb-4 border-b pb-2">Outras Configurações</h3>
+        <h3 className="xl font-semibold mt-8 mb-4 border-b pb-2">Outras Configurações</h3>
         <p className="text-gray-500">Em breve: Gerenciamento de usuários, faturamento e modelos personalizados.</p>
       </div>
     </div>
