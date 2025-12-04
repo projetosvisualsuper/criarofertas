@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, Loader2, List, Trash2, Plus, Palette } from 'lucide-react';
+import { Settings, Save, Loader2, List, Trash2, Plus, Palette, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLoginBannerSettings, LoginBannerSettings } from '../../hooks/useLoginBannerSettings';
 import { supabase } from '@/src/integrations/supabase/client';
@@ -12,9 +12,13 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
   
   const [localSettings, setLocalSettings] = useState<LoginBannerSettings>(settings);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Estado local para controlar se o gradiente está ativo na UI
+  const [isGradientActive, setIsGradientActive] = useState(!!settings.bannerGradientEndColor);
 
   useEffect(() => {
     setLocalSettings(settings);
+    setIsGradientActive(!!settings.bannerGradientEndColor);
   }, [settings]);
 
   const handleFeatureChange = (index: number, value: string) => {
@@ -29,6 +33,20 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
 
   const handleRemoveFeature = (index: number) => {
     setLocalSettings(prev => ({ ...prev, features: prev.features.filter((_, i) => i !== index) }));
+  };
+  
+  const handleToggleGradient = () => {
+    setIsGradientActive(prev => {
+        const newState = !prev;
+        if (!newState) {
+            // Se desativar, limpa a cor final do gradiente
+            setLocalSettings(prev => ({ ...prev, bannerGradientEndColor: null }));
+        } else if (!localSettings.bannerGradientEndColor) {
+            // Se ativar e não houver cor final, define um padrão
+            setLocalSettings(prev => ({ ...prev, bannerGradientEndColor: '#4f46e5' })); // Indigo 600 como padrão
+        }
+        return newState;
+    });
   };
 
   const handleSave = async () => {
@@ -60,12 +78,17 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
     
     const idToUpdate = existingData?.id;
     
-    // CORREÇÃO: Usando snake_case para banner_color no payload
+    // Prepara o payload de salvamento
+    const finalBannerGradientEndColor = isGradientActive 
+        ? localSettings.bannerGradientEndColor 
+        : null;
+        
     const dataToSave = {
         title: localSettings.title,
         subtitle: localSettings.subtitle,
         features: localSettings.features.filter(f => f.trim().length > 0), // Filtra recursos vazios
-        banner_color: localSettings.bannerColor, // Mapeamento corrigido
+        banner_color: localSettings.bannerColor,
+        banner_gradient_end_color: finalBannerGradientEndColor, // NOVO CAMPO
         updated_at: new Date().toISOString(),
     };
 
@@ -156,22 +179,60 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
             <h3 className="font-semibold text-lg flex items-center gap-2">
                 <Palette size={20} className="text-indigo-600" /> Cor do Banner
             </h3>
-            <div className="flex items-center gap-4">
-                <input
-                    type="color"
-                    value={localSettings.bannerColor}
-                    onChange={(e) => setLocalSettings(prev => ({ ...prev, bannerColor: e.target.value }))}
-                    className="w-16 h-16 border rounded-lg cursor-pointer"
-                    disabled={isSaving}
-                />
-                <input
-                    type="text"
-                    value={localSettings.bannerColor}
-                    onChange={(e) => setLocalSettings(prev => ({ ...prev, bannerColor: e.target.value }))}
-                    className="flex-1 border rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none"
-                    placeholder="#RRGGBB"
-                    disabled={isSaving}
-                />
+            
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                <p className="text-sm font-medium text-gray-700">Usar Gradiente (Degradê)</p>
+                <button 
+                    onClick={handleToggleGradient}
+                    className={`p-1 rounded-full transition-colors ${isGradientActive ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-300 text-gray-700 hover:bg-gray-400'}`}
+                    title={isGradientActive ? "Desativar Gradiente" : "Ativar Gradiente"}
+                >
+                    {isGradientActive ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+                </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Cor Inicial */}
+                <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 block mb-1">Cor Inicial</label>
+                    <input
+                        type="color"
+                        value={localSettings.bannerColor}
+                        onChange={(e) => setLocalSettings(prev => ({ ...prev, bannerColor: e.target.value }))}
+                        className="w-full h-12 border rounded-lg cursor-pointer"
+                        disabled={isSaving}
+                    />
+                    <input
+                        type="text"
+                        value={localSettings.bannerColor}
+                        onChange={(e) => setLocalSettings(prev => ({ ...prev, bannerColor: e.target.value }))}
+                        className="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none"
+                        placeholder="#RRGGBB"
+                        disabled={isSaving}
+                    />
+                </div>
+                
+                {/* Cor Final (Apenas se Gradiente Ativo) */}
+                {isGradientActive && (
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700 block mb-1">Cor Final do Gradiente</label>
+                        <input
+                            type="color"
+                            value={localSettings.bannerGradientEndColor || '#4f46e5'}
+                            onChange={(e) => setLocalSettings(prev => ({ ...prev, bannerGradientEndColor: e.target.value }))}
+                            className="w-full h-12 border rounded-lg cursor-pointer"
+                            disabled={isSaving}
+                        />
+                        <input
+                            type="text"
+                            value={localSettings.bannerGradientEndColor || '#4f46e5'}
+                            onChange={(e) => setLocalSettings(prev => ({ ...prev, bannerGradientEndColor: e.target.value }))}
+                            className="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none"
+                            placeholder="#RRGGBB"
+                            disabled={isSaving}
+                        />
+                    </div>
+                )}
             </div>
         </div>
         

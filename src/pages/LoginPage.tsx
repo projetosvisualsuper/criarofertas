@@ -8,8 +8,14 @@ import { useLoginBannerSettings } from '../hooks/useLoginBannerSettings';
 const LoginPage: React.FC = () => {
   const { settings, loading } = useLoginBannerSettings();
   
-  // Usa a cor dinâmica do hook
+  // Cores dinâmicas do hook
   const BANNER_COLOR = settings.bannerColor || '#007bff'; 
+  const END_COLOR = settings.bannerGradientEndColor;
+  
+  // Determina o estilo de fundo
+  const backgroundStyle = END_COLOR
+    ? { background: `linear-gradient(135deg, ${BANNER_COLOR} 0%, ${END_COLOR} 100%)` }
+    : { backgroundColor: BANNER_COLOR };
 
   const customTheme = {
     default: {
@@ -31,7 +37,7 @@ const LoginPage: React.FC = () => {
   };
 
   const BannerContent = () => (
-    <div className="p-10 text-white h-full flex flex-col justify-center" style={{ backgroundColor: BANNER_COLOR }}>
+    <div className="p-10 text-white h-full flex flex-col justify-center" style={backgroundStyle}>
       <h2 className="text-4xl font-black mb-4 leading-tight">
         {settings.title.split(' ').map((word, index) => (
           <span key={index} className={index === 0 ? 'text-white' : 'text-green-300'}>
