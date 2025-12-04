@@ -78,11 +78,29 @@ const AppContent: React.FC = () => {
   const { loading: loadingRegisteredProducts } = useProductDatabase(userId);
   const { settings: globalSettings, loading: loadingGlobalSettings } = useGlobalSettings();
   
-  // O estado isReady agora depende apenas do carregamento do tema e dos produtos do cartaz
   const [isReady, setIsReady] = useState(false);
 
-  // Verifica se os dados essenciais (tema e produtos do cartaz) foram carregados
   const essentialDataLoaded = !loadingTheme && !loadingProducts && !!profile;
+
+  // NOVO: Efeito para ler o hash da URL e mudar o módulo ativo
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1); // Remove o '#'
+      if (hash && MODULE_PERMISSIONS[hash]) {
+        setActiveModule(hash);
+        // Limpa o hash para evitar que ele persista na URL
+        window.history.pushState("", document.title, window.location.pathname + window.location.search);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange(); // Executa na montagem para pegar o hash inicial
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [setActiveModule]);
+
 
   useEffect(() => {
     if (essentialDataLoaded) {
@@ -137,9 +155,6 @@ const AppContent: React.FC = () => {
         }
       }
       
-      // Se a migração for necessária, o setTheme/setProducts irá disparar um novo ciclo.
-      // Definimos isReady como true apenas quando os dados essenciais estiverem carregados E a migração tiver sido processada.
-      // Como a migração é síncrona (apenas atualiza o estado local e salva em background), podemos definir isReady aqui.
       setIsReady(true);
     }
   }, [essentialDataLoaded, theme, products, setTheme, setProducts, profile, hasPermission, activeModule, setActiveModule]);
@@ -150,7 +165,6 @@ const AppContent: React.FC = () => {
     return <LoginPage />;
   }
 
-  // Se os dados essenciais (Auth, Theme, Products) não estiverem prontos, mostre o carregamento.
   if (!isReady || !profile) {
     return (
       <div className="flex items-center justify-center h-screen w-screen bg-gray-100">
@@ -165,7 +179,6 @@ const AppContent: React.FC = () => {
   const isMaintenanceMode = globalSettings.maintenance_mode.enabled;
   const isAdmin = profile.role === 'admin';
 
-  // Bloqueio de Acesso em Modo Manutenção
   if (isMaintenanceMode && !isAdmin) {
     return (
       <div className="flex items-center justify-center h-screen w-screen bg-gray-900 text-white">
