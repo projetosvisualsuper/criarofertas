@@ -46,7 +46,7 @@ serve(async (req) => {
         // Captura erros de rede, DNS ou SSL que impedem a conexão
         console.error("WooCommerce Fetch Network Error:", fetchError);
         return new Response(JSON.stringify({ 
-            error: `Network/DNS Error: Failed to connect to WooCommerce URL. Check if the URL is correct and publicly accessible. Details: ${fetchError.message}` 
+            error: `Network/DNS Error: Failed to connect to WooCommerce URL (${baseUrl}). Check if the URL is correct and publicly accessible. Details: ${fetchError.message}` 
         }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
