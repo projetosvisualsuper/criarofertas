@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -6,12 +7,6 @@ const corsHeaders = {
 };
 
 const MERCADOPAGO_ACCESS_TOKEN = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
-
-// Dados de planos simulados para o checkout (em um ambiente real, isso viria do DB)
-const PLAN_DETAILS: Record<string, { title: string, price: number }> = {
-    'premium': { title: 'Plano Premium Criar Ofertas', price: 99.00 },
-    'pro': { title: 'Plano Pro Criar Ofertas', price: 199.00 },
-};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -28,19 +23,47 @@ serve(async (req) => {
     
     const { planRole, userId } = await req.json();
     
-    if (!planRole || !userId || !PLAN_DETAILS[planRole]) {
-        return new Response(JSON.stringify({ error: 'Invalid planRole or missing userId' }), { status: 400, headers: corsHeaders });
+    if (!planRole || !userId) {
+        return new Response(JSON.stringify({ error: 'Missing planRole or userId' }), { status: 400, headers: corsHeaders });
     }
     
-    const plan = PLAN_DETAILS[planRole];
+    // 1. Criar cliente Admin para buscar dados da tabela plan_configurations
+    const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
     
-    // 1. Cria o payload da Preferência de Pagamento
+    // 2. Buscar detalhes do plano no DB
+    const { data: planConfig, error: planError } = await supabaseAdmin
+        .from('plan_configurations')
+        .select('name, price')
+        .eq('role', planRole)
+        .single();
+        
+    if (planError || !planConfig) {
+        console.error("Error fetching plan configuration:", planError);
+        return new Response(JSON.stringify({ error: `Plan configuration not found for role: ${planRole}` }), { status: 404, headers: corsHeaders });
+    }
+    
+    // 3. Extrair o preço (removendo R$ e / mês para obter o valor numérico)
+    const priceMatch = planConfig.price.match(/[\d,.]+/);
+    let priceValue = 0;
+    if (priceMatch) {
+        // Substitui vírgula por ponto e garante que seja um float
+        priceValue = parseFloat(priceMatch[0].replace(',', '.'));
+    }
+    
+    if (isNaN(priceValue) || priceValue <= 0) {
+        return new Response(JSON.stringify({ error: `Invalid price value found in DB for plan ${planRole}: ${planConfig.price}` }), { status: 400, headers: corsHeaders });
+    }
+    
+    // 4. Cria o payload da Preferência de Pagamento
     const preferencePayload = {
         items: [
             {
-                title: plan.title,
+                title: `${planConfig.name} Criar Ofertas`, // Usando o nome do DB
                 quantity: 1,
-                unit_price: plan.price,
+                unit_price: priceValue, // Usando o valor numérico do DB
             },
         ],
         // CRÍTICO: Usar o ID do usuário Supabase como external_reference
@@ -56,7 +79,7 @@ serve(async (req) => {
         auto_return: "approved",
     };
 
-    // 2. Chama a API do Mercado Pago para criar a preferência
+    // 5. Chama a API do Mercado Pago para criar a preferência
     const mpResponse = await fetch("https://api.mercadopago.com/checkout/preferences", {
         method: 'POST',
         headers: {
@@ -74,7 +97,7 @@ serve(async (req) => {
     
     const preference = await mpResponse.json();
 
-    // 3. Retorna o link de checkout
+    // 6. Retorna o link de checkout
     return new Response(JSON.stringify({ 
         checkoutLink: preference.init_point, // Link para redirecionamento
     }), {
