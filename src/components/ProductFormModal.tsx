@@ -68,18 +68,20 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
 
     setIsLoading(true);
     
-    // 1. Criar um nome de arquivo seguro e único no diretório compartilhado
+    // 1. Criar um nome de arquivo seguro e determinístico (sem UUID)
     const safeName = product.name.trim().replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase();
     const fileExtension = file.name.split('.').pop();
-    const filePath = `${SHARED_IMAGE_DIR}/${safeName}-${crypto.randomUUID()}.${fileExtension}`;
+    // O caminho agora é determinístico: shared/nome-do-produto.ext
+    const filePath = `${SHARED_IMAGE_DIR}/${safeName}.${fileExtension}`;
 
     try {
       // 2. Upload para o Storage (no diretório 'shared')
+      // Usamos upsert: true para sobrescrever se o arquivo com o mesmo nome já existir.
       const { error: uploadError } = await supabase.storage
         .from('product_images')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false,
+          upsert: true, // Sobrescreve se o nome for o mesmo
         });
 
       if (uploadError) throw uploadError;
@@ -162,7 +164,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
             </div>
             
             <div className="flex-1 space-y-2">
-              <label className="text-xs font-semibold text-gray-700 block">Nome do Produto (Obrigatório)</label>
+              <label className="text-xs font-semibold text-gray-700 block mb-1">Nome do Produto (Obrigatório)</label>
               <input 
                 className="w-full border rounded px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-indigo-500 outline-none" 
                 value={product.name} 

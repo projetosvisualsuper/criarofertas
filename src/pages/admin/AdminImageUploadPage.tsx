@@ -49,18 +49,20 @@ const AdminImageUploadPage: React.FC = () => {
 
     setIsUploading(true);
     
-    // Cria um nome de arquivo seguro e único
+    // Cria um nome de arquivo seguro e determinístico (sem UUID)
     const safeName = imageName.trim().replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase();
     const fileExtension = fileToUpload.name.split('.').pop();
-    const filePath = `${PUBLIC_IMAGE_DIR}/${safeName}-${crypto.randomUUID()}.${fileExtension}`;
+    // O caminho agora é determinístico: shared/nome-da-imagem.ext
+    const filePath = `${PUBLIC_IMAGE_DIR}/${safeName}.${fileExtension}`;
 
     try {
       // 1. Upload para o Storage (no diretório 'shared')
+      // Usamos upsert: true para sobrescrever se o arquivo com o mesmo nome já existir.
       const { error: uploadError } = await supabase.storage
         .from('product_images')
         .upload(filePath, fileToUpload, {
           cacheControl: '3600',
-          upsert: false,
+          upsert: true, // Sobrescreve se o nome for o mesmo
         });
 
       if (uploadError) throw uploadError;
@@ -192,7 +194,7 @@ const AdminImageUploadPage: React.FC = () => {
                     alt={image.name} 
                     className="w-full h-24 object-contain bg-white"
                   />
-                  <div className="p-1 text-xs text-center bg-gray-50 truncate">{image.name.split('-')[0]}</div>
+                  <div className="p-1 text-xs text-center bg-gray-50 truncate">{image.name.split('.')[0]}</div>
                   
                   <button
                     onClick={() => handleDeleteClick(image)}
