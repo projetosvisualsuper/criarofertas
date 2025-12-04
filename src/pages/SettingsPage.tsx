@@ -1,6 +1,6 @@
 import React from 'react';
 import { Settings, Key } from 'lucide-react';
-import WooCommerceSettingsInstructions from '../components/WooCommerceSettingsInstructions'; // NOVO IMPORT
+import WooCommerceSettingsInstructions from '../components/WooCommerceSettingsInstructions';
 
 const SettingsPage: React.FC = () => {
   // A chave agora é um segredo do lado do servidor e não pode ser acessada aqui.
@@ -22,7 +22,7 @@ const SettingsPage: React.FC = () => {
             <div className="flex items-center gap-3">
                 <Key size={24} className="text-blue-600" />
                 <div>
-                    <p className="font-semibold text-blue-800">Integração Mercado Pago (Webhooks)</p>
+                    <p className="font-semibold text-blue-800">Integração Mercado Pago (Webhooks e Assinaturas)</p>
                     <p className="text-sm text-gray-700">
                         Configure o Mercado Pago para notificar o sistema sobre pagamentos e gerenciar o status do plano.
                     </p>
@@ -32,7 +32,7 @@ const SettingsPage: React.FC = () => {
                 <li>Obtenha seu <strong>Access Token</strong> e defina um <strong>Token Secreto de Webhook</strong> no painel do Mercado Pago.</li>
                 <li>No Supabase, adicione os seguintes segredos em <strong>Project Settings</strong> &gt; <strong>Edge Functions</strong>:
                     <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
-                        <li><code className="font-mono bg-blue-100 p-0.5 rounded">MERCADOPAGO_ACCESS_TOKEN</code>: Seu token de acesso para chamadas de API.</li>
+                        <li><code className="font-mono bg-blue-100 p-0.5 rounded">MERCADOPAGO_ACCESS_TOKEN</code>: Seu token de acesso para chamadas de API. <span className="font-bold text-red-600">(Verifique se é um token de Produção/Teste válido e com permissão de Assinaturas)</span>.</li>
                         <li><code className="font-mono bg-blue-100 p-0.5 rounded">MERCADOPAGO_WEBHOOK_SECRET</code>: O token secreto para autenticar webhooks.</li>
                     </ul>
                 </li>
