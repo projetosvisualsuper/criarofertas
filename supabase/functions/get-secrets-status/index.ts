@@ -10,9 +10,6 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
   
-  // Esta função não requer autenticação, pois apenas verifica se os segredos estão definidos.
-  // No entanto, em um ambiente de produção, você pode querer restringir isso a usuários autenticados.
-
   try {
     const metaAppId = Deno.env.get('META_APP_ID');
     const metaAppSecret = Deno.env.get('META_APP_SECRET');
