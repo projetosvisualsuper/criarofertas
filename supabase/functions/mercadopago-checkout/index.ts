@@ -65,20 +65,27 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: `Invalid price value found in DB for plan ${planRole}: ${planConfig.price}` }), { status: 400, headers: corsHeaders });
     }
     
+    // Garante que o valor tenha duas casas decimais (necessário para algumas APIs de pagamento)
+    const transactionAmount = parseFloat(priceValue.toFixed(2));
+    
     // 4. Cria o payload da Preferência de Assinatura (Preapproval)
     const externalReference = `${userId}_${planRole}`;
+    
+    // URLs de retorno e notificação
+    const backUrl = "https://ofertaflash.vercel.app/#profile"; // Usando hash para garantir que o App React lide com o redirecionamento
+    const notificationUrl = `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/mercadopago-webhook-handler`;
     
     const preapprovalPayload = {
         reason: `${planConfig.name} Criar Ofertas`,
         auto_recurring: {
             frequency: 1,
             frequency_type: "months",
-            transaction_amount: priceValue,
+            transaction_amount: transactionAmount, // Usando o valor formatado
             currency_id: "BRL",
         },
-        back_url: "https://ofertaflash.vercel.app/profile",
+        back_url: backUrl,
         external_reference: externalReference, 
-        notification_url: `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/mercadopago-webhook-handler`,
+        notification_url: notificationUrl,
     };
 
     // 5. Chama a API do Mercado Pago para criar a preferência de assinatura
