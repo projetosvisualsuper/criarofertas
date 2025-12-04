@@ -13,6 +13,22 @@ interface PlanUpgradeModalProps {
   onPlanUpdated: (newRole: string) => void;
 }
 
+// Mapeamento de Permissões para Português (BR)
+const PERMISSION_TRANSLATIONS: Record<Permission | string, string> = {
+    'access_builder': 'Acesso ao Builder',
+    'manage_products': 'Gerenciamento de Produtos',
+    'manage_company_info': 'Gerenciamento de Info da Empresa',
+    'access_signage': 'Acesso a TV Digital (Slides)',
+    'access_social_media': 'Acesso a Redes Sociais',
+    'access_ads': 'Acesso a Anúncios Áudio/Vídeo',
+    'access_settings': 'Acesso a Configurações',
+    'view_reports': 'Visualização de Relatórios',
+    'manage_users': 'Gerenciamento de Clientes',
+    // Features adicionais que não são chaves de permissão
+    'Suporte Prioritário': 'Suporte Prioritário',
+    'Dados da Empresa': 'Dados da Empresa',
+};
+
 const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, onPlanUpdated }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,18 +93,17 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
   
   // Mapeia as configurações dinâmicas para o formato de exibição
   const displayPlans = plans.map(plan => {
-      // Para o modal, precisamos de uma lista de features. 
-      // Como o DB armazena apenas as permissões (chaves), vamos mapear as permissões para nomes amigáveis.
-      // Esta é uma simplificação, em produção, o DB deveria ter um campo 'features_list'.
-      const features = plan.permissions.map(p => p.replace(/_/g, ' ').replace('access', 'Acesso').replace('manage', 'Gerenciamento'));
+      // Mapeia as permissões para nomes amigáveis usando o objeto de tradução
+      const features = plan.permissions.map(p => PERMISSION_TRANSLATIONS[p] || p);
       
       // Adiciona features básicas que não são permissões (ex: suporte)
       if (plan.role === 'pro') {
-          features.push('Suporte Prioritário');
+          features.push(PERMISSION_TRANSLATIONS['Suporte Prioritário']);
       }
-      if (plan.role === 'premium') {
-          features.push('Dados da Empresa');
-      }
+      // A permissão 'manage_company_info' já cobre 'Dados da Empresa', mas se quisermos adicionar um item extra:
+      // if (plan.role === 'premium') {
+      //     features.push(PERMISSION_TRANSLATIONS['Dados da Empresa']);
+      // }
       
       return {
           id: plan.role,
@@ -137,7 +152,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
                 className={`p-6 rounded-xl shadow-lg border-4 transition-all ${
                   isCurrent 
                     ? 'border-indigo-500 bg-indigo-50' 
-                    : isUpgrade 
+                    : isUpgrade
                       ? 'border-gray-200 hover:border-indigo-400' 
                       : 'border-gray-200 bg-gray-50'
                 } flex flex-col`}
