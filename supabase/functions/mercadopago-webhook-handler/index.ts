@@ -16,21 +16,18 @@ serve(async (req) => {
   }
   
   // 1. Verificar o token de autenticação do Webhook (Segurança)
-  // O Mercado Pago geralmente envia um token no header 'x-signature' ou 'x-request-id'
-  // Para simplificar, vamos usar um token secreto no header 'Authorization' ou 'x-mercadopago-token'
   const mpAuthHeader = req.headers.get('x-mercadopago-token');
   if (!mpAuthHeader || mpAuthHeader !== MERCADOPAGO_WEBHOOK_SECRET) {
     console.error("Webhook Error: Invalid Mercado Pago access token.");
-    // Retorna 401 se o token não for válido
     return new Response(JSON.stringify({ error: 'Unauthorized webhook access' }), { status: 401, headers: corsHeaders });
   }
 
   try {
     const payload = await req.json();
-    const topic = payload.topic || payload.type; // 'payment' ou 'subscription'
-    const resourceUrl = payload.resource || payload.data?.id; // ID do recurso (pagamento ou assinatura)
+    const topic = payload.topic || payload.type; // 'payment' ou 'preapproval'
+    const resourceId = payload.data?.id; // ID do recurso (pagamento ou preapproval)
     
-    if (!resourceUrl || !topic) {
+    if (!resourceId || !topic) {
         console.warn("Webhook Warning: Missing topic or resource ID in payload.");
         return new Response(JSON.stringify({ received: true, message: "Missing topic or resource ID" }), { status: 200, headers: corsHeaders });
     }
@@ -40,40 +37,56 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
     
-    let logMessage = `Event received: ${topic} for resource ${resourceUrl}`;
-    let newRole = 'free';
+    let logMessage = `Event received: ${topic} for resource ${resourceId}`;
     let userId = null;
+    let newRole = 'free';
+    let status = null;
+    let externalReference = null;
 
-    // 2. Buscar detalhes do pagamento/assinatura no Mercado Pago
-    // Em um cenário real, você faria uma chamada à API do MP aqui usando MERCADOPAGO_ACCESS_TOKEN
-    // Ex: const paymentDetails = await fetch(`https://api.mercadopago.com/v1/${topic}s/${resourceUrl}`, { headers: { Authorization: `Bearer ${MERCADOPAGO_ACCESS_TOKEN}` } });
+    // 2. Buscar detalhes do recurso no Mercado Pago
+    const resourceType = topic === 'payment' ? 'payments' : (topic === 'preapproval' ? 'preapprovals' : null);
     
-    // SIMULAÇÃO: Para fins de demonstração, vamos simular a busca e extração do userId e status.
-    // Assumimos que o Mercado Pago armazena o Supabase User ID no campo 'external_reference'
+    if (!resourceType) {
+        logMessage = `Ignored Mercado Pago topic: ${topic}`;
+        console.log(logMessage);
+        return new Response(JSON.stringify({ received: true, message: logMessage }), { status: 200, headers: corsHeaders });
+    }
     
-    // SIMULAÇÃO DE DADOS DO MP (Substitua pela chamada real à API do MP)
-    const simulatedPaymentDetails = {
-        status: 'approved', // approved, pending, cancelled, refunded
-        external_reference: 'SUPABASE_USER_ID_EXAMPLE', // Onde o ID do usuário Supabase estaria
-        metadata: {
-            plan_role: 'premium' // Onde o plano (role) estaria
+    const mpResponse = await fetch(`https://api.mercadopago.com/${resourceType}/${resourceId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${MERCADOPAGO_ACCESS_TOKEN}`,
+        },
+    });
+    
+    if (!mpResponse.ok) {
+        console.error(`Failed to fetch MP resource ${resourceId}: ${mpResponse.status}`);
+        return new Response(JSON.stringify({ error: `Failed to fetch MP resource: ${mpResponse.status}` }), { status: 500, headers: corsHeaders });
+    }
+    
+    const resourceDetails = await mpResponse.json();
+    
+    // Extração de dados
+    status = resourceDetails.status;
+    externalReference = resourceDetails.external_reference;
+    
+    // O external_reference agora é 'userId_planRole'
+    if (externalReference) {
+        const parts = externalReference.split('_');
+        if (parts.length === 2) {
+            userId = parts[0];
+            newRole = parts[1];
         }
-    };
-    
-    // Extração simulada
-    userId = simulatedPaymentDetails.external_reference;
-    const paymentStatus = simulatedPaymentDetails.status;
-    const planRole = simulatedPaymentDetails.metadata.plan_role;
+    }
 
-    if (!userId || userId === 'SUPABASE_USER_ID_EXAMPLE') {
+    if (!userId) {
         console.warn("Webhook Warning: Could not extract valid Supabase User ID from external_reference.");
         return new Response(JSON.stringify({ received: true, message: "Missing or invalid User ID" }), { status: 200, headers: corsHeaders });
     }
     
-    // 3. Processar Status de Pagamento
-    if (paymentStatus === 'approved') {
-        // Pagamento confirmado, faz upgrade para o plano pago
-        newRole = planRole || 'premium'; // Assume premium se não houver role definido
+    // 3. Processar Status de Assinatura/Pagamento
+    if (status === 'authorized' || status === 'approved' || status === 'active') {
+        // Assinatura ativa ou pagamento aprovado, faz upgrade para o plano pago
         
         const { error: updateError } = await supabaseAdmin
             .from('profiles')
@@ -81,10 +94,10 @@ serve(async (req) => {
             .eq('id', userId);
             
         if (updateError) throw updateError;
-        logMessage = `User ${userId} upgraded to ${newRole} due to approved Mercado Pago payment.`;
+        logMessage = `User ${userId} upgraded to ${newRole} due to approved Mercado Pago status: ${status}.`;
         
-    } else if (paymentStatus === 'cancelled' || paymentStatus === 'refunded') {
-        // Pagamento falhou ou foi cancelado/reembolsado, faz downgrade para 'free'
+    } else if (status === 'cancelled' || status === 'paused' || status === 'pending' || status === 'refunded') {
+        // Assinatura cancelada, pausada ou pagamento falhou, faz downgrade para 'free'
         newRole = 'free';
         const { error: downgradeError } = await supabaseAdmin
             .from('profiles')
@@ -92,9 +105,9 @@ serve(async (req) => {
             .eq('id', userId);
             
         if (downgradeError) throw downgradeError;
-        logMessage = `User ${userId} downgraded to ${newRole} due to Mercado Pago payment status: ${paymentStatus}.`;
+        logMessage = `User ${userId} downgraded to ${newRole} due to Mercado Pago status: ${status}.`;
     } else {
-        logMessage = `Ignored Mercado Pago status: ${paymentStatus}`;
+        logMessage = `Ignored Mercado Pago status: ${status}`;
     }
 
     console.log(logMessage);

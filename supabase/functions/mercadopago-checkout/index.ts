@@ -57,36 +57,31 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: `Invalid price value found in DB for plan ${planRole}: ${planConfig.price}` }), { status: 400, headers: corsHeaders });
     }
     
-    // 4. Cria o payload da Preferência de Pagamento
-    const preferencePayload = {
-        items: [
-            {
-                title: `${planConfig.name} Criar Ofertas`, // Usando o nome do DB
-                quantity: 1,
-                unit_price: priceValue, // Usando o valor numérico do DB
-            },
-        ],
-        // CRÍTICO: Usar o ID do usuário Supabase como external_reference
-        external_reference: userId, 
-        // URL de notificação para o webhook que você já configurou
-        notification_url: `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/mercadopago-webhook-handler`,
-        // Redirecionamento após o pagamento (ajuste conforme sua URL de sucesso/falha)
-        back_urls: {
-            success: "https://ofertaflash.vercel.app/success", // Substitua pela sua URL real
-            failure: "https://ofertaflash.vercel.app/failure", // Substitua pela sua URL real
-            pending: "https://ofertaflash.vercel.app/pending", // Substitua pela sua URL real
+    // 4. Cria o payload da Preferência de Assinatura (Preapproval)
+    // Usamos o external_reference para armazenar o userId e o planRole
+    const externalReference = `${userId}_${planRole}`;
+    
+    const preapprovalPayload = {
+        reason: `${planConfig.name} Criar Ofertas`,
+        auto_recurring: {
+            frequency: 1,
+            frequency_type: "months",
+            transaction_amount: priceValue,
+            currency_id: "BRL",
         },
-        auto_return: "approved",
+        back_url: "https://ofertaflash.vercel.app/profile", // Redireciona para o perfil após o checkout
+        external_reference: externalReference, 
+        notification_url: `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/mercadopago-webhook-handler`,
     };
 
-    // 5. Chama a API do Mercado Pago para criar a preferência
-    const mpResponse = await fetch("https://api.mercadopago.com/checkout/preferences", {
+    // 5. Chama a API do Mercado Pago para criar a preferência de assinatura
+    const mpResponse = await fetch("https://api.mercadopago.com/preapproval", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${MERCADOPAGO_ACCESS_TOKEN}`,
         },
-        body: JSON.stringify(preferencePayload),
+        body: JSON.stringify(preapprovalPayload),
     });
 
     if (!mpResponse.ok) {
@@ -95,11 +90,11 @@ serve(async (req) => {
         throw new Error(`Mercado Pago API failed: ${mpResponse.status} - ${errorBody.message || 'Unknown error'}`);
     }
     
-    const preference = await mpResponse.json();
+    const preapproval = await mpResponse.json();
 
     // 6. Retorna o link de checkout
     return new Response(JSON.stringify({ 
-        checkoutLink: preference.init_point, // Link para redirecionamento
+        checkoutLink: preapproval.init_point, // Link para redirecionamento
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
