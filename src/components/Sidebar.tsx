@@ -842,8 +842,8 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     <div className="w-full md:w-[400px] h-full bg-white border-r flex flex-col shadow-xl z-20 relative">
       <div className="p-4 border-b bg-gray-50 flex-shrink-0">
         <h1 className="text-xl font-bold flex items-center gap-2 text-indigo-700">
-          <span className="bg-indigo-600 text-white p-1 rounded">OF</span>
-          OfertaFlash Builder
+          <span className="bg-indigo-600 text-white p-1 rounded">CO</span>
+          Criar Ofertas
         </h1>
       </div>
 

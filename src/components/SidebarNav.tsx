@@ -14,7 +14,7 @@ interface SidebarNavProps {
 
 const MODULES: { id: string; name: string; icon: React.ElementType; description: string; permission: Permission }[] = [
   { id: 'profile', name: 'Meu Perfil', icon: UserCircle, description: 'Gerencie sua conta e plano.', permission: 'access_builder' },
-  { id: 'poster', name: 'OfertaFlash Builder', icon: LayoutTemplate, description: 'Crie cartazes e flyers de ofertas.', permission: 'access_builder' },
+  { id: 'poster', name: 'Criar Ofertas', icon: LayoutTemplate, description: 'Crie cartazes e flyers de ofertas.', permission: 'access_builder' },
   { id: 'product-db', name: 'Banco de Produtos', icon: Database, description: 'Cadastre produtos e imagens para reutilizar.', permission: 'manage_products' },
   { id: 'company', name: 'Dados da Empresa', icon: Building, description: 'Gerencie as informações do seu negócio.', permission: 'access_builder' },
   { id: 'signage', name: 'TV Digital (Slides)', icon: Monitor, description: 'Gere slides e vídeos para telas de TV.', permission: 'access_signage' },
