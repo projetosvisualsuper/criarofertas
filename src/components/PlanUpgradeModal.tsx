@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '../ui/dialog';
 import { Zap, Check, Loader2, ArrowRight, ExternalLink } from 'lucide-react';
 import { PLAN_NAMES, DEFAULT_PERMISSIONS_BY_ROLE, Permission } from '../config/constants';
 import { Profile } from '../../types';
@@ -88,6 +88,12 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
                 planRole: planRole,
                 userId: profile.id,
             },
+            // Adicionando um cabeçalho de autorização vazio para contornar o erro 401
+            // Isso força o Supabase a não enviar o JWT do usuário, se o problema for um JWT inválido/expirado
+            // que o runtime está rejeitando, ou se a função foi configurada incorretamente.
+            headers: {
+                'Authorization': 'Bearer ' + session?.access_token, // Enviamos o token se estiver disponível
+            }
         });
 
         if (error) {
@@ -120,6 +126,8 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
             userMessage = 'Erro: MERCADOPAGO_ACCESS_TOKEN não configurado no Supabase Secrets.';
         } else if (errorMessage.includes('Plan configuration not found')) {
             userMessage = 'Erro: Configuração do plano não encontrada no banco de dados.';
+        } else if (errorMessage.includes('401 (Unauthorized)')) {
+            userMessage = 'Erro de Autorização (401). Tente fazer logout e login novamente para renovar sua sessão.';
         } else {
             userMessage = errorMessage;
         }
