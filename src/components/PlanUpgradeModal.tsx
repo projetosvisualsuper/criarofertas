@@ -114,7 +114,8 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
         let userMessage = "Falha ao iniciar o checkout. Verifique as chaves de API no Supabase Secrets.";
         
         if (errorMessage.includes('Mercado Pago API failed')) {
-            userMessage = `Erro na API do Mercado Pago. Verifique o Access Token e as permissões. Detalhe: ${errorMessage}`;
+            // Se a Edge Function retornou um erro detalhado do MP, usamos ele.
+            userMessage = errorMessage;
         } else if (errorMessage.includes('not configured in Supabase Secrets')) {
             userMessage = 'Erro: MERCADOPAGO_ACCESS_TOKEN não configurado no Supabase Secrets.';
         } else if (errorMessage.includes('Plan configuration not found')) {
