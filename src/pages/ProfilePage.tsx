@@ -6,7 +6,7 @@ import { showSuccess, showError } from '../utils/toast';
 import { PLAN_NAMES, DEFAULT_PERMISSIONS_BY_ROLE, Permission } from '../config/constants';
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import ConfirmationModal from '../components/ConfirmationModal';
-import SocialMediaIntegration from '../components/SocialMediaIntegration'; // NOVO IMPORT
+import SocialMediaIntegration from '../components/SocialMediaIntegration';
 
 const ProfilePage: React.FC = () => {
   const { profile, session, refreshProfile } = useAuth();
@@ -112,7 +112,7 @@ const ProfilePage: React.FC = () => {
   // --- Componentes de Seção ---
 
   const ProfileSection = () => (
-    <div className="p-6 bg-white rounded-xl shadow-md space-y-4">
+    <div className="p-6 bg-white rounded-xl shadow-md space-y-4 h-full">
       <h3 className="text-xl font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
         <UserCircle size={20} className="text-indigo-600" /> Detalhes do Perfil
       </h3>
@@ -147,7 +147,7 @@ const ProfilePage: React.FC = () => {
   );
 
   const PasswordSection = () => (
-    <div className="p-6 bg-white rounded-xl shadow-md space-y-4">
+    <div className="p-6 bg-white rounded-xl shadow-md space-y-4 h-full">
       <h3 className="text-xl font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
         <Key size={20} className="text-indigo-600" /> Alterar Senha
       </h3>
@@ -230,9 +230,12 @@ const ProfilePage: React.FC = () => {
             <PlanSection />
         </div>
         <div className="lg:col-span-2 space-y-6">
-            <ProfileSection />
-            <PasswordSection />
-            <SocialMediaIntegration /> {/* NOVO: Integração de Redes Sociais */}
+            {/* Novo Grid para Perfil e Senha */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ProfileSection />
+                <PasswordSection />
+            </div>
+            <SocialMediaIntegration />
         </div>
       </div>
       
