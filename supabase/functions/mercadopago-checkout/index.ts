@@ -6,10 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const MERCADOPAGO_ACCESS_TOKEN = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -17,6 +13,11 @@ serve(async (req) => {
 
   try {
     console.log("MP Checkout: Starting request processing.");
+    
+    // Lendo segredos dentro do handler
+    const MERCADOPAGO_ACCESS_TOKEN = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!MERCADOPAGO_ACCESS_TOKEN) {
       console.error("MP Checkout Error: MERCADOPAGO_ACCESS_TOKEN is missing.");
@@ -151,8 +152,9 @@ serve(async (req) => {
     });
 
   } catch (error) {
+    // Captura qualquer erro de tempo de execução (ex: erro de rede, erro de sintaxe)
     console.error("MP Checkout Error: Internal Edge Function error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: `Internal Edge Function Error: ${error.message}` }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
