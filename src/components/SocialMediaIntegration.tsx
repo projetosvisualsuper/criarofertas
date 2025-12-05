@@ -53,7 +53,7 @@ const SocialMediaIntegration: React.FC = () => {
         
         if (successParam === 'success') {
             setIsCheckingCallback(true); // Ativa o carregamento
-            showSuccess("Conexão Meta iniciada. Verificando status...");
+            showSuccess("Conexão Meta estabelecida! Buscando detalhes da conta...");
             
             // Força a busca de contas após um pequeno atraso para dar tempo ao DB
             setTimeout(() => {

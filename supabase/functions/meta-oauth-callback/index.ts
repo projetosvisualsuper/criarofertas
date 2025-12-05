@@ -15,7 +15,7 @@ const REDIRECT_URI = `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/meta
 const API_VERSION = 'v24.0';
 
 // URL de fallback de produção
-const PRODUCTION_APP_URL = 'https://criarofertas.vercel.app/#profile';
+const PRODUCTION_APP_URL = 'https://criarofertas.vercel.app'; // Removendo o hash aqui
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -28,7 +28,7 @@ serve(async (req) => {
   
   let userId: string | null = null;
   let appOrigin: string | null = null;
-  let finalRedirect = PRODUCTION_APP_URL; // Define o fallback de produção
+  let finalRedirectBase = PRODUCTION_APP_URL; // Base sem hash ou query
 
   try {
     if (state) {
@@ -38,24 +38,29 @@ serve(async (req) => {
         if (parts.length === 2) {
             userId = parts[0];
             appOrigin = parts[1];
-            // Garante que o redirecionamento use o hash #profile
-            finalRedirect = `${appOrigin}/#profile`;
+            finalRedirectBase = appOrigin;
         }
     }
   } catch (e) {
     console.error("Failed to decode state:", e);
   }
   
+  // Função auxiliar para construir a URL de redirecionamento
+  const buildRedirectUrl = (query: string) => {
+      // Garante que o hash #profile seja sempre adicionado no final
+      return `${finalRedirectBase}${query}#profile`;
+  };
+  
   if (!code || !userId) {
     const missing = `Missing: ${!code ? 'code' : ''} ${!userId ? 'userId' : ''}`;
     console.warn(`Meta OAuth Callback Warning: ${missing}. State received: ${state}`);
-    // Redireciona para a página de perfil sem o erro na URL, forçando o frontend a recarregar o estado.
-    return Response.redirect(finalRedirect, 302);
+    // Redireciona para a página de perfil com o erro na query
+    return Response.redirect(buildRedirectUrl(`?error=${encodeURIComponent("Falha na autenticação Meta. Tente novamente.")}`), 302);
   }
   
   if (!META_APP_ID || !META_APP_SECRET) {
     console.error("Meta secrets not configured.");
-    return Response.redirect(`${finalRedirect}?error=${encodeURIComponent("Meta App ID or Secret not configured in Supabase Secrets.")}`, 302);
+    return Response.redirect(buildRedirectUrl(`?error=${encodeURIComponent("Meta App ID or Secret not configured in Supabase Secrets.")}`), 302);
   }
 
   try {
@@ -126,13 +131,12 @@ serve(async (req) => {
     console.log(`SUCCESS: Meta account connected for user ${userId} with page ${pageName}.`);
 
     // 5. Redirecionar de volta para a página de configurações com sucesso
-    // Adicionamos um parâmetro de consulta para o frontend saber que a conexão foi bem-sucedida
-    return Response.redirect(`${finalRedirect}?meta_connect=success`, 302);
+    return Response.redirect(buildRedirectUrl(`?meta_connect=success`), 302);
 
   } catch (error) {
     console.error("Meta OAuth Error:", error);
     // Redirecionar para a página de configurações com uma mensagem de erro
     const errorMessage = (error as Error).message || "Erro desconhecido durante a autenticação.";
-    return Response.redirect(`${finalRedirect}?error=${encodeURIComponent(errorMessage)}`, 302);
+    return Response.redirect(buildRedirectUrl(`?error=${encodeURIComponent(errorMessage)}`), 302);
   }
 });
