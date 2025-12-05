@@ -7,7 +7,7 @@ import InstagramPostModal from './InstagramPostModal'; // NOVO IMPORT
 
 interface SocialMediaGalleryProps {
   savedImages: SavedImage[];
-  deleteImage: (id: string) => void;
+  deleteImage: (id: string) => void; // Assinatura simplificada para evitar confusão
   setTheme: React.Dispatch<React.SetStateAction<PosterTheme>>;
   handleSelectImageForPreview: (image: SavedImage | null) => void;
   previewImage: SavedImage | null;
