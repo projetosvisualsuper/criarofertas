@@ -38,6 +38,7 @@ serve(async (req) => {
         if (parts.length === 2) {
             userId = parts[0];
             appOrigin = parts[1];
+            // Garante que o redirecionamento use o hash #profile
             finalRedirect = `${appOrigin}/#profile`;
         }
     }
@@ -45,11 +46,11 @@ serve(async (req) => {
     console.error("Failed to decode state:", e);
   }
   
-  // Se o state for inválido, o finalRedirect permanece PRODUCTION_APP_URL
-  
   if (!code || !userId) {
-    // Se o código ou userId estiver faltando, redireciona com erro.
-    return Response.redirect(`${finalRedirect}?error=${encodeURIComponent("Missing code or user ID in callback.")}`, 302);
+    const missing = `Missing: ${!code ? 'code' : ''} ${!userId ? 'userId' : ''}`;
+    console.warn(`Meta OAuth Callback Warning: ${missing}. State received: ${state}`);
+    // Redireciona para a página de perfil sem o erro na URL, forçando o frontend a recarregar o estado.
+    return Response.redirect(finalRedirect, 302);
   }
   
   if (!META_APP_ID || !META_APP_SECRET) {
@@ -125,7 +126,8 @@ serve(async (req) => {
     console.log(`SUCCESS: Meta account connected for user ${userId} with page ${pageName}.`);
 
     // 5. Redirecionar de volta para a página de configurações com sucesso
-    return Response.redirect(finalRedirect, 302);
+    // Adicionamos um parâmetro de consulta para o frontend saber que a conexão foi bem-sucedida
+    return Response.redirect(`${finalRedirect}?meta_connect=success`, 302);
 
   } catch (error) {
     console.error("Meta OAuth Error:", error);

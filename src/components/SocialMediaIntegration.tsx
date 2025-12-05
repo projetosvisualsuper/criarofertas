@@ -15,7 +15,7 @@ const SocialMediaIntegration: React.FC = () => {
   
   const [metaAppId, setMetaAppId] = useState<string | null>(null);
   const [metaAppIdStatus, setMetaAppIdStatus] = useState<'loading' | 'configured' | 'missing'>('loading');
-  const [isCheckingCallback, setIsCheckingCallback] = useState(false); // NOVO ESTADO
+  const [isCheckingCallback, setIsCheckingCallback] = useState(false); 
 
   // Efeito para verificar erros de callback na URL e buscar status dos segredos
   useEffect(() => {
@@ -40,21 +40,20 @@ const SocialMediaIntegration: React.FC = () => {
         // 2. Verificar se estamos voltando de um callback
         const url = new URL(window.location.href);
         const errorParam = url.searchParams.get('error');
-        const hasCallbackParams = url.searchParams.has('code') && url.searchParams.has('state');
+        const successParam = url.searchParams.get('meta_connect'); // NOVO PARÂMETRO
+        
+        // Limpa os parâmetros de consulta da URL
+        url.searchParams.delete('error');
+        url.searchParams.delete('meta_connect');
+        window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
         
         if (errorParam) {
           showError(`Erro de Conexão: ${decodeURIComponent(errorParam)}`);
-          // Limpa o parâmetro de erro da URL
-          url.searchParams.delete('error');
-          window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
         }
         
-        if (hasCallbackParams) {
+        if (successParam === 'success') {
             setIsCheckingCallback(true); // Ativa o carregamento
-            // Limpa os parâmetros para evitar loops
-            url.searchParams.delete('code');
-            url.searchParams.delete('state');
-            window.history.replaceState({}, document.title, url.pathname + window.location.hash);
+            showSuccess("Conexão Meta iniciada. Verificando status...");
             
             // Força a busca de contas após um pequeno atraso para dar tempo ao DB
             setTimeout(() => {
