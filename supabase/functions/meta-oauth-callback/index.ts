@@ -14,6 +14,9 @@ const REDIRECT_URI = `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/meta
 // ATUALIZANDO A VERSÃO DA API PARA V24.0
 const API_VERSION = 'v24.0';
 
+// URL de fallback de produção
+const PRODUCTION_APP_URL = 'https://criarofertas.vercel.app/#profile';
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -25,7 +28,7 @@ serve(async (req) => {
   
   let userId: string | null = null;
   let appOrigin: string | null = null;
-  let finalRedirect = '';
+  let finalRedirect = PRODUCTION_APP_URL; // Define o fallback de produção
 
   try {
     if (state) {
@@ -42,12 +45,7 @@ serve(async (req) => {
     console.error("Failed to decode state:", e);
   }
   
-  // Se o state for inválido ou não existir, usamos a URL de origem da Edge Function como fallback,
-  // mas isso geralmente falha no AI Studio. O ideal é que o state seja sempre válido.
-  if (!finalRedirect) {
-      // Fallback para a URL de origem do Supabase (que não é o que queremos, mas é o que temos)
-      finalRedirect = `${url.origin.replace('/functions/v1/meta-oauth-callback', '')}/#profile`;
-  }
+  // Se o state for inválido, o finalRedirect permanece PRODUCTION_APP_URL
   
   if (!code || !userId) {
     // Se o código ou userId estiver faltando, redireciona com erro.
