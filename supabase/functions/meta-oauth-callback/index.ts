@@ -20,15 +20,19 @@ serve(async (req) => {
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state'); // O state é o userId
   
+  // URL de redirecionamento de sucesso/erro
+  const appOrigin = url.origin.replace('.supabase.co/functions/v1', ''); // Tenta obter a URL base do app
+  const finalRedirect = `${appOrigin}/#profile`;
+  
   if (!code || !state) {
-    return new Response("Missing code or state parameter.", { status: 400 });
+    return Response.redirect(`${finalRedirect}?error=${encodeURIComponent("Missing code or state parameter.")}`, 302);
   }
   
   const userId = state;
   
   if (!META_APP_ID || !META_APP_SECRET) {
     console.error("Meta secrets not configured.");
-    return new Response("Meta App ID or Secret not configured in Supabase Secrets.", { status: 500 });
+    return Response.redirect(`${finalRedirect}?error=${encodeURIComponent("Meta App ID or Secret not configured in Supabase Secrets.")}`, 302);
   }
 
   try {
@@ -37,30 +41,31 @@ serve(async (req) => {
     
     const tokenResponse = await fetch(tokenUrl);
     if (!tokenResponse.ok) {
-        const errorBody = await tokenResponse.text();
+        const errorBody = await tokenResponse.json();
         console.error("Meta Token Exchange Failed:", errorBody);
-        throw new Error(`Meta token exchange failed: ${tokenResponse.status}`);
+        throw new Error(`Meta token exchange failed: ${errorBody.error?.message || tokenResponse.status}`);
     }
     const tokenData = await tokenResponse.json();
     const shortLivedToken = tokenData.access_token;
     
     // 2. Trocar o token de curta duração por um token de longa duração
+    // Este passo é crucial para tokens de página.
     const longLivedTokenUrl = `https://graph.facebook.com/v20.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${META_APP_ID}&client_secret=${META_APP_SECRET}&fb_exchange_token=${shortLivedToken}`;
     
     const longLivedResponse = await fetch(longLivedTokenUrl);
     if (!longLivedResponse.ok) {
-        const errorBody = await longLivedResponse.text();
+        const errorBody = await longLivedResponse.json();
         console.error("Meta Long-Lived Token Exchange Failed:", errorBody);
-        throw new Error(`Meta long-lived token exchange failed: ${longLivedResponse.status}`);
+        throw new Error(`Meta long-lived token exchange failed: ${errorBody.error?.message || longLivedResponse.status}`);
     }
     const longLivedData = await longLivedResponse.json();
-    const longLivedToken = longLivedData.access_token;
+    const longLivedUserToken = longLivedData.access_token;
     const expiresInSeconds = longLivedData.expires_in || (60 * 24 * 60 * 60); // 60 dias padrão se não especificado
     
     const expiresAt = new Date(Date.now() + expiresInSeconds * 1000).toISOString();
 
-    // 3. Obter a lista de Páginas do usuário (necessário para postar no Instagram/Facebook)
-    const pagesUrl = `https://graph.facebook.com/v20.0/me/accounts?access_token=${longLivedToken}`;
+    // 3. Obter a lista de Páginas do usuário usando o token de longa duração
+    const pagesUrl = `https://graph.facebook.com/v20.0/me/accounts?access_token=${longLivedUserToken}`;
     const pagesResponse = await fetch(pagesUrl);
     const pagesData = await pagesResponse.json();
     
@@ -71,7 +76,7 @@ serve(async (req) => {
     
     // Para simplificar, vamos usar a primeira página encontrada e seu token de página
     const page = pagesData.data[0];
-    const pageAccessToken = page.access_token;
+    const pageAccessToken = page.access_token; // Este é o token de página (que é de longa duração)
     const pageId = page.id;
     const pageName = page.name;
 
@@ -98,13 +103,12 @@ serve(async (req) => {
     }
 
     // 5. Redirecionar de volta para a página de configurações com sucesso
-    const successRedirect = `${url.origin}/#settings`;
-    return Response.redirect(successRedirect, 302);
+    return Response.redirect(finalRedirect, 302);
 
   } catch (error) {
     console.error("Meta OAuth Error:", error);
     // Redirecionar para a página de configurações com uma mensagem de erro
-    const errorRedirect = `${url.origin}/#settings?error=${encodeURIComponent(error.message)}`;
-    return Response.redirect(errorRedirect, 302);
+    const errorMessage = (error as Error).message || "Erro desconhecido durante a autenticação.";
+    return Response.redirect(`${finalRedirect}?error=${encodeURIComponent(errorMessage)}`, 302);
   }
 });
