@@ -4,7 +4,9 @@ import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat, SavedImage } from '../../types';
 import { Image } from 'lucide-react';
 import { INITIAL_THEME } from '../state/initialState';
-import { showSuccess, showError } from '../utils/toast'; // Importando toasts
+import { showSuccess, showError } from '../utils/toast';
+import { useSocialMediaAccounts } from '../hooks/useSocialMediaAccounts'; // NOVO IMPORT
+import { useAuth } from '../context/AuthContext'; // NOVO IMPORT
 
 interface SocialMediaPageProps {
   theme: PosterTheme;
@@ -16,13 +18,21 @@ interface SocialMediaPageProps {
   deleteImage: (id: string) => Promise<void>;
 }
 
+// Filtra o formato 'tv' (que é para slides)
+const availableFormats = formats.filter(f => f.id !== 'tv');
+const defaultFormat = availableFormats.find(f => f.id === 'feed');
+
 export default function SocialMediaPage({ theme, setTheme, products, setProducts, formats, savedImages, deleteImage }: SocialMediaPageProps) {
+  const { session } = useAuth();
+  const userId = session?.user?.id;
+  const { accounts } = useSocialMediaAccounts(userId); // Busca contas conectadas
+  
   const [isDownloading, setIsDownloading] = useState(false);
-  const [previewImage, setPreviewImage] = useState<SavedImage | null>(null); // Novo estado para a imagem estática
+  const [previewImage, setPreviewImage] = useState<SavedImage | null>(null);
   const posterRef = useRef<PosterPreviewRef>(null);
   
-  // Inclui todos os formatos, exceto 'tv' (que é para slides)
-  const availableFormats = formats.filter(f => f.id !== 'tv');
+  // Encontra a conta Meta (Facebook/Instagram)
+  const metaAccount = accounts.find(a => a.platform === 'meta');
 
   const applyFormatPreset = useCallback((newFormat: PosterFormat) => {
     setTheme(prevTheme => ({
@@ -36,15 +46,12 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
     const isAvailableFormat = availableFormats.some(f => f.id === theme.format.id);
     
     // Se o formato atual não for um formato disponível (ex: se veio do TV/Slides), define o padrão como 'feed'
-    if (!isAvailableFormat) {
-      const defaultFormat = availableFormats.find(f => f.id === 'feed');
-      if (defaultFormat) {
-        applyFormatPreset(defaultFormat);
-      }
+    if (!isAvailableFormat && defaultFormat) {
+      applyFormatPreset(defaultFormat);
     }
-  }, [theme.format.id, availableFormats, applyFormatPreset]);
+  }, [theme.format.id, applyFormatPreset]);
 
-  const handleDownload = async () => { // Tornar a função assíncrona
+  const handleDownload = async () => {
     if (previewImage) {
       // Caso 1: Baixar a imagem salva estática (Forçando download via Blob para cross-origin)
       setIsDownloading(true);
@@ -80,8 +87,6 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
       }
     } else if (posterRef.current) {
       // Caso 2: Tentar baixar o preview editável (se for renderizado)
-      // Nota: O PosterPreview não é renderizado quando previewImage está ativo.
-      // Se o usuário estiver na aba 'formats' e clicar em download, ele tentará baixar o preview.
       posterRef.current.triggerDownload();
     } else {
       showError("Nenhuma arte selecionada ou carregada para download.");
@@ -148,14 +153,15 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
       <SocialMediaSidebar 
         theme={theme} 
         setTheme={setTheme} 
-        formats={availableFormats} // Passando todos os formatos disponíveis
+        formats={availableFormats}
         handleDownload={handleDownload}
         handleFormatChange={applyFormatPreset}
         savedImages={savedImages}
         deleteImage={deleteImage}
         handleSelectImageForPreview={handleSelectImageForPreview}
         previewImage={previewImage}
-        activeFormatName={theme.format.name} // Passando o nome do formato ativo para filtro
+        activeFormatName={theme.format.name}
+        metaAccount={metaAccount} // PASSANDO A CONTA META
       />
       
       <main className="flex-1 bg-gray-100 relative h-full flex flex-col">

@@ -1,7 +1,9 @@
 import React from 'react';
 import { SavedImage, PosterTheme } from '../../types';
-import { Trash2, Download, Image, Clock, RefreshCw, Eye } from 'lucide-react';
+import { Trash2, Download, Image, Clock, RefreshCw, Eye, Instagram } from 'lucide-react';
 import { showSuccess, showError } from '../utils/toast';
+import { SocialMediaAccount } from '../../types';
+import InstagramPostModal from './InstagramPostModal'; // NOVO IMPORT
 
 interface SocialMediaGalleryProps {
   savedImages: SavedImage[];
@@ -9,13 +11,12 @@ interface SocialMediaGalleryProps {
   setTheme: React.Dispatch<React.SetStateAction<PosterTheme>>;
   handleSelectImageForPreview: (image: SavedImage | null) => void;
   previewImage: SavedImage | null;
-  activeFormatName: string; // Nova prop para filtro
+  activeFormatName: string;
+  metaAccount: SocialMediaAccount | undefined; // NOVO: Conta Meta
 }
 
-const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, deleteImage, setTheme, handleSelectImageForPreview, previewImage, activeFormatName }) => {
+const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, deleteImage, setTheme, handleSelectImageForPreview, previewImage, activeFormatName, metaAccount }) => {
 
-  // Removendo handleDownload daqui. O download será feito pelo botão principal da sidebar.
-  
   const handleLoadTheme = (image: SavedImage) => {
     // Restaura o tema completo, incluindo o formato
     setTheme(image.theme);
@@ -73,8 +74,24 @@ const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, de
                 >
                   <Eye size={14} /> {isSelected ? 'Voltar' : 'Visualizar'}
                 </button>
+                
+                {/* Botão de Postagem no Instagram */}
+                {metaAccount && (
+                    <InstagramPostModal
+                        image={image}
+                        metaAccount={metaAccount}
+                        trigger={
+                            <button
+                                className="flex items-center gap-1 p-2 bg-pink-600 text-white rounded-full hover:bg-pink-700 transition-colors shadow-lg text-xs font-bold"
+                                title="Publicar no Instagram"
+                            >
+                                <Instagram size={14} /> Postar
+                            </button>
+                        }
+                    />
+                )}
+                
                 <div className="flex space-x-2">
-                  {/* Botão de Download removido daqui */}
                   <button
                     onClick={() => deleteImage(image.id)}
                     className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-lg"

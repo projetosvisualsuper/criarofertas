@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { PosterTheme, PosterFormat, SavedImage } from '../../types';
-import { Download, LayoutTemplate, Image as ImageIcon, Share2 } from 'lucide-react';
+import { PosterTheme, PosterFormat, SavedImage, SocialMediaAccount } from '../../types';
+import { Download, LayoutTemplate, Image as ImageIcon, Share2, Facebook, AlertTriangle } from 'lucide-react';
 import SocialMediaGallery from './SocialMediaGallery';
 import { showSuccess, showError } from '../utils/toast';
 
@@ -14,9 +14,10 @@ interface SocialMediaSidebarProps {
   deleteImage: (id: string) => void;
   handleSelectImageForPreview: (image: SavedImage | null) => void;
   previewImage: SavedImage | null;
+  metaAccount: SocialMediaAccount | undefined; // NOVO: Conta Meta
 }
 
-const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme, formats, handleDownload, handleFormatChange, savedImages, deleteImage, handleSelectImageForPreview, previewImage }) => {
+const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme, formats, handleDownload, handleFormatChange, savedImages, deleteImage, handleSelectImageForPreview, previewImage, metaAccount }) => {
   const [activeTab, setActiveTab] = useState<'formats' | 'gallery'>('gallery'); // Mudando o padrão para 'gallery'
 
   const handleTabChange = (tab: 'formats' | 'gallery') => {
@@ -124,6 +125,16 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
         
         {activeTab === 'gallery' && (
           <>
+            {/* Aviso de Conexão Meta */}
+            {!metaAccount && (
+                <div className="p-3 bg-red-50 rounded-lg border border-red-200 flex items-center gap-2">
+                    <AlertTriangle size={16} className="text-red-600 shrink-0" />
+                    <p className="text-xs font-medium text-red-800">
+                        Conecte sua conta Meta no <a href="#profile" className="font-bold underline">Meu Perfil</a> para postar diretamente.
+                    </p>
+                </div>
+            )}
+            
             {previewImage && (
               <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-200 flex items-center justify-between">
                 <p className="text-sm font-semibold text-indigo-800">Visualizando: {previewImage.formatName}</p>
@@ -141,7 +152,8 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
               setTheme={setTheme} 
               handleSelectImageForPreview={handleSelectImageForPreview}
               previewImage={previewImage}
-              activeFormatName={theme.format.name} // Passando o nome do formato ativo para filtro
+              activeFormatName={theme.format.name}
+              metaAccount={metaAccount} // PASSANDO A CONTA META
             />
           </>
         )}
