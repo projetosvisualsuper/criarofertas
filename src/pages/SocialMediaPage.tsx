@@ -6,7 +6,7 @@ import { Image } from 'lucide-react';
 import { INITIAL_THEME } from '../state/initialState';
 import { showSuccess, showError } from '../utils/toast';
 import { useSocialMediaAccounts } from '../hooks/useSocialMediaAccounts'; // NOVO IMPORT
-import { useAuth } from '../context/AuthContext'; // NOVO IMPORT
+import { useAuth } from '../context/useAuth'; // NOVO IMPORT
 
 interface SocialMediaPageProps {
   theme: PosterTheme;
@@ -15,7 +15,7 @@ interface SocialMediaPageProps {
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   formats: PosterFormat[]; // Full list from App.tsx
   savedImages: SavedImage[];
-  deleteImage: (id: string) => Promise<void>; // CORREÇÃO: Apenas ID
+  deleteImage: (id: string) => void; // Simplificando a tipagem para evitar problemas de Promise
 }
 
 // Filtra o formato 'tv' (que é para slides)
