@@ -135,7 +135,9 @@ serve(async (req) => {
         }
         
         const errorMsg = `Mercado Pago API failed (${mpResponse.status}): ${errorBody.message || 'Unknown error'}. Verifique o Access Token e as permissões.`;
-        console.error("MP Checkout Error:", errorMsg);
+        
+        // NOVO: Loga o corpo completo do erro para o console do Supabase
+        console.error("MP Checkout Error: Mercado Pago API failed:", mpResponse.status, JSON.stringify(errorBody));
         
         // Retorna o erro detalhado para o frontend
         return new Response(JSON.stringify({ 
