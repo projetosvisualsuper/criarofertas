@@ -15,7 +15,7 @@ const ProfilePage: React.FC = () => {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [isCancellingPlan, setIsCancellingPlan] = useState(false);
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false); // Novo estado
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
   if (!profile || !session) {
     return (
@@ -111,71 +111,6 @@ const ProfilePage: React.FC = () => {
 
   // --- Componentes de Seção ---
 
-  const ProfileSection = () => (
-    <div className="p-6 bg-white rounded-xl shadow-md space-y-4 h-full">
-      <h3 className="text-xl font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
-        <UserCircle size={20} className="text-indigo-600" /> Detalhes do Perfil
-      </h3>
-      
-      <div className="flex items-center gap-3 text-sm text-gray-600">
-        <Mail size={16} className="text-gray-500" />
-        <span className="font-medium">Email:</span> {session.user.email}
-      </div>
-
-      <form onSubmit={handleUpdateProfile} className="space-y-3">
-        <div>
-          <label htmlFor="username" className="text-sm font-medium text-gray-700 block mb-1">Nome de Usuário</label>
-          <input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-            placeholder="Seu nome de usuário"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={isSavingProfile || username === profile.username}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
-        >
-          {isSavingProfile ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-          Salvar Nome de Usuário
-        </button>
-      </form>
-    </div>
-  );
-
-  const PasswordSection = () => (
-    <div className="p-6 bg-white rounded-xl shadow-md space-y-4 h-full">
-      <h3 className="text-xl font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
-        <Key size={20} className="text-indigo-600" /> Alterar Senha
-      </h3>
-      
-      <form onSubmit={handleUpdatePassword} className="space-y-3">
-        <div>
-          <label htmlFor="new-password" className="text-sm font-medium text-gray-700 block mb-1">Nova Senha</label>
-          <input
-            id="new-password"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-            placeholder="Mínimo 6 caracteres"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={isUpdatingPassword || newPassword.length < 6}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
-        >
-          {isUpdatingPassword ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-          Atualizar Senha
-        </button>
-      </form>
-    </div>
-  );
-
   const PlanSection = () => (
     <div className="p-6 bg-white rounded-xl shadow-md space-y-4">
       <h3 className="text-xl font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
@@ -230,11 +165,73 @@ const ProfilePage: React.FC = () => {
             <PlanSection />
         </div>
         <div className="lg:col-span-2 space-y-6">
-            {/* Novo Grid para Perfil e Senha */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ProfileSection />
-                <PasswordSection />
+            {/* NOVO CARD COMBINADO: Detalhes do Perfil e Senha */}
+            <div className="p-6 bg-white rounded-xl shadow-md space-y-6">
+                
+                {/* Detalhes do Perfil */}
+                <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
+                        <UserCircle size={20} className="text-indigo-600" /> Detalhes do Perfil
+                    </h3>
+                    
+                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <Mail size={16} className="text-gray-500 shrink-0" />
+                        <span className="font-medium">Email:</span> <span className="truncate">{session.user.email}</span>
+                    </div>
+
+                    <form onSubmit={handleUpdateProfile} className="space-y-3">
+                        <div>
+                            <label htmlFor="username" className="text-sm font-medium text-gray-700 block mb-1">Nome de Usuário</label>
+                            <input
+                                id="username"
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                placeholder="Seu nome de usuário"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={isSavingProfile || username === profile.username}
+                            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
+                        >
+                            {isSavingProfile ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                            Salvar Nome de Usuário
+                        </button>
+                    </form>
+                </div>
+                
+                {/* Alterar Senha */}
+                <div className="space-y-4 border-t pt-6">
+                    <h3 className="text-xl font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
+                        <Key size={20} className="text-indigo-600" /> Alterar Senha
+                    </h3>
+                    
+                    <form onSubmit={handleUpdatePassword} className="space-y-3">
+                        <div>
+                            <label htmlFor="new-password" className="text-sm font-medium text-gray-700 block mb-1">Nova Senha</label>
+                            <input
+                                id="new-password"
+                                type="password"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                placeholder="Mínimo 6 caracteres"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={isUpdatingPassword || newPassword.length < 6}
+                            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
+                        >
+                            {isUpdatingPassword ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                            Atualizar Senha
+                        </button>
+                    </form>
+                </div>
             </div>
+            
             <SocialMediaIntegration />
         </div>
       </div>
