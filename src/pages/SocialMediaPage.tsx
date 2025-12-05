@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import SocialMediaSidebar from '../components/SocialMediaSidebar';
 import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat, SavedImage } from '../../types';
@@ -6,7 +6,7 @@ import { Image } from 'lucide-react';
 import { INITIAL_THEME } from '../state/initialState';
 import { showSuccess, showError } from '../utils/toast';
 import { useSocialMediaAccounts } from '../hooks/useSocialMediaAccounts';
-import { useAuth } from '../context/AuthContext'; // CORREÇÃO: Importando de AuthContext
+import { useAuth } from '../context/AuthContext';
 
 interface SocialMediaPageProps {
   theme: PosterTheme;
@@ -18,10 +18,6 @@ interface SocialMediaPageProps {
   deleteImage: (id: string) => void; // Simplificando a tipagem para evitar problemas de Promise
 }
 
-// Filtra o formato 'tv' (que é para slides)
-const availableFormats = formats.filter(f => f.id !== 'tv');
-const defaultFormat = availableFormats.find(f => f.id === 'feed');
-
 export default function SocialMediaPage({ theme, setTheme, products, setProducts, formats, savedImages, deleteImage }: SocialMediaPageProps) {
   const { session } = useAuth();
   const userId = session?.user?.id;
@@ -30,6 +26,10 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
   const [isDownloading, setIsDownloading] = useState(false);
   const [previewImage, setPreviewImage] = useState<SavedImage | null>(null);
   const posterRef = useRef<PosterPreviewRef>(null);
+  
+  // Mover a lógica de filtragem para dentro do componente
+  const availableFormats = useMemo(() => formats.filter(f => f.id !== 'tv'), [formats]);
+  const defaultFormat = useMemo(() => availableFormats.find(f => f.id === 'feed'), [availableFormats]);
   
   // Encontra a conta Meta (Facebook/Instagram)
   const metaAccount = accounts.find(a => a.platform === 'meta');
@@ -49,7 +49,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
     if (!isAvailableFormat && defaultFormat) {
       applyFormatPreset(defaultFormat);
     }
-  }, [theme.format.id, applyFormatPreset]);
+  }, [theme.format.id, applyFormatPreset, availableFormats, defaultFormat]);
 
   const handleDownload = async () => {
     if (previewImage) {
