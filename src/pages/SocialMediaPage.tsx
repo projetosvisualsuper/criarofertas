@@ -5,8 +5,8 @@ import { Product, PosterTheme, PosterFormat, SavedImage } from '../../types';
 import { Image } from 'lucide-react';
 import { INITIAL_THEME } from '../state/initialState';
 import { showSuccess, showError } from '../utils/toast';
-import { useSocialMediaAccounts } from '../hooks/useSocialMediaAccounts'; // NOVO IMPORT
-import { useAuth } from '../context/useAuth'; // NOVO IMPORT
+import { useSocialMediaAccounts } from '../hooks/useSocialMediaAccounts';
+import { useAuth } from '../context/AuthContext'; // CORREÇÃO: Importando de AuthContext
 
 interface SocialMediaPageProps {
   theme: PosterTheme;
