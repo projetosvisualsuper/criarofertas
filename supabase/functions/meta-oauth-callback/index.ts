@@ -9,13 +9,14 @@ const corsHeaders = {
 // Segredos do Meta (Facebook/Instagram)
 const META_APP_ID = Deno.env.get('META_APP_ID');
 const META_APP_SECRET = Deno.env.get('META_APP_SECRET');
+// URL de redirecionamento EXATA que deve estar configurada no painel do Meta
 const REDIRECT_URI = `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/meta-oauth-callback`;
 
 // ATUALIZANDO A VERSÃO DA API PARA V24.0
 const API_VERSION = 'v24.0';
 
 // URL de fallback de produção
-const PRODUCTION_APP_URL = 'https://criarofertas.vercel.app'; // Removendo o hash aqui
+const PRODUCTION_APP_URL = 'https://criarofertas.vercel.app'; // Base sem hash ou query
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -65,13 +66,15 @@ serve(async (req) => {
 
   try {
     // 1. Trocar o código de autorização por um token de acesso de curta duração
+    // Usamos a constante REDIRECT_URI aqui para garantir a correspondência exata
     const tokenUrl = `https://graph.facebook.com/${API_VERSION}/oauth/access_token?client_id=${META_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&client_secret=${META_APP_SECRET}&code=${code}`;
     
     const tokenResponse = await fetch(tokenUrl);
     if (!tokenResponse.ok) {
         const errorBody = await tokenResponse.json();
         console.error("Meta Token Exchange Failed:", errorBody);
-        throw new Error(`Meta token exchange failed: ${errorBody.error?.message || tokenResponse.status}`);
+        // Lança o erro 400 para ser capturado e exibido no frontend
+        throw new Error(`Meta token exchange failed: ${tokenResponse.status} - ${errorBody.error?.message || 'Unknown Meta API error'}`);
     }
     const tokenData = await tokenResponse.json();
     const shortLivedToken = tokenData.access_token;
@@ -83,7 +86,7 @@ serve(async (req) => {
     if (!longLivedResponse.ok) {
         const errorBody = await longLivedResponse.json();
         console.error("Meta Long-Lived Token Exchange Failed:", errorBody);
-        throw new Error(`Meta long-lived token exchange failed: ${errorBody.error?.message || longLivedResponse.status}`);
+        throw new Error(`Meta long-lived token exchange failed: ${longLivedResponse.status} - ${errorBody.error?.message || 'Unknown Meta API error'}`);
     }
     const longLivedData = await longLivedResponse.json();
     const longLivedUserToken = longLivedData.access_token;
