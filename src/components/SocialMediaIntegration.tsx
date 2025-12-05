@@ -73,11 +73,9 @@ const SocialMediaIntegration: React.FC = () => {
     
     const REDIRECT_URI = `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/meta-oauth-callback`;
     
+    // Escopos essenciais e modernos para postagem
     const scopes = [
-        'pages_show_list', 
         'instagram_basic', 
-        'instagram_manage_comments', 
-        'instagram_manage_insights', 
         'pages_read_engagement', 
         'pages_manage_posts'
     ].join(',');
