@@ -66,15 +66,25 @@ serve(async (req) => {
 
   try {
     // 1. Trocar o código de autorização por um token de acesso de curta duração
-    // Usamos a constante REDIRECT_URI aqui para garantir a correspondência exata
     const tokenUrl = `https://graph.facebook.com/${API_VERSION}/oauth/access_token?client_id=${META_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&client_secret=${META_APP_SECRET}&code=${code}`;
     
     const tokenResponse = await fetch(tokenUrl);
     if (!tokenResponse.ok) {
-        const errorBody = await tokenResponse.json();
-        console.error("Meta Token Exchange Failed:", errorBody);
-        // Lança o erro 400 para ser capturado e exibido no frontend
-        throw new Error(`Meta token exchange failed: ${tokenResponse.status} - ${errorBody.error?.message || 'Unknown Meta API error'}`);
+        let errorMessage = `Meta token exchange failed: ${tokenResponse.status}`;
+        try {
+            const errorBody = await tokenResponse.json();
+            errorMessage += ` - ${errorBody.error?.message || 'Unknown Meta API error'}`;
+        } catch (e) {
+            // Se não for JSON, apenas usa o status
+        }
+        console.error("Meta Token Exchange Failed:", errorMessage);
+        
+        // Se for erro 400, sugere a verificação de chaves/URL
+        if (tokenResponse.status === 400) {
+            throw new Error("Falha na troca de token (Erro 400). Verifique se o META_APP_SECRET está correto e se a URL de redirecionamento está configurada no Meta.");
+        }
+        
+        throw new Error(errorMessage);
     }
     const tokenData = await tokenResponse.json();
     const shortLivedToken = tokenData.access_token;
