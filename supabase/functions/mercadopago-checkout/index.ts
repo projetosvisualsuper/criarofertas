@@ -14,7 +14,10 @@ serve(async (req) => {
   }
 
   try {
+    console.log("MP Checkout: Starting request processing.");
+
     if (!MERCADOPAGO_ACCESS_TOKEN) {
+      console.error("MP Checkout Error: MERCADOPAGO_ACCESS_TOKEN is missing.");
       return new Response(JSON.stringify({ error: "MERCADOPAGO_ACCESS_TOKEN is not configured in Supabase Secrets." }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -26,12 +29,14 @@ serve(async (req) => {
         const body = await req.json();
         planRole = body.planRole;
         userId = body.userId;
+        console.log(`MP Checkout: Received body - planRole: ${planRole}, userId: ${userId}`);
     } catch (e) {
-        console.error("Failed to parse request body:", e);
+        console.error("MP Checkout Error: Failed to parse request body.", e);
         return new Response(JSON.stringify({ error: 'Invalid JSON body received.' }), { status: 400, headers: corsHeaders });
     }
     
     if (!planRole || !userId) {
+        console.error("MP Checkout Error: Missing planRole or userId.");
         return new Response(JSON.stringify({ error: 'Missing planRole or userId in request body' }), { status: 400, headers: corsHeaders });
     }
     
@@ -49,7 +54,7 @@ serve(async (req) => {
         .single();
         
     if (planError || !planConfig) {
-        console.error("Error fetching plan configuration:", planError);
+        console.error("MP Checkout Error: Error fetching plan configuration:", planError);
         return new Response(JSON.stringify({ error: `Plan configuration not found for role: ${planRole}` }), { status: 404, headers: corsHeaders });
     }
     
@@ -64,11 +69,13 @@ serve(async (req) => {
     }
     
     if (isNaN(priceValue) || priceValue <= 0) {
+        console.error(`MP Checkout Error: Invalid price value found: ${planConfig.price}`);
         return new Response(JSON.stringify({ error: `Invalid price value found in DB for plan ${planRole}: ${planConfig.price}` }), { status: 400, headers: corsHeaders });
     }
     
     // Garante que o valor tenha duas casas decimais
     const transactionAmount = parseFloat(priceValue.toFixed(2));
+    console.log(`MP Checkout: Plan found. Price: ${planConfig.price}, Transaction Amount: ${transactionAmount}`);
     
     // 4. Cria o payload da Preferência de Assinatura (Preapproval)
     const externalReference = `${userId}_${planRole}`;
@@ -89,6 +96,8 @@ serve(async (req) => {
         external_reference: externalReference, 
         notification_url: notificationUrl,
     };
+    
+    console.log("MP Checkout: Sending Preapproval Payload:", JSON.stringify(preapprovalPayload));
 
     // 5. Chama a API do Mercado Pago para criar a preferência de assinatura
     const mpResponse = await fetch("https://api.mercadopago.com/preapproval", {
@@ -109,7 +118,7 @@ serve(async (req) => {
             errorBody = { message: await mpResponse.text() };
         }
         
-        console.error("Mercado Pago API Error:", mpResponse.status, errorBody);
+        console.error("MP Checkout Error: Mercado Pago API failed:", mpResponse.status, errorBody);
         
         // Retorna o erro detalhado para o frontend
         return new Response(JSON.stringify({ 
@@ -121,6 +130,7 @@ serve(async (req) => {
     }
     
     const preapproval = await mpResponse.json();
+    console.log("MP Checkout: Preapproval created successfully.");
 
     // 6. Retorna o link de checkout
     return new Response(JSON.stringify({ 
@@ -131,7 +141,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("Error in Mercado Pago Checkout Edge Function:", error);
+    console.error("MP Checkout Error: Internal Edge Function error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
