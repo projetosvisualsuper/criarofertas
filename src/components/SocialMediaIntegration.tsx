@@ -74,15 +74,18 @@ const SocialMediaIntegration: React.FC = () => {
     const REDIRECT_URI = `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/meta-oauth-callback`;
     
     // Escopos essenciais e modernos para postagem
-    // Removendo 'instagram_basic' para evitar o erro de escopo inválido
     const scopes = [
         'public_profile', 
         'pages_read_engagement', 
         'pages_manage_posts'
     ].join(',');
+    
+    // NOVO: Codifica o userId e a URL de origem no parâmetro state
+    const appOrigin = window.location.origin;
+    const statePayload = `${userId}|${appOrigin}`;
 
     // AGORA USAMOS O ID REAL DO APLICATIVO
-    const authUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scopes}&state=${userId}`;
+    const authUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scopes}&state=${encodeURIComponent(statePayload)}`;
     
     // Redireciona o usuário para o Meta para iniciar o login
     window.location.href = authUrl;

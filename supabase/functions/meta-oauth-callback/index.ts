@@ -18,17 +18,37 @@ serve(async (req) => {
   
   const url = new URL(req.url);
   const code = url.searchParams.get('code');
-  const state = url.searchParams.get('state'); // O state é o userId
+  const state = url.searchParams.get('state');
   
-  // URL de redirecionamento de sucesso/erro
-  const appOrigin = url.origin.replace('.supabase.co/functions/v1', ''); // Tenta obter a URL base do app
-  const finalRedirect = `${appOrigin}/#profile`;
-  
-  if (!code || !state) {
-    return Response.redirect(`${finalRedirect}?error=${encodeURIComponent("Missing code or state parameter.")}`, 302);
+  let userId: string | null = null;
+  let appOrigin: string | null = null;
+  let finalRedirect = '';
+
+  try {
+    if (state) {
+        // O state agora é 'userId|appOrigin'
+        const decodedState = decodeURIComponent(state);
+        const parts = decodedState.split('|');
+        if (parts.length === 2) {
+            userId = parts[0];
+            appOrigin = parts[1];
+            finalRedirect = `${appOrigin}/#profile`;
+        }
+    }
+  } catch (e) {
+    console.error("Failed to decode state:", e);
+    // Se a decodificação falhar, tentamos usar um fallback
+    finalRedirect = `https://ofertaflash.vercel.app/#profile`;
   }
   
-  const userId = state;
+  if (!finalRedirect) {
+      // Fallback se o state for inválido
+      finalRedirect = `https://ofertaflash.vercel.app/#profile`;
+  }
+  
+  if (!code || !userId) {
+    return Response.redirect(`${finalRedirect}?error=${encodeURIComponent("Missing code or state parameter.")}`, 302);
+  }
   
   if (!META_APP_ID || !META_APP_SECRET) {
     console.error("Meta secrets not configured.");
@@ -49,7 +69,6 @@ serve(async (req) => {
     const shortLivedToken = tokenData.access_token;
     
     // 2. Trocar o token de curta duração por um token de longa duração
-    // Este passo é crucial para tokens de página.
     const longLivedTokenUrl = `https://graph.facebook.com/v20.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${META_APP_ID}&client_secret=${META_APP_SECRET}&fb_exchange_token=${shortLivedToken}`;
     
     const longLivedResponse = await fetch(longLivedTokenUrl);
@@ -70,7 +89,6 @@ serve(async (req) => {
     const pagesData = await pagesResponse.json();
     
     if (!pagesData.data || pagesData.data.length === 0) {
-        // Se o usuário não tiver páginas, não podemos postar no Instagram/Facebook
         throw new Error("Nenhuma página do Facebook encontrada. Você precisa de uma página para postar no Instagram.");
     }
     
