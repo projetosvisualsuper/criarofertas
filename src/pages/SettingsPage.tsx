@@ -73,6 +73,9 @@ const SettingsPage: React.FC = () => {
                     </code>
                 </li>
                 <li>Certifique-se de que o ID do usuário do Supabase (`auth.uid()`) seja enviado como `external_reference` ao criar a preferência de pagamento.</li>
+                <li className="text-red-700 font-bold mt-2">
+                    ⚠️ Verificação de Permissão: Certifique-se de que o seu MERCADOPAGO_ACCESS_TOKEN tenha permissão para criar "Preapprovals" (Assinaturas) na API do Mercado Pago.
+                </li>
             </ol>
         </div>
         
