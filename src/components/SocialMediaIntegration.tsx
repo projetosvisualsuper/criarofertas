@@ -80,8 +80,11 @@ const SocialMediaIntegration: React.FC = () => {
         'pages_manage_posts'
     ].join(',');
     
-    // NOVO: Codifica o userId e a URL de origem no parâmetro state
-    const appOrigin = window.location.origin;
+    // CORREÇÃO: Se estiver em localhost, forçamos a URL de produção para o redirecionamento final.
+    const appOrigin = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
+        ? 'https://criarofertas.vercel.app' // URL de produção fornecida pelo usuário
+        : window.location.origin;
+        
     const statePayload = `${userId}|${appOrigin}`;
 
     // AGORA USAMOS O ID REAL DO APLICATIVO
