@@ -6,6 +6,7 @@ import { Profile } from '../../types';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError, showLoading, updateToast } from '../utils/toast';
 import { usePlanConfigurations } from '../hooks/usePlanConfigurations';
+import { useAuth } from '../context/AuthContext'; // Importando useAuth
 
 interface PlanUpgradeModalProps {
   profile: Profile;
@@ -29,6 +30,7 @@ const PERMISSION_TRANSLATIONS: Record<Permission | string, string> = {
 };
 
 const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, onPlanUpdated }) => {
+  const { session } = useAuth(); // Obtendo a sessão aqui
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const currentPlan = profile.role;
@@ -88,11 +90,9 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
                 planRole: planRole,
                 userId: profile.id,
             },
-            // Adicionando um cabeçalho de autorização vazio para contornar o erro 401
-            // Isso força o Supabase a não enviar o JWT do usuário, se o problema for um JWT inválido/expirado
-            // que o runtime está rejeitando, ou se a função foi configurada incorretamente.
+            // Adicionando o access_token da sessão
             headers: {
-                'Authorization': 'Bearer ' + session?.access_token, // Enviamos o token se estiver disponível
+                'Authorization': 'Bearer ' + session?.access_token, 
             }
         });
 
