@@ -121,6 +121,8 @@ serve(async (req) => {
         console.error("Supabase DB Error:", dbError);
         throw new Error(`Falha ao salvar token no banco de dados: ${dbError.message}`);
     }
+    
+    console.log(`SUCCESS: Meta account connected for user ${userId} with page ${pageName}.`);
 
     // 5. Redirecionar de volta para a página de configurações com sucesso
     return Response.redirect(finalRedirect, 302);
