@@ -21,10 +21,9 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
 
   const modules = [
     { id: 'dashboard', name: 'Dashboard', icon: Home },
-    // { id: 'orders', name: 'Pedidos', icon: ListOrdered }, // Removido
     { id: 'users', name: 'Clientes', icon: Users },
     { id: 'plans', name: 'Planos', icon: Zap },
-    { id: 'ai-costs', name: 'Custos de IA', icon: DollarSign }, // NOVO MÓDULO
+    { id: 'ai-costs', name: 'Custos de IA', icon: DollarSign }, // MÓDULO DE CUSTOS
     { id: 'images', name: 'Banco de Imagens', icon: Image },
     { id: 'global-templates', name: 'Templates Globais', icon: LayoutTemplate },
     { id: 'reports', name: 'Relatórios SaaS', icon: BarChart3 },
@@ -35,10 +34,9 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
   const renderContent = () => {
     switch (activeAdminModule) {
       case 'dashboard': return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;
-      // case 'orders': return <AdminOrderManagementPage />; // Removido
       case 'users': return <AdminUserManagementPage />;
       case 'plans': return <AdminPlanManagementPage />;
-      case 'ai-costs': return <AdminAICostsPage />; // NOVO COMPONENTE
+      case 'ai-costs': return <AdminAICostsPage />; // RENDERIZAÇÃO DO COMPONENTE
       case 'images': return <AdminImageUploadPage />;
       case 'global-templates': return <AdminGlobalTemplatesPage />;
       case 'reports': return <AdminReportsPage />;
