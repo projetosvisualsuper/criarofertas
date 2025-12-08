@@ -41,22 +41,25 @@ const AdminEditUserModal: React.FC<AdminEditUserModalProps> = ({ isOpen, onClose
     }
 
     // 1. Atualiza o perfil com o novo role e as permissões dinâmicas.
-    // O trigger handle_user_plan_change no DB deve ser disparado pela mudança de 'role'
-    // e cuidará da atualização dos créditos.
-    const { error } = await supabase
+    // Usamos .select('id') para verificar se alguma linha foi realmente afetada.
+    const { data, error } = await supabase
       .from('profiles')
       .update({
         role: newRole,
         permissions: selectedPlanConfig.permissions, // Usando permissões dinâmicas
         updated_at: new Date().toISOString(), // Força a atualização do timestamp
       })
-      .eq('id', profile.id);
+      .eq('id', profile.id)
+      .select('id'); // Solicita o retorno do ID para verificar se a linha foi afetada
 
     setIsLoading(false);
 
     if (error) {
       console.error('Error updating user plan:', error);
       showError(`Falha ao atualizar o plano de ${profile.username || profile.id}. Detalhe: ${error.message}`);
+    } else if (!data || data.length === 0) {
+      // Se não houver erro, mas 0 linhas afetadas, é uma falha de RLS.
+      showError(`Falha na atualização do plano. A permissão de administrador pode ter sido negada pelo banco de dados (RLS).`);
     } else {
       showSuccess(`Plano de ${profile.username || profile.id} atualizado para ${PLAN_NAMES[newRole]}.`);
       onUserUpdated(); // Força o recarregamento da lista na página pai
