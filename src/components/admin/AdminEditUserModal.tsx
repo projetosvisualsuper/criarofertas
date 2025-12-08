@@ -6,6 +6,7 @@ import { PLAN_NAMES, Permission } from '../../config/constants';
 import { showSuccess, showError } from '../../utils/toast';
 import { Loader2, Save } from 'lucide-react';
 import { usePlanConfigurations } from '../../hooks/usePlanConfigurations'; // Importando hook de planos
+import { useAuth } from '../../context/AuthContext'; // Importando useAuth para obter o perfil do admin
 
 interface AdminEditUserModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface AdminEditUserModalProps {
 
 const AdminEditUserModal: React.FC<AdminEditUserModalProps> = ({ isOpen, onClose, profile, onUserUpdated }) => {
   const { plans, loading: loadingPlans } = usePlanConfigurations(true); // Busca todos os planos
+  const { profile: adminProfile } = useAuth(); // Obtém o perfil do administrador logado
   const [newRole, setNewRole] = useState(profile?.role || 'free');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,6 +35,11 @@ const AdminEditUserModal: React.FC<AdminEditUserModalProps> = ({ isOpen, onClose
 
   const handleSave = async () => {
     setIsLoading(true);
+    
+    // Log de depuração para verificar o role do admin
+    console.log("Admin Profile Role:", adminProfile?.role);
+    console.log("Target User ID:", profile.id);
+    console.log("New Role:", newRole);
 
     if (!selectedPlanConfig) {
       showError(`Plano "${newRole}" inválido ou não carregado.`);
@@ -41,7 +48,6 @@ const AdminEditUserModal: React.FC<AdminEditUserModalProps> = ({ isOpen, onClose
     }
 
     // 1. Atualiza o perfil com o novo role e as permissões dinâmicas.
-    // Usamos .select('id') para verificar se alguma linha foi realmente afetada.
     const { data, error } = await supabase
       .from('profiles')
       .update({
@@ -59,7 +65,7 @@ const AdminEditUserModal: React.FC<AdminEditUserModalProps> = ({ isOpen, onClose
       showError(`Falha ao atualizar o plano de ${profile.username || profile.id}. Detalhe: ${error.message}`);
     } else if (!data || data.length === 0) {
       // Se não houver erro, mas 0 linhas afetadas, é uma falha de RLS.
-      showError(`Falha na atualização do plano. A permissão de administrador pode ter sido negada pelo banco de dados (RLS).`);
+      showError(`Falha na atualização do plano. A permissão de administrador pode ter sido negada pelo banco de dados (RLS). Verifique se o seu perfil tem o role 'admin'.`);
     } else {
       showSuccess(`Plano de ${profile.username || profile.id} atualizado para ${PLAN_NAMES[newRole]}.`);
       onUserUpdated(); // Força o recarregamento da lista na página pai
