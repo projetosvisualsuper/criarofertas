@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { Profile } from '../../../types';
 import { supabase } from '@/src/integrations/supabase/client';
-import { PLAN_NAMES, DEFAULT_PERMISSIONS_BY_ROLE, Permission } from '../../config/constants';
+import { PLAN_NAMES, Permission } from '../../config/constants';
 import { showSuccess, showError } from '../../utils/toast';
 import { Loader2, Save } from 'lucide-react';
+import { usePlanConfigurations } from '../../hooks/usePlanConfigurations'; // Importando hook de planos
 
 interface AdminEditUserModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface AdminEditUserModalProps {
 }
 
 const AdminEditUserModal: React.FC<AdminEditUserModalProps> = ({ isOpen, onClose, profile, onUserUpdated }) => {
+  const { plans, loading: loadingPlans } = usePlanConfigurations(true); // Busca todos os planos
   const [newRole, setNewRole] = useState(profile?.role || 'free');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -24,23 +26,28 @@ const AdminEditUserModal: React.FC<AdminEditUserModalProps> = ({ isOpen, onClose
   }, [profile]);
 
   if (!profile) return null;
+  
+  const selectedPlanConfig = useMemo(() => {
+      return plans.find(p => p.role === newRole);
+  }, [plans, newRole]);
 
   const handleSave = async () => {
     setIsLoading(true);
 
-    const newPermissions = DEFAULT_PERMISSIONS_BY_ROLE[newRole] as Permission[];
-    if (!newPermissions) {
-      showError(`Plano "${newRole}" inválido.`);
+    if (!selectedPlanConfig) {
+      showError(`Plano "${newRole}" inválido ou não carregado.`);
       setIsLoading(false);
       return;
     }
 
-    // 1. Atualiza o perfil com o novo role, novas permissões e força a atualização do timestamp
+    // 1. Atualiza o perfil com o novo role e as permissões dinâmicas.
+    // O trigger handle_user_plan_change no DB deve ser disparado pela mudança de 'role'
+    // e cuidará da atualização dos créditos.
     const { error } = await supabase
       .from('profiles')
       .update({
         role: newRole,
-        permissions: newPermissions,
+        permissions: selectedPlanConfig.permissions, // Usando permissões dinâmicas
         updated_at: new Date().toISOString(), // Força a atualização do timestamp
       })
       .eq('id', profile.id);
@@ -71,27 +78,33 @@ const AdminEditUserModal: React.FC<AdminEditUserModalProps> = ({ isOpen, onClose
             <label htmlFor="plan-select" className="text-sm font-medium text-gray-700 block mb-1">
               Plano (Role)
             </label>
-            <select
-              id="plan-select"
-              value={newRole}
-              onChange={(e) => setNewRole(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
-            >
-              {Object.keys(PLAN_NAMES).map(roleKey => (
-                <option key={roleKey} value={roleKey}>
-                  {PLAN_NAMES[roleKey]}
-                </option>
-              ))}
-            </select>
+            {loadingPlans ? (
+                <div className="flex items-center justify-center h-10 bg-gray-50 rounded-lg">
+                    <Loader2 size={16} className="animate-spin text-indigo-600" />
+                </div>
+            ) : (
+                <select
+                  id="plan-select"
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                >
+                  {plans.map(plan => (
+                    <option key={plan.role} value={plan.role}>
+                      {plan.name}
+                    </option>
+                  ))}
+                </select>
+            )}
           </div>
           <p className="text-xs text-gray-500">
-            Alterar o plano irá substituir as permissões do usuário pelas permissões padrão do novo plano.
+            Alterar o plano irá substituir as permissões do usuário pelas permissões padrão do novo plano e recarregar os créditos de IA.
           </p>
         </div>
         <div className="flex justify-end pt-4 border-t">
           <button
             onClick={handleSave}
-            disabled={isLoading || newRole === profile.role}
+            disabled={isLoading || newRole === profile.role || loadingPlans}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
           >
             {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
