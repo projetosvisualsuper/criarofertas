@@ -4,21 +4,21 @@ import { useGlobalSettings } from '../../hooks/useGlobalSettings';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../../utils/toast';
-import { useAICosts, AICost } from '../../hooks/useAICosts'; // NOVO IMPORT
+import { useAICosts, AICost } from '../../hooks/useAICosts';
 
 const AdminSettingsPage: React.FC = () => {
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
   const { settings, loading: loadingGlobalSettings, updateMaintenanceMode } = useGlobalSettings(isAdmin);
-  const { costs, loading: loadingAICosts, updateCost } = useAICosts(isAdmin); // NOVO HOOK
+  const { costs, loading: loadingAICosts, updateCost } = useAICosts(isAdmin);
 
   const [announcementMessage, setAnnouncementMessage] = useState('');
   const [activeAnnouncement, setActiveAnnouncement] = useState<{ id: string; message: string | string[] } | null>(null);
   const [isSavingAnnouncement, setIsSavingAnnouncement] = useState(false);
   const [loadingAnnouncement, setLoadingAnnouncement] = useState(true);
   
-  const [localCosts, setLocalCosts] = useState<AICost[]>([]); // NOVO ESTADO
-  const [isSavingCost, setIsSavingCost] = useState(false); // NOVO ESTADO
+  const [localCosts, setLocalCosts] = useState<AICost[]>([]);
+  const [isSavingCost, setIsSavingCost] = useState<string | null>(null); // Agora armazena a chave do serviço sendo salvo
 
   const isMaintenanceEnabled = settings.maintenance_mode.enabled;
 
@@ -31,7 +31,7 @@ const AdminSettingsPage: React.FC = () => {
     updateMaintenanceMode(!isMaintenanceEnabled);
   };
   
-  // --- Lógica de Anúncios Globais ---
+  // --- Lógica de Anúncios Globais (Mantida) ---
   
   const fetchActiveAnnouncement = async () => {
     setLoadingAnnouncement(true);
@@ -43,15 +43,14 @@ const AdminSettingsPage: React.FC = () => {
       .limit(1)
       .single();
       
-    if (error && error.code !== 'PGRST116') { // PGRST116 = No rows found
+    if (error && error.code !== 'PGRST116') {
       console.error('Error fetching active announcement:', error);
     } else if (data) {
       setActiveAnnouncement(data);
       
-      // Converte o array de strings (jsonb) de volta para texto com quebras de linha para edição
       const messageToEdit = Array.isArray(data.message) 
         ? data.message.join('\n') 
-        : (typeof data.message === 'string' ? data.message : ''); // Fallback se for string simples
+        : (typeof data.message === 'string' ? data.message : '');
         
       setAnnouncementMessage(messageToEdit);
     } else {
@@ -76,7 +75,6 @@ const AdminSettingsPage: React.FC = () => {
     setIsSavingAnnouncement(true);
     
     try {
-      // 1. Processar a mensagem: dividir por linha e filtrar vazias
       const lines = announcementMessage.split('\n')
         .map(line => line.trim())
         .filter(line => line.length > 0);
@@ -87,7 +85,6 @@ const AdminSettingsPage: React.FC = () => {
         return;
       }
       
-      // 2. Desativar anúncios antigos (se houver)
       const { error: deactivateError } = await supabase
           .from('global_announcements')
           .update({ is_active: false })
@@ -96,7 +93,6 @@ const AdminSettingsPage: React.FC = () => {
           
       if (deactivateError) console.warn("Warning: Failed to deactivate old announcements:", deactivateError);
       
-      // 3. Inserir o novo anúncio ativo (salvando como array de strings, que é o formato JSONB esperado)
       const { error } = await supabase
         .from('global_announcements')
         .insert({ message: lines, is_active: true });
@@ -161,14 +157,14 @@ const AdminSettingsPage: React.FC = () => {
         return;
     }
     
-    setIsSavingCost(true);
+    setIsSavingCost(cost.service_key); // Define qual serviço está salvando
     try {
         await updateCost(cost.service_key, newCost, cost.description);
         // O hook já chama fetchCosts, que atualiza o estado 'costs' e, por sua vez, 'localCosts' via useEffect.
     } catch (e) {
         // Erro já tratado no hook
     } finally {
-        setIsSavingCost(false);
+        setIsSavingCost(null); // Limpa o estado de salvamento
     }
   };
 
@@ -273,7 +269,7 @@ const AdminSettingsPage: React.FC = () => {
           </div>
         </div>
         
-        {/* Configuração de Custos de IA (NOVA SEÇÃO) */}
+        {/* Configuração de Custos de IA (SEÇÃO AJUSTADA) */}
         <div className="border-b pb-6">
             <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
                 <Zap size={20} className="text-purple-600" /> Configuração de Custos de IA
@@ -289,17 +285,19 @@ const AdminSettingsPage: React.FC = () => {
                 </div>
             ) : (
                 <div className="space-y-4">
-                    {localCosts.map(cost => (
+                    {localCosts.map(cost => {
+                        const isSavingCurrent = isSavingCost === cost.service_key;
+                        return (
                         <div key={cost.service_key} className="p-4 border rounded-lg bg-gray-50 space-y-3">
                             <div className="flex justify-between items-center">
                                 <h4 className="font-bold text-gray-800">{cost.service_key.replace(/_/g, ' ').toUpperCase()}</h4>
                                 <button
                                     onClick={() => handleSaveCost(cost)}
-                                    disabled={isSavingCost}
+                                    disabled={isSavingCurrent}
                                     className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition-colors disabled:opacity-50"
                                 >
-                                    {isSavingCost ? <Loader2 className="animate-spin" size={12} /> : <Save size={12} />}
-                                    Salvar
+                                    {isSavingCurrent ? <Loader2 className="animate-spin" size={12} /> : <Save size={12} />}
+                                    {isSavingCurrent ? 'Salvando...' : 'Salvar'}
                                 </button>
                             </div>
                             
@@ -310,23 +308,25 @@ const AdminSettingsPage: React.FC = () => {
                                     value={cost.description}
                                     onChange={(e) => handleCostChange(cost.service_key, 'description', e.target.value)}
                                     className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                                    disabled={isSavingCost}
+                                    disabled={isSavingCurrent}
                                 />
                             </div>
                             
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-xs font-medium text-gray-700 block mb-1">Custo em Créditos</label>
-                                    <div className="relative">
+                                    <div className="relative flex items-center">
                                         <input
                                             type="number"
                                             min="0"
-                                            value={cost.cost}
+                                            // Garante que o valor seja tratado como string para o input
+                                            value={String(cost.cost)} 
                                             onChange={(e) => handleCostChange(cost.service_key, 'cost', parseInt(e.target.value, 10))}
                                             className="w-full border rounded-lg px-3 py-2 text-lg font-bold focus:ring-2 focus:ring-indigo-500 outline-none pr-10"
-                                            disabled={isSavingCost}
+                                            disabled={isSavingCurrent}
                                         />
-                                        <DollarSign size={16} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                        {/* Ajuste de posição do ícone */}
+                                        <DollarSign size={16} className="absolute right-3 text-gray-400" />
                                     </div>
                                 </div>
                             </div>
