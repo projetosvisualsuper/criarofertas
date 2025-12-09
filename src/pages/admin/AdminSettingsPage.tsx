@@ -4,7 +4,7 @@ import { useGlobalSettings } from '../../hooks/useGlobalSettings';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../../utils/toast';
-import AdminAICostsPage from './AdminAICostsPage'; // RE-IMPORTANDO
+import AdminAICostsPage from './AdminAICostsPage';
 
 const AdminSettingsPage: React.FC = () => {
   const { profile } = useAuth();
@@ -237,13 +237,26 @@ const AdminSettingsPage: React.FC = () => {
             <AdminAICostsPage />
         </div>
         
-        {/* Integrações de Pagamento (Mantido) */}
+        {/* Integrações de Pagamento (Atualizado) */}
         <div className="border-b pb-6">
             <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
                 <Key size={20} className="text-blue-600" /> Integrações de Pagamento
             </h3>
-            <p className="text-sm text-gray-600">Instruções para Mercado Pago e Asaas (em breve).</p>
-            {/* Conteúdo de Integrações de Pagamento (Omitido para brevidade, mas estaria aqui) */}
+            <p className="text-sm text-gray-600">
+                O sistema utiliza o Mercado Pago para gerenciar assinaturas de planos e compras avulsas de créditos.
+            </p>
+            <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1 pl-2 mt-3">
+                <li>Obtenha seu <strong>Access Token</strong> e defina um <strong>Token Secreto de Webhook</strong> no painel do Mercado Pago.</li>
+                <li>No Supabase, adicione os segredos: <code className="font-mono bg-blue-100 p-0.5 rounded">MERCADOPAGO_ACCESS_TOKEN</code> e <code className="font-mono bg-blue-100 p-0.5 rounded">MERCADOPAGO_WEBHOOK_SECRET</code>.</li>
+                <li>Configure o Webhook no Mercado Pago para enviar notificações de pagamento para o endpoint:
+                    <code className="font-mono bg-blue-100 p-0.5 rounded block mt-2 text-xs break-all">
+                        https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/mercadopago-webhook-handler
+                    </code>
+                </li>
+                <li className="text-red-700 font-bold mt-2">
+                    ⚠️ O webhook agora processa tanto assinaturas de planos (tópico `preapproval`) quanto compras de créditos (tópico `payment`).
+                </li>
+            </ol>
         </div>
         
         {/* Outras Configurações (Mantido) */}

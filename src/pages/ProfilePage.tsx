@@ -7,7 +7,8 @@ import { PLAN_NAMES, DEFAULT_PERMISSIONS_BY_ROLE, Permission } from '../config/c
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SocialMediaIntegration from '../components/SocialMediaIntegration';
-import { useUserCredits } from '../hooks/useUserCredits'; // NOVO IMPORT
+import { useUserCredits } from '../hooks/useUserCredits';
+import CreditPurchaseModal from '../components/CreditPurchaseModal'; // NOVO IMPORT
 
 const ProfilePage: React.FC = () => {
   const { profile, session, refreshProfile } = useAuth();
@@ -113,10 +114,7 @@ const ProfilePage: React.FC = () => {
     }
   };
   
-  const handleBuyCredits = () => {
-      showSuccess("Funcionalidade de compra de créditos em desenvolvimento. No futuro, você será redirecionado para o checkout.");
-      // Aqui seria a lógica para iniciar o checkout de créditos avulsos
-  };
+  // A função handleBuyCredits foi substituída pelo modal
 
   // --- Componentes de Seção ---
 
@@ -188,12 +186,15 @@ const ProfilePage: React.FC = () => {
           </div>
           
           <div className="border-t pt-4">
-            <button
-              onClick={handleBuyCredits}
-              className="w-full flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-bold py-2 rounded-lg transition-colors"
-            >
-              <Plus size={16} /> Comprar Créditos Adicionais
-            </button>
+            <CreditPurchaseModal
+              trigger={
+                <button
+                  className="w-full flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-bold py-2 rounded-lg transition-colors"
+                >
+                  <Plus size={16} /> Comprar Créditos Adicionais
+                </button>
+              }
+            />
           </div>
         </>
       )}

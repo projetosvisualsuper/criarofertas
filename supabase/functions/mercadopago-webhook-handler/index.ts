@@ -39,9 +39,8 @@ serve(async (req) => {
     
     let logMessage = `Event received: ${topic} for resource ${resourceId}`;
     let userId = null;
-    let newRole = 'free';
-    let status = null;
-    let externalReference = null;
+    let actionType = null; // 'plan' ou 'credits'
+    let actionValue = null; // role ou amount
 
     // 2. Buscar detalhes do recurso no Mercado Pago
     const resourceType = topic === 'payment' ? 'payments' : (topic === 'preapproval' ? 'preapprovals' : null);
@@ -67,15 +66,16 @@ serve(async (req) => {
     const resourceDetails = await mpResponse.json();
     
     // Extração de dados
-    status = resourceDetails.status;
-    externalReference = resourceDetails.external_reference;
+    const status = resourceDetails.status;
+    const externalReference = resourceDetails.external_reference;
     
-    // O external_reference agora é 'userId_planRole'
+    // 3. Parsear external_reference: userId_type_value
     if (externalReference) {
         const parts = externalReference.split('_');
-        if (parts.length === 2) {
+        if (parts.length >= 2) {
             userId = parts[0];
-            newRole = parts[1];
+            actionType = parts[1]; // 'premium', 'pro', 'credits'
+            actionValue = parts.length > 2 ? parts[2] : parts[1]; // Se for plano, o valor é o role. Se for crédito, é o amount.
         }
     }
 
@@ -84,28 +84,69 @@ serve(async (req) => {
         return new Response(JSON.stringify({ received: true, message: "Missing or invalid User ID" }), { status: 200, headers: corsHeaders });
     }
     
-    // 3. Processar Status de Assinatura/Pagamento
+    // 4. Processar Status de Pagamento/Assinatura
+    
+    // --- APROVADO / ATIVO ---
     if (status === 'authorized' || status === 'approved' || status === 'active') {
-        // Assinatura ativa ou pagamento aprovado, faz upgrade para o plano pago
-        
-        const { error: updateError } = await supabaseAdmin
-            .from('profiles')
-            .update({ role: newRole, updated_at: new Date().toISOString() })
-            .eq('id', userId);
+        if (actionType === 'credits') {
+            // Ação: Adicionar Créditos
+            const creditAmount = parseInt(actionValue, 10);
+            if (isNaN(creditAmount) || creditAmount <= 0) {
+                logMessage = `Credit purchase approved, but invalid amount: ${actionValue}`;
+                console.error(logMessage);
+                return new Response(JSON.stringify({ received: true, message: logMessage }), { status: 200, headers: corsHeaders });
+            }
             
-        if (updateError) throw updateError;
-        logMessage = `User ${userId} upgraded to ${newRole} due to approved Mercado Pago status: ${status}.`;
-        
-    } else if (status === 'cancelled' || status === 'paused' || status === 'pending' || status === 'refunded') {
-        // Assinatura cancelada, pausada ou pagamento falhou, faz downgrade para 'free'
-        newRole = 'free';
-        const { error: downgradeError } = await supabaseAdmin
-            .from('profiles')
-            .update({ role: newRole, updated_at: new Date().toISOString() })
-            .eq('id', userId);
+            // Adiciona os créditos ao saldo do usuário
+            const { error: creditError } = await supabaseAdmin
+                .from('user_credits')
+                .update({ balance: supabaseAdmin.raw('balance + ??', creditAmount) })
+                .eq('user_id', userId);
+                
+            if (creditError) throw creditError;
             
-        if (downgradeError) throw downgradeError;
-        logMessage = `User ${userId} downgraded to ${newRole} due to Mercado Pago status: ${status}.`;
+            // Registra a transação
+            await supabaseAdmin
+                .from('credit_transactions')
+                .insert({
+                    user_id: userId,
+                    type: 'refill',
+                    amount: creditAmount,
+                    description: `Compra de ${creditAmount} créditos via Mercado Pago.`,
+                });
+                
+            logMessage = `User ${userId} successfully purchased and received ${creditAmount} credits.`;
+            
+        } else {
+            // Ação: Upgrade de Plano (Assinatura)
+            const newRole = actionValue;
+            
+            const { error: updateError } = await supabaseAdmin
+                .from('profiles')
+                .update({ role: newRole, updated_at: new Date().toISOString() })
+                .eq('id', userId);
+                
+            if (updateError) throw updateError;
+            logMessage = `User ${userId} upgraded to ${newRole} due to approved Mercado Pago status: ${status}.`;
+        }
+        
+    } 
+    // --- CANCELADO / FALHADO ---
+    else if (status === 'cancelled' || status === 'paused' || status === 'pending' || status === 'refunded' || status === 'charged_back') {
+        if (resourceType === 'preapprovals') {
+            // Se for uma assinatura cancelada/pausada, faz downgrade para 'free'
+            const newRole = 'free';
+            const { error: downgradeError } = await supabaseAdmin
+                .from('profiles')
+                .update({ role: newRole, updated_at: new Date().toISOString() })
+                .eq('id', userId);
+                
+            if (downgradeError) throw downgradeError;
+            logMessage = `User ${userId} downgraded to ${newRole} due to Mercado Pago status: ${status}.`;
+        } else {
+            // Pagamento de crédito falhou/pendente - não faz nada, apenas registra
+            logMessage = `Credit payment for user ${userId} is ${status}. No action taken on balance.`;
+        }
     } else {
         logMessage = `Ignored Mercado Pago status: ${status}`;
     }
