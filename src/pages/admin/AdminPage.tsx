@@ -17,8 +17,8 @@ interface AdminPageProps {
 }
 
 const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
-  // Definindo o estado inicial para 'ai-costs' para forçar a renderização do componente
-  const [activeAdminModule, setActiveAdminModule] = useState<AdminModule>('ai-costs');
+  // Revertendo o estado inicial para 'dashboard'
+  const [activeAdminModule, setActiveAdminModule] = useState<AdminModule>('dashboard');
 
   const modules = [
     { id: 'dashboard', name: 'Dashboard', icon: Home },
