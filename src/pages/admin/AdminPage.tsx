@@ -57,7 +57,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
             <button
               key={module.id}
               onClick={() => setActiveAdminModule(module.id as AdminModule)}
-              className={`w-full flex items-center gap-3 p-2 rounded-md text-sm font-medium transition-colors ${
+              className={`w-full text-left p-2 rounded-md text-sm font-medium transition-colors ${
                 activeAdminModule === module.id
                   ? 'bg-indigo-50 text-indigo-700'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
