@@ -68,6 +68,7 @@ const AdminPlanManagementPage: React.FC = () => {
                 </ul>
               </div>
             </div>
+            <div className="text-sm font-medium text-gray-600">Créditos de IA: {plan.ai_credits}</div>
           </div>
         ))}
       </div>

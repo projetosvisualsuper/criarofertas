@@ -134,7 +134,7 @@ serve(async (req) => {
         const prompt = `Write a catchy, short, and exciting headline (max 8 words) for a retail sales poster about: ${topic}. Language: Portuguese (Brazil). Do not include quotes. Return only the headline text.`;
         
         const chatResponse = await callOpenAI('chat/completions', apiKey, {
-            model: "gpt-4o-mini",
+            model: "gpt-3.5-turbo",
             messages: [{ role: "user", content: prompt }],
             temperature: 0.7,
         });
@@ -158,7 +158,7 @@ serve(async (req) => {
           ]`;
           
         const chatResponse = await callOpenAI('chat/completions', apiKey, {
-            model: "gpt-4o-mini",
+            model: "gpt-3.5-turbo",
             messages: [{ role: "user", content: prompt }],
             response_format: { type: "json_object" },
             temperature: 0.1,
@@ -229,7 +229,7 @@ serve(async (req) => {
         }`;
         
         const chatResponse = await callOpenAI('chat/completions', apiKey, {
-            model: "gpt-4o-mini",
+            model: "gpt-3.5-turbo",
             messages: [{ role: "user", content: prompt }],
             response_format: { type: "json_object" },
             temperature: 0.5,

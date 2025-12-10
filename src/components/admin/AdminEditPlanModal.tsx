@@ -4,6 +4,8 @@ import { PlanConfiguration } from '../../hooks/usePlanConfigurations';
 import { PERMISSIONS, PLAN_NAMES } from '../../config/constants';
 import { Loader2, Save, Check, X, DollarSign, Zap } from 'lucide-react'; // Adicionando Zap
 import { showSuccess, showError } from '../../utils/toast';
+import { usePlanConfigurations } from '../../hooks/usePlanConfigurations'; // Importando hook de planos
+import { useAuth } from '../../context/AuthContext'; // Importando useAuth para obter o perfil do admin
 
 interface AdminEditPlanModalProps {
   isOpen: boolean;
@@ -13,29 +15,23 @@ interface AdminEditPlanModalProps {
 }
 
 const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose, plan, onSave }) => {
-  const [localPlan, setLocalPlan] = useState<PlanConfiguration | null>(plan);
+  const { plans, loading: loadingPlans } = usePlanConfigurations(true); // Busca todos os planos
+  const { profile: adminProfile } = useAuth(); // Obtém o perfil do administrador logado
+  const [newRole, setNewRole] = useState(profile?.role || 'free');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setLocalPlan(plan);
-  }, [plan]);
+    if (profile) {
+      setNewRole(profile.role);
+    }
+  }, [profile]);
 
-  if (!localPlan) return null;
+  if (!profile) return null;
   
-  const allPermissions = PERMISSIONS;
+  const selectedPlanConfig = useMemo(() => {
+      return plans.find(p => p.role === newRole);
+  }, [plans, newRole]);
 
-  const handlePermissionToggle = (permission: string) => {
-    setLocalPlan(prev => {
-      if (!prev) return null;
-      const currentPermissions = prev.permissions;
-      const newPermissions = currentPermissions.includes(permission as any)
-        ? currentPermissions.filter(p => p !== permission)
-        : [...currentPermissions, permission as any];
-      
-      return { ...prev, permissions: newPermissions };
-    });
-  };
-  
   const handleSave = async () => {
     console.log("Attempting to save plan:", localPlan); // Log de execução
     
@@ -78,8 +74,7 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
             Ajuste o nome, preço, créditos de IA e as permissões concedidas por este plano.
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="py-4 space-y-6">
+        <div className="py-4 space-y-4">
           {/* Detalhes Básicos */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -103,23 +98,17 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
           </div>
           
           {/* Créditos de IA */}
-          <div className="space-y-2 border-t pt-4">
-            <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <Zap size={20} className="text-yellow-500" /> Créditos de IA (Recarga Mensal)
-            </h4>
-            <p className="text-sm text-gray-600">
-                Defina o saldo de créditos que o usuário receberá ao entrar ou fazer upgrade para este plano.
-            </p>
-            <div className="relative">
-                <input
-                    type="number"
-                    min="0"
-                    value={localPlan.ai_credits}
-                    onChange={(e) => setLocalPlan(prev => prev ? { ...prev, ai_credits: parseInt(e.target.value, 10) } : null)}
-                    className="w-full border rounded-lg px-3 py-2 text-lg font-bold focus:ring-2 focus:ring-indigo-500 outline-none pr-10"
-                />
-                <Zap size={16} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-yellow-500" />
-            </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 block mb-1 flex items-center gap-2">
+                <Zap size={16} className="text-yellow-500" /> Créditos de IA (Recarga Mensal)
+            </label>
+            <input
+                type="number"
+                min="0"
+                value={localPlan.ai_credits}
+                onChange={(e) => setLocalPlan(prev => prev ? { ...prev, ai_credits: parseInt(e.target.value, 10) } : null)}
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
           </div>
 
           {/* Permissões */}
@@ -150,11 +139,10 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
             </div>
           </div>
         </div>
-        
         <div className="flex justify-end pt-4 border-t">
           <button
             onClick={handleSave}
-            disabled={isLoading}
+            disabled={isLoading || newRole === profile.role || loadingPlans}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
           >
             {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
@@ -166,4 +154,4 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
   );
 };
 
-export default AdminEditPlanModal;
+export default AdminEditUserModal;
