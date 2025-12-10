@@ -173,8 +173,11 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
         </h2 >
       </div>
       
+      {/* Layout Principal: Preview (2/3) + Controles (1/3) */}
       <div className="flex-1 flex flex-col lg:flex-row gap-8 items-start min-h-0">
-        <div className="w-full lg:w-2/3 flex flex-col items-center justify-center relative">
+        
+        {/* Coluna do Preview (Ocupa 2/3 e se ajusta) */}
+        <div className="w-full lg:w-2/3 flex flex-col items-center justify-center relative flex-shrink-0">
           {productsForSlides.length === 0 ? (
             <div className="w-full max-w-4xl aspect-[16/9] border-4 border-dashed border-gray-300 rounded-xl flex items-center justify-center text-center bg-white/50">
               <div className="p-8">
@@ -195,17 +198,18 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
           )}
         </div>
 
-        <div className="w-full lg:w-1/3">
+        {/* Coluna de Controles (Ocupa 1/3 e tem rolagem) */}
+        <div className="w-full lg:w-1/3 flex flex-col h-full lg:max-h-[calc(100vh-150px)] overflow-y-auto">
           {currentProduct && (
             <>
-              <div className="flex items-center justify-center space-x-4 bg-white p-4 rounded-xl shadow-sm">
+              <div className="flex items-center justify-center space-x-4 bg-white p-4 rounded-xl shadow-sm flex-shrink-0 mb-4">
                 <button onClick={handlePrev} className="p-3 bg-gray-100 rounded-full shadow-sm hover:bg-gray-200 transition-colors disabled:opacity-50" disabled={productsForSlides.length <= 1}><ChevronLeft size={24} /></button>
                 <button onClick={() => setIsPlaying(!isPlaying)} className="p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors disabled:opacity-50" disabled={productsForSlides.length <= 1}>{isPlaying ? <Pause size={24} /> : <Play size={24} />}</button>
                 <button onClick={handleNext} className="p-3 bg-gray-100 rounded-full shadow-sm hover:bg-gray-200 transition-colors disabled:opacity-50" disabled={productsForSlides.length <= 1}><ChevronRight size={24} /></button>
                 <span className="text-sm text-gray-600 ml-4">Slide {currentSlideIndex + 1} de {productsForSlides.length}</span>
               </div>
               
-              <div className="mt-4 p-4 bg-white rounded-xl shadow-sm space-y-3">
+              <div className="p-4 bg-white rounded-xl shadow-sm space-y-4 flex-shrink-0 mb-4">
                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Zap size={16}/> Transição de Slide</label>
                 <div className="grid grid-cols-2 gap-2">
                   {SLIDE_TRANSITION_PRESETS.map(preset => {
@@ -224,7 +228,7 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
                 </div>
               </div>
 
-              <div className="mt-4">
+              <div className="flex-shrink-0 mb-4">
                 <button 
                   onClick={handleDownloadAllSlides}
                   disabled={isDownloading || productsForSlides.length === 0}
@@ -234,12 +238,16 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
                   {isDownloading ? `Compactando ${downloadProgress}/${productsForSlides.length}...` : 'Baixar Todos (ZIP)'}
                 </button>
               </div>
-              <SlideLayoutControls 
-                product={currentProduct} 
-                onLayoutChange={handleLayoutChange} 
-                theme={theme}
-                setTheme={setTheme}
-              />
+              
+              {/* Controles de Layout com Rolagem */}
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <SlideLayoutControls 
+                  product={currentProduct} 
+                  onLayoutChange={handleLayoutChange} 
+                  theme={theme}
+                  setTheme={setTheme}
+                />
+              </div>
             </>
           )}
         </div>
