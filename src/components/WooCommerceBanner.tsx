@@ -57,14 +57,22 @@ const WooCommerceBanner: React.FC = () => {
   
   if (error) {
     // Se houver erro, renderiza o bloco de erro de forma estável
+    let userErrorText = error;
+    
+    if (error.includes('WooCommerce API returned status 404') && error.includes('woocommerce_rest_cannot_view')) {
+        userErrorText = "Erro de Permissão (404): A chave de API do WooCommerce não tem permissão de 'Leitura' (Read) para listar produtos. Por favor, verifique as configurações da chave no painel do WooCommerce.";
+    } else if (error.includes('WooCommerce API returned status 401')) {
+        userErrorText = "Erro de Autorização (401): Chaves de API inválidas. Verifique se o Consumer Key e o Consumer Secret estão corretos no Supabase Secrets.";
+    }
+
     return (
       <div className="p-4 bg-red-50 rounded-xl shadow-inner border border-red-200">
         <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="w-5 h-5 text-red-600" />
             <p className="text-sm font-semibold text-red-800">Erro de Integração</p>
         </div>
-        <p className="text-xs text-red-700 mb-2">{error}</p>
-        <a href="#" onClick={() => window.location.href = '#settings'} className="text-xs font-bold text-red-600 hover:text-red-800 flex items-center gap-1">
+        <p className="text-xs text-red-700 mb-2 whitespace-pre-wrap">{userErrorText}</p>
+        <a href="#settings" className="text-xs font-bold text-red-600 hover:text-red-800 flex items-center gap-1">
             <Settings size={12} /> Configurar Chaves
         </a>
       </div>

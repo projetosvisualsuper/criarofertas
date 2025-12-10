@@ -182,7 +182,13 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
   
   const handlePlayAudio = () => {
     if (audioRef.current) {
-      audioRef.current.play();
+      // Tenta pausar e resetar antes de tocar, para garantir que comece do início
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(e => {
+        console.error("Failed to play audio:", e);
+        showError("Falha ao reproduzir áudio. Verifique as configurações do navegador.");
+      });
     }
   };
 
