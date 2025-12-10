@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showError } from '../utils/toast';
 
@@ -8,7 +8,8 @@ export interface AICost {
   description: string;
 }
 
-const initialCosts: Record<string, number> = {
+// Definindo os valores padrão como um mapa simples para fácil acesso
+const DEFAULT_COSTS: Record<string, number> = {
   generate_copy: 1,
   parse_products: 1,
   generate_image: 10,
@@ -20,17 +21,22 @@ export function useAICosts(isAdmin: boolean = false) {
   const [costs, setCosts] = useState<AICost[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Mapeamento rápido para uso em componentes
-  const costMap = costs.reduce((acc, item) => {
-    // Garante que o custo seja um número inteiro
-    acc[item.service_key] = parseInt(item.cost as any, 10) || 0;
-    return acc;
-  }, {} as Record<string, number>);
+  // Mapeamento rápido para uso em componentes, usando useMemo para re-calcular
+  const costMap = useMemo(() => {
+    const map = costs.reduce((acc, item) => {
+      // Garante que o custo seja um número inteiro
+      acc[item.service_key] = parseInt(item.cost as any, 10) || 0;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    // Mescla com os defaults para garantir que todas as chaves existam,
+    // mas os valores do DB (map) sobrescrevem os defaults.
+    return { ...DEFAULT_COSTS, ...map };
+  }, [costs]);
 
   const fetchCosts = useCallback(async () => {
     setLoading(true);
     
-    // RLS permite que qualquer usuário leia, mas apenas admins podem escrever.
     const { data, error } = await supabase
       .from('ai_costs')
       .select('*')
@@ -78,7 +84,7 @@ export function useAICosts(isAdmin: boolean = false) {
 
   return {
     costs,
-    costMap: { ...initialCosts, ...costMap }, // Garante que os valores iniciais existam como fallback
+    costMap, // Retorna o useMemo
     loading,
     updateCost,
     fetchCosts,
