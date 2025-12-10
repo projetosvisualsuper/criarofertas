@@ -14,7 +14,6 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
   
-  // A autenticação é feita na função chamadora (gerar-audio), mas verificamos a chave aqui.
   if (!ELEVENLABS_API_KEY) {
     console.error("ElevenLabs Error: API Key not configured.");
     return new Response(JSON.stringify({ error: "ELEVENLABS_API_KEY não configurada." }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -47,21 +46,27 @@ serve(async (req) => {
 
     if (!ttsResponse.ok) {
         let errorDetails = "Falha na API de TTS da ElevenLabs.";
+        let status = ttsResponse.status;
+        
+        // Tenta ler o corpo como JSON para obter a mensagem de erro detalhada
         try {
             const errorJson = await ttsResponse.json();
             errorDetails = errorJson.detail || errorDetails;
         } catch (e) {
-            // Ignora se não for JSON
+            // Se não for JSON, tenta ler como texto
+            errorDetails = await ttsResponse.text();
         }
-        console.error("ElevenLabs TTS API Error:", ttsResponse.status, errorDetails);
+        
+        console.error("ElevenLabs TTS API Error:", status, errorDetails);
+        
         // Retorna o erro como JSON para que a função chamadora possa capturá-lo
-        return new Response(JSON.stringify({ error: `Falha na geração de áudio (Status ${ttsResponse.status}): ${errorDetails}` }), { 
-            status: 500, 
+        return new Response(JSON.stringify({ error: `Falha na geração de áudio (Status ${status}): ${errorDetails}` }), { 
+            status: 500, // Retorna 500 para garantir que o 'gerar-audio' capture o erro
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         });
     }
 
-    // Retorna o ArrayBuffer diretamente para o cliente
+    // Se a resposta for OK, lemos o corpo como ArrayBuffer (MP3)
     const audioBuffer = await ttsResponse.arrayBuffer();
 
     return new Response(audioBuffer, {
