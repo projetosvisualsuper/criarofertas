@@ -86,6 +86,8 @@ serve(async (req) => {
     // --- 3. CHAMAR A EDGE FUNCTION DA ELEVENLABS INTERNAMENTE ---
     const elevenLabsUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/elevenlabs-tts`;
     
+    console.log(`Calling internal TTS function at: ${elevenLabsUrl}`); // NOVO LOG
+    
     const ttsResponse = await fetch(elevenLabsUrl, {
         method: 'POST',
         headers: {
@@ -94,6 +96,8 @@ serve(async (req) => {
         },
         body: JSON.stringify({ text }),
     });
+    
+    console.log(`Internal TTS Call Status: ${ttsResponse.status}`); // NOVO LOG
     
     // Se a chamada interna falhar (ex: 500), tentamos ler o corpo do erro JSON
     if (!ttsResponse.ok) {
