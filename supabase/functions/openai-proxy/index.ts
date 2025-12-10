@@ -121,8 +121,14 @@ serve(async (req) => {
         if (creditError || creditData.error) {
             const errorMessage = creditData?.error || creditError?.message || "Erro desconhecido ao consumir créditos.";
             console.error("Credit Consumption Failed:", errorMessage);
+            
+            // Se o erro for de saldo insuficiente, retornamos 402 para o frontend
             const status = errorMessage.includes('Saldo insuficiente') ? 402 : 500;
-            return new Response(JSON.stringify({ error: errorMessage }), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+            
+            return new Response(JSON.stringify({ error: errorMessage }), { 
+                status, 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            });
         }
     }
     // --- FIM CONSUMO DE CRÉDITOS ---
@@ -249,12 +255,17 @@ serve(async (req) => {
     // Retorna o resultado do chat/imagem
     return new Response(JSON.stringify({ response: result }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
     });
 
   } catch (error) {
     console.error("Error in Edge Function:", error);
+    
+    // Se for um erro de API Key, retorna 401
+    const status = error.message.includes('API Key') ? 401 : 500;
+    
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
+      status: status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

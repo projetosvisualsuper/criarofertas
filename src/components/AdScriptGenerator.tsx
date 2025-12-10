@@ -59,13 +59,23 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
       const errorMessage = (error as Error).message;
       console.error("Detailed Script Generation Error:", errorMessage); 
       
-      // Exibe a mensagem de erro exata no toast
-      updateToast(loadingToast, `Erro ao gerar roteiro: ${errorMessage}`, 'error');
+      let userFriendlyError = errorMessage;
+      
+      if (errorMessage.includes('Saldo insuficiente')) {
+          userFriendlyError = `Saldo insuficiente. Você precisa de ${scriptCost} créditos para esta operação.`;
+      } else if (errorMessage.includes('OPENAI_API_KEY')) {
+          userFriendlyError = `Erro de API: Verifique se a chave OPENAI_API_KEY está configurada corretamente no Supabase Secrets.`;
+      } else if (errorMessage.includes('non-2xx status code')) {
+          userFriendlyError = `Erro de conexão com a Edge Function. Verifique o console para detalhes.`;
+      }
+      
+      // Exibe a mensagem de erro amigável no toast
+      updateToast(loadingToast, `Erro ao gerar roteiro: ${userFriendlyError}`, 'error');
       
       // Define um script de erro para exibição na tela
       setAdScript({ 
         headline: "Erro de Geração", 
-        script: `Não foi possível gerar o roteiro devido a um erro: ${errorMessage}. Verifique a chave API e o console.`, 
+        script: `Não foi possível gerar o roteiro devido a um erro: ${userFriendlyError}.`, 
         suggestions: { music: "Nenhuma", voice: "Nenhuma" } 
       });
       
@@ -101,7 +111,9 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
           errorMessage = String(error);
       }
       
-      const userFriendlyError = errorMessage.includes('OPENAI_API_KEY') 
+      const userFriendlyError = errorMessage.includes('Saldo insuficiente') 
+        ? `Saldo insuficiente. Você precisa de ${audioCost} créditos para esta operação.`
+        : errorMessage.includes('OPENAI_API_KEY') 
         ? `Falha ao gerar áudio. Verifique se a chave OPENAI_API_KEY está configurada corretamente no Supabase Secrets.`
         : `Falha ao gerar áudio. Detalhe: ${errorMessage}`;
         
