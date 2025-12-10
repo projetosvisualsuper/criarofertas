@@ -19,16 +19,24 @@ serve(async (req) => {
     
     if (!WOOCOMMERCE_URL || !consumerKey || !consumerSecret) {
       return new Response(JSON.stringify({ error: "WooCommerce secrets (URL, KEY, or SECRET) are not configured in Supabase Secrets." }), {
-        status: 400,
+        status: 200, // Retorna 200 para que o frontend possa ler o corpo do erro
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
     
-    // Garante que a URL base não termine com barra
-    const baseUrl = WOOCOMMERCE_URL.endsWith('/') ? WOOCOMMERCE_URL.slice(0, -1) : WOOCOMMERCE_URL;
+    // Garante que a URL base termine com barra para a API
+    let baseUrl = WOOCOMMERCE_URL.endsWith('/') ? WOOCOMMERCE_URL : WOOCOMMERCE_URL + '/';
+    
+    // Adiciona o endpoint da API REST
+    if (!baseUrl.includes('/wp-json/')) {
+        baseUrl = baseUrl + 'wp-json/wc/v3/';
+    } else {
+        // Se já tiver wp-json, garante que o v3 esteja lá
+        baseUrl = baseUrl.replace(/wp-json\/wc\/v\d+\//, 'wp-json/wc/v3/');
+    }
     
     const authQuery = `consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`;
-    const productsEndpoint = `${baseUrl}/wp-json/wc/v3/products?per_page=10&status=publish&orderby=rand&${authQuery}`;
+    const productsEndpoint = `${baseUrl}products?per_page=10&status=publish&orderby=rand&${authQuery}`;
 
     let response: Response;
     
@@ -38,7 +46,6 @@ serve(async (req) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                // Adicionando um User-Agent para evitar bloqueios simples de firewall/CDN
                 'User-Agent': 'OfertaFlash-Supabase-Client/1.0',
             },
         });
@@ -46,9 +53,9 @@ serve(async (req) => {
         // Captura erros de rede, DNS ou SSL que impedem a conexão
         console.error("WooCommerce Fetch Network Error:", fetchError);
         return new Response(JSON.stringify({ 
-            error: `Network/DNS Error: Failed to connect to WooCommerce URL (${baseUrl}). Check if the URL is correct and publicly accessible. Details: ${fetchError.message}` 
+            error: `Network/DNS Error: Failed to connect to WooCommerce URL (${WOOCOMMERCE_URL}). Check if the URL is correct and publicly accessible. Details: ${fetchError.message}` 
         }), {
-            status: 500,
+            status: 200, // Retorna 200 para que o frontend possa ler o corpo do erro
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
     }
@@ -67,10 +74,16 @@ serve(async (req) => {
         
         console.error(`WooCommerce API Error: ${errorStatus} - ${errorBody}`);
         
+        // Se for 401, adiciona a dica de permissão
+        let userHint = '';
+        if (errorStatus === 401) {
+            userHint = ' (Verifique se as chaves têm permissão de Leitura e se estão corretas).';
+        }
+        
         return new Response(JSON.stringify({ 
-            error: `WooCommerce API returned status ${errorStatus}. Details: ${errorBody}` 
+            error: `WooCommerce API returned status ${errorStatus}. Details: ${errorBody}${userHint}` 
         }), {
-            status: 500,
+            status: 200, // Retorna 200 para que o frontend possa ler o corpo do erro
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
     }
@@ -95,8 +108,8 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error in WooCommerce Edge Function:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
+    return new Response(JSON.stringify({ error: `Internal Edge Function Error: ${error.message}` }), {
+      status: 200, // Retorna 200 para que o frontend possa ler o corpo do erro
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
