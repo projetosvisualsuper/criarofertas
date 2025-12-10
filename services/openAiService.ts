@@ -175,7 +175,8 @@ export const generateAudioFromText = async (text: string): Promise<string> => {
         // Se falhar a decodificação, lança o erro de tamanho
       }
       
-      throw new Error(`Falha na geração de áudio. O arquivo retornado é muito pequeno (${data.byteLength} bytes). Verifique se a ELEVENLABS_API_KEY e a ELEVENLABS_VOICE_ID estão corretas e se a voz suporta Português.`);
+      // MENSAGEM DE ERRO MAIS CLARA
+      throw new Error(`Falha na geração de áudio. O arquivo retornado é muito pequeno (${data.byteLength} bytes). Verifique se a ELEVENLABS_API_KEY e a ELEVENLABS_VOICE_ID (voz: nPczCjzI2devNBz1zQrb) estão corretas e se a voz suporta o modelo 'eleven_multilingual_v2' para Português.`);
   }
   
   // Cria um Blob a partir do ArrayBuffer retornado
