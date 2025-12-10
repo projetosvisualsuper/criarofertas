@@ -86,21 +86,18 @@ serve(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
     
-    // 1a. Obter o ID do usuário logado
-    const supabaseAnon = createClient(
-        Deno.env.get('SUPABASE_URL')!,
-        Deno.env.get('SUPABASE_ANON_KEY')!,
-        { global: { headers: { 'Authorization': authHeader } } }
-    );
-    const { data: { user }, error: userError } = await supabaseAnon.auth.getUser();
-    if (userError || !user) throw new Error("User not authenticated.");
+    // 1a. Obter o ID do usuário logado (usando o token)
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''));
+    if (userError || !user) throw new Error("User not authenticated or token invalid.");
     
-    // 1b. Verificar o role do usuário (usando a função de segurança)
-    const { data: roleData } = await supabaseAdmin.rpc('get_my_role', {
-        // Não precisa de argumentos, mas a função precisa ser chamada
-    }).auth.session({ access_token: authHeader.replace('Bearer ', '') });
+    // 1b. Verificar o role do usuário (buscando na tabela profiles com o cliente admin)
+    const { data: profileData, error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
     
-    const userRole = roleData || 'free';
+    const userRole = profileData?.role || 'free';
     
     let creditCost = 0;
     let description = '';
@@ -125,6 +122,12 @@ serve(async (req) => {
     
     // --- 2. CONSUMIR CRÉDITOS (SE NÃO FOR ADMIN E O CUSTO FOR > 0) ---
     if (userRole !== 'admin' && creditCost > 0) {
+        // Usamos o cliente anônimo para invocar a função de consumo, mas passamos o token do usuário
+        const supabaseAnon = createClient(
+            Deno.env.get('SUPABASE_URL')!,
+            Deno.env.get('SUPABASE_ANON_KEY')!,
+        );
+        
         const { data: creditData, error: creditError } = await supabaseAnon.functions.invoke('credit-consumer', {
             method: 'POST',
             body: { amount: creditCost, description: description },
