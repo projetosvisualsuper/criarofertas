@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Product, PosterTheme, AdScript } from '../../types';
 import { Wand2, Loader2, Zap, Clipboard, Check, Download, Music, Mic, Volume2, VolumeX, DollarSign } from 'lucide-react';
 import { generateAdScript, generateAudioFromText } from '../../services/openAiService';
@@ -22,6 +22,8 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+  
+  const audioRef = useRef<HTMLAudioElement>(null); // Referência para o elemento de áudio
 
   const selectedProducts = useMemo(() => 
     products.filter(p => selectedProductIds.includes(p.id)), 
@@ -170,9 +172,8 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
   };
   
   const handlePlayAudio = () => {
-    if (audioUrl) {
-      const audio = new Audio(audioUrl);
-      audio.play();
+    if (audioRef.current) {
+      audioRef.current.play();
     }
   };
 
@@ -257,19 +258,24 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
               </button>
               
               {audioUrl && (
-                <div className="mt-3 flex gap-2">
-                  <button 
-                    onClick={handlePlayAudio}
-                    className="flex-1 flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg font-bold transition-colors"
-                  >
-                    <Volume2 size={16} /> Ouvir Áudio
-                  </button>
-                  <button 
-                    onClick={handleDownloadAudio}
-                    className="flex-1 flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-800 text-white py-2 rounded-lg font-bold transition-colors"
-                  >
-                    <Download size={16} /> Baixar MP3
-                  </button>
+                <div className="mt-3 space-y-2">
+                  {/* Elemento de Áudio para Reprodução Direta */}
+                  <audio ref={audioRef} src={audioUrl} controls className="w-full h-10 rounded-lg" />
+                  
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={handlePlayAudio}
+                      className="flex-1 flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg font-bold transition-colors"
+                    >
+                      <Volume2 size={16} /> Reproduzir
+                    </button>
+                    <button 
+                      onClick={handleDownloadAudio}
+                      className="flex-1 flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-800 text-white py-2 rounded-lg font-bold transition-colors"
+                    >
+                      <Download size={16} /> Baixar MP3
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
