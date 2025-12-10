@@ -78,7 +78,12 @@ serve(async (req) => {
             const errorMessage = creditData?.error || creditError?.message || "Erro desconhecido ao consumir créditos.";
             console.error("Credit Consumption Failed:", errorMessage);
             const status = errorMessage.includes('Saldo insuficiente') ? 402 : 500;
-            return new Response(JSON.stringify({ error: errorMessage }), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+            
+            // Retorna o erro como JSON para que o frontend possa ler a mensagem
+            return new Response(JSON.stringify({ error: errorMessage }), { 
+                status, 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            });
         }
     }
     // --- FIM CONSUMO DE CRÉDITOS ---
@@ -86,7 +91,7 @@ serve(async (req) => {
     // --- 3. CHAMAR A EDGE FUNCTION DA ELEVENLABS INTERNAMENTE ---
     const elevenLabsUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/elevenlabs-tts`;
     
-    console.log(`Calling internal TTS function at: ${elevenLabsUrl}`); // NOVO LOG
+    console.log(`Calling internal TTS function at: ${elevenLabsUrl}`);
     
     const ttsResponse = await fetch(elevenLabsUrl, {
         method: 'POST',
@@ -97,20 +102,25 @@ serve(async (req) => {
         body: JSON.stringify({ text }),
     });
     
-    console.log(`Internal TTS Call Status: ${ttsResponse.status}`); // NOVO LOG
+    console.log(`Internal TTS Call Status: ${ttsResponse.status}`);
     
     // Se a chamada interna falhar (ex: 500), tentamos ler o corpo do erro JSON
     if (!ttsResponse.ok) {
         let errorDetails = "Falha na chamada interna para ElevenLabs TTS.";
+        let status = ttsResponse.status;
+        
+        // Tenta ler o corpo como JSON para obter a mensagem de erro detalhada
         try {
             const errorJson = await ttsResponse.json();
             errorDetails = errorJson.error || errorDetails;
         } catch (e) {
-            // Se não for JSON, apenas usa o status
-            errorDetails = `Erro de rede ou Edge Function interna falhou (Status ${ttsResponse.status}).`;
+            // Se não for JSON, tenta ler como texto
+            errorDetails = await ttsResponse.text();
         }
-        console.error("Internal TTS Call Failed:", ttsResponse.status, errorDetails);
-        // Retorna o erro para o frontend
+        
+        console.error("Internal TTS Call Failed:", status, errorDetails);
+        
+        // Retorna o erro como JSON para que o frontend possa capturá-lo
         return new Response(JSON.stringify({ error: `Falha na geração de áudio: ${errorDetails}` }), { 
             status: 500, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
