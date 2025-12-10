@@ -3,7 +3,7 @@ import { Product, PosterTheme, AdScript } from '../../types';
 import { Wand2, Loader2, Zap, Clipboard, Check, Download, Music, Mic, Volume2, VolumeX, DollarSign } from 'lucide-react';
 import { generateAdScript, generateAudioFromText } from '../../services/openAiService';
 import { showSuccess, showError, showLoading, updateToast } from '../utils/toast';
-import { supabase } => '@/src/integrations/supabase/client';
+import { supabase } from '@/src/integrations/supabase/client';
 import { useAICosts } from '../hooks/useAICosts';
 import { useAuth } from '../context/AuthContext';
 

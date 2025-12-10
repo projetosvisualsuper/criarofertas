@@ -22,7 +22,8 @@ export function useAICosts(isAdmin: boolean = false) {
   
   // Mapeamento rápido para uso em componentes
   const costMap = costs.reduce((acc, item) => {
-    acc[item.service_key] = item.cost;
+    // Garante que o custo seja um número inteiro
+    acc[item.service_key] = parseInt(item.cost as any, 10) || 0;
     return acc;
   }, {} as Record<string, number>);
 
@@ -42,7 +43,11 @@ export function useAICosts(isAdmin: boolean = false) {
       }
       setCosts([]);
     } else {
-      setCosts(data as AICost[]);
+      // Mapeia os dados, garantindo que 'cost' seja um número
+      setCosts(data.map(item => ({
+          ...item,
+          cost: parseInt(item.cost as any, 10) || 0,
+      })) as AICost[]);
     }
     setLoading(false);
   }, [isAdmin]);
