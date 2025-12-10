@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import OpenAI from "npm:openai";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
@@ -32,12 +31,10 @@ serve(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
     
-    // 1a. Obter o ID do usuário logado (usando o token)
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''));
     if (userError || !user) throw new Error("User not authenticated or token invalid.");
     
-    // 1b. Verificar o role do usuário (buscando na tabela profiles com o cliente admin)
-    const { data: profileData, error: profileError } = await supabaseAdmin
+    const { data: profileData } = await supabaseAdmin
         .from('profiles')
         .select('role')
         .eq('id', user.id)
@@ -49,7 +46,6 @@ serve(async (req) => {
     let description = '';
     
     if (userRole !== 'admin') {
-        // 1c. Buscar o custo dinamicamente
         const { data: costData, error: costError } = await supabaseAdmin
             .from('ai_costs')
             .select('cost, description')
@@ -57,7 +53,6 @@ serve(async (req) => {
             .single();
             
         if (costError || !costData) {
-            console.warn(`AI Cost not found for ${serviceKey}. Using default 5.`);
             creditCost = 5; // Fallback
             description = `Consumo de 5 créditos (Fallback)`;
         } else {
@@ -68,7 +63,6 @@ serve(async (req) => {
     
     // --- 2. CONSUMIR CRÉDITOS (SE NÃO FOR ADMIN E O CUSTO FOR > 0) ---
     if (userRole !== 'admin' && creditCost > 0) {
-        // Usamos o cliente anônimo para invocar a função de consumo, mas passamos o token do usuário
         const supabaseAnon = createClient(
             Deno.env.get('SUPABASE_URL')!,
             Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -89,44 +83,40 @@ serve(async (req) => {
     }
     // --- FIM CONSUMO DE CRÉDITOS ---
 
-    const openai = new OpenAI({
-      apiKey: Deno.env.get("OPENAI_API_KEY"),
-    });
-
-    const result = await openai.audio.speech.create({
-      model: "tts-1", 
-      voice: "alloy",
-      input: text,
-      format: "mp3",
+    // --- 3. CHAMAR A EDGE FUNCTION DA ELEVENLABS INTERNAMENTE ---
+    // Usamos a URL interna do Supabase para chamar a outra Edge Function
+    const elevenLabsUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/elevenlabs-tts`;
+    
+    const ttsResponse = await fetch(elevenLabsUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            // Passamos o token do usuário para a função interna para que ela possa autenticar
+            'Authorization': authHeader, 
+        },
+        body: JSON.stringify({ text }),
     });
     
-    // NOVO: Verifica se a resposta da API da OpenAI foi bem-sucedida
-    if (!result.ok) {
-        let errorDetails = "Falha na API de TTS da OpenAI.";
+    if (!ttsResponse.ok) {
+        let errorDetails = "Falha na chamada interna para ElevenLabs TTS.";
         try {
-            const errorJson = await result.json();
-            errorDetails = errorJson.error?.message || errorDetails;
+            const errorJson = await ttsResponse.json();
+            errorDetails = errorJson.error || errorDetails;
         } catch (e) {
             // Ignora se não for JSON
         }
-        console.error("OpenAI TTS API Error:", result.status, errorDetails);
-        throw new Error(`Falha na geração de áudio (Status ${result.status}): ${errorDetails}`);
+        console.error("Internal TTS Call Failed:", ttsResponse.status, errorDetails);
+        throw new Error(`Falha na geração de áudio: ${errorDetails}`);
     }
 
-    const arrayBuffer = await result.arrayBuffer();
+    // Retorna o ArrayBuffer (MP3) da ElevenLabs diretamente para o cliente
+    const audioBuffer = await ttsResponse.arrayBuffer();
 
-    if (!arrayBuffer || arrayBuffer.byteLength < 100) {
-      console.error("TTS Generation failed: Empty or too small buffer.");
-      return new Response(JSON.stringify({ error: "Falha ao gerar áudio: Buffer vazio ou corrompido." }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
-
-    const bytes = new Uint8Array(arrayBuffer);
-
-    return new Response(bytes, {
+    return new Response(audioBuffer, {
       headers: {
         ...corsHeaders,
         "Content-Type": "audio/mpeg",
-        "Content-Length": bytes.byteLength.toString(),
+        "Content-Length": audioBuffer.byteLength.toString(),
         "Cache-Control": "no-cache",
       },
       status: 200,

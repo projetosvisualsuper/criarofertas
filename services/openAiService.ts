@@ -27,7 +27,7 @@ async function invokeOpenAIProxy(task: string, data: any) {
     throw new Error("Edge function returned an empty or malformed response.");
   }
   
-  // Se a Edge Function retornou um erro no corpo (ex: Saldo insuficiente - status 200 com erro no corpo)
+  // Se a Edge Function retornar um erro no corpo (ex: Saldo insuficiente - status 200 com erro no corpo)
   if (result.error) {
       throw new Error(result.error);
   }
@@ -135,10 +135,11 @@ export const generateAdScript = async (products: Product[]): Promise<AdScript> =
 };
 
 /**
- * Função para gerar áudio usando a Edge Function de TTS da OpenAI.
+ * Função para gerar áudio usando a Edge Function de TTS (agora ElevenLabs).
  * Retorna um URL de objeto local (Blob URL) para reprodução.
  */
 export const generateAudioFromText = async (text: string): Promise<string> => {
+  // NOTA: A Edge Function 'gerar-audio' agora chama a 'elevenlabs-tts' internamente.
   const { data, error } = await supabase.functions.invoke('gerar-audio', {
     method: 'POST',
     body: { text },
@@ -147,7 +148,7 @@ export const generateAudioFromText = async (text: string): Promise<string> => {
 
   if (error) {
     console.error("Error invoking 'gerar-audio' Edge Function:", error);
-    // Se o erro for um objeto, tentamos extrair a mensagem de erro da Edge Function
+    // Tenta extrair a mensagem de erro detalhada da Edge Function
     const errorDetails = (error as any).context?.body?.error || error.message;
     throw new Error(`Falha na geração de áudio: ${errorDetails}`);
   }
