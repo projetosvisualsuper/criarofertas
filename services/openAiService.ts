@@ -10,6 +10,14 @@ async function invokeOpenAIProxy(task: string, data: any) {
 
   if (error) {
     console.error(`Error invoking edge function for task "${task}":`, error);
+    
+    // Tenta extrair a mensagem de erro detalhada da Edge Function
+    const edgeFunctionError = (error as any).context?.body?.error;
+    if (edgeFunctionError) {
+        throw new Error(edgeFunctionError);
+    }
+    
+    // Se não houver erro detalhado, lança o erro padrão
     throw new Error(error.message);
   }
   
@@ -17,6 +25,11 @@ async function invokeOpenAIProxy(task: string, data: any) {
   if (!result) {
     console.error(`Edge function returned empty or malformed result for task "${task}":`, result);
     throw new Error("Edge function returned an empty or malformed response.");
+  }
+  
+  // Se a Edge Function retornou um erro no corpo (ex: Saldo insuficiente - status 200 com erro no corpo)
+  if (result.error) {
+      throw new Error(result.error);
   }
   
   // Se a Edge Function retornar um objeto com 'imageBase64' (tarefa de imagem), retorna o resultado completo.
@@ -39,7 +52,7 @@ export const generateMarketingCopy = async (topic: string): Promise<string> => {
     return response.text?.trim() || "Ofertas Imperdíveis";
   } catch (error) {
     console.error("Error generating copy:", error);
-    return "Super Ofertas";
+    throw error; // Propaga o erro para o componente tratar
   }
 };
 
@@ -88,7 +101,7 @@ export const generateBackgroundImage = async (prompt: string): Promise<string | 
     return null;
   } catch (error) {
     console.error("Error generating image:", error);
-    return null;
+    throw error; // Propaga o erro
   }
 };
 
