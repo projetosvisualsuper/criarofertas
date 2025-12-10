@@ -19,9 +19,18 @@ async function callOpenAI(endpoint: string, apiKey: string, payload: any) {
     });
 
     if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`OpenAI API Error (${endpoint}):`, errorText);
-        throw new Error(`OpenAI API failed: ${response.status} - ${errorText}`);
+        let errorBody;
+        try {
+            errorBody = await response.json();
+        } catch (e) {
+            errorBody = { message: await response.text() };
+        }
+        
+        const errorMessage = errorBody.error?.message || errorBody.message || 'Unknown OpenAI API error';
+        console.error(`OpenAI API Error (${endpoint}): ${response.status} - ${errorMessage}`);
+        
+        // Lança um erro que inclui o status e a mensagem detalhada
+        throw new Error(`OpenAI API failed (${response.status}): ${errorMessage}`);
     }
     return response.json();
 }
@@ -39,7 +48,11 @@ serve(async (req) => {
   try {
     const apiKey = Deno.env.get('OPENAI_API_KEY');
     if (!apiKey) {
-      throw new Error("OPENAI_API_KEY is not set in Supabase secrets.");
+      // Se a chave estiver faltando, retornamos um erro 401 (mas com status 200 para o frontend ler)
+      return new Response(JSON.stringify({ error: "OPENAI_API_KEY is not set in Supabase secrets." }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const { task, data } = await req.json();
@@ -261,11 +274,9 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in Edge Function:", error);
     
-    // Se for um erro de API Key, retorna 401
-    const status = error.message.includes('API Key') ? 401 : 500;
-    
+    // Em caso de erro, retornamos 200 com o erro no corpo para que o frontend possa ler a mensagem detalhada.
     return new Response(JSON.stringify({ error: error.message }), {
-      status: status,
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
