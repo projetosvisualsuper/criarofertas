@@ -8,7 +8,7 @@ import SettingsPage from './src/pages/SettingsPage';
 import ProductManagerPage from './src/pages/ProductManagerPage';
 import CompanyInfoPage from './src/pages/CompanyInfoPage';
 import UserManagementPage from './src/pages/UserManagementPage';
-import ProfilePage from './src/pages/ProfilePage';
+import ProfilePage from './src/pages/LoginPage';
 import LoginPage from './src/pages/LoginPage';
 import AdminPage from './src/pages/AdminPage';
 import ReportsPage from './src/pages/ReportsPage';
@@ -210,7 +210,7 @@ const AppContent: React.FC = () => {
       case 'profile':
         return <ProfilePage />;
       case 'poster':
-        return <PosterBuilderPage {...commonProps} addSavedImage={addSavedImage} />;
+        return <PosterBuilderPage {...commonProps} addSavedImage={addSavedImage} setActiveModule={setActiveModule} />;
       case 'product-db':
         return <ProductManagerPage />;
       case 'company':

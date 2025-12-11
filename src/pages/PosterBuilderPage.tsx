@@ -18,13 +18,14 @@ interface PosterBuilderPageProps {
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   formats: PosterFormat[];
   addSavedImage: (image: Omit<SavedImage, 'id' | 'timestamp'>) => Promise<void>;
+  setActiveModule: (module: string) => void; // NOVO: Adicionando a função para mudar o módulo
 }
 
 // Filtra o formato 'tv' para que ele não apareça no Poster Builder
 const builderFormats = POSTER_FORMATS.filter(f => f.id !== 'tv');
 const defaultFormat = builderFormats.find(f => f.id === 'a4') || builderFormats[0];
 
-export default function PosterBuilderPage({ theme, setTheme, products, setProducts, formats, addSavedImage }: PosterBuilderPageProps) {
+export default function PosterBuilderPage({ theme, setTheme, products, setProducts, formats, addSavedImage, setActiveModule }: PosterBuilderPageProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const posterRef = useRef<PosterPreviewRef>(null);
@@ -291,7 +292,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
                 
                 {/* NOVO: Carrossel de Destaques (flex-1 para ocupar o restante) */}
                 <div className="flex-1 min-h-0 overflow-y-auto">
-                    <WooCommerceCarousel />
+                    <WooCommerceCarousel setActiveModule={setActiveModule} />
                 </div>
             </div>
          </div>

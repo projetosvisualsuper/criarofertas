@@ -14,7 +14,12 @@ const shuffleArray = (array: WooProduct[]) => {
     return array;
 };
 
-const CarouselCard: React.FC<{ product: WooProduct }> = ({ product }) => {
+interface CarouselCardProps {
+    product: WooProduct;
+    onClick: () => void;
+}
+
+const CarouselCard: React.FC<CarouselCardProps> = ({ product, onClick }) => {
     // Garante que o preço seja um número e formatado para 2 casas decimais
     const rawPrice = parseFloat(product.sale_price || product.regular_price || product.price);
     const priceFormatted = isNaN(rawPrice) ? '0.00' : rawPrice.toFixed(2).replace('.', ',');
@@ -25,7 +30,10 @@ const CarouselCard: React.FC<{ product: WooProduct }> = ({ product }) => {
     const isSale = !!product.sale_price && product.sale_price !== product.regular_price;
     
     return (
-        <div className="p-3 bg-white rounded-xl shadow-lg border-2 border-indigo-500/50 flex flex-col items-center text-center h-full transition-all duration-500 animate-fade-in">
+        <button 
+            onClick={onClick}
+            className="p-3 bg-white rounded-xl shadow-lg border-2 border-indigo-500/50 flex flex-col items-center text-center h-full transition-all duration-500 animate-fade-in w-full cursor-pointer hover:shadow-xl hover:border-indigo-600"
+        >
             <div className="w-full h-20 bg-white rounded-lg overflow-hidden flex items-center justify-center shrink-0 mb-2 relative">
                 {product.image_url ? (
                     <img 
@@ -43,21 +51,23 @@ const CarouselCard: React.FC<{ product: WooProduct }> = ({ product }) => {
                 )}
             </div>
             
-            {/* Removendo mb-1 */}
             <p className="text-sm font-bold text-gray-800 line-clamp-2 leading-tight">{product.name}</p>
             
-            {/* Removendo pt-2 */}
             <div className="mt-auto w-full"> 
                 {isSale && (
                     <p className="text-xs text-gray-500 line-through leading-none">De R$ {regularPriceFormatted}</p>
                 )}
                 <p className="text-xl font-black text-green-600 leading-tight">R$ {priceFormatted}</p>
             </div>
-        </div>
+        </button>
     );
 };
 
-const WooCommerceCarousel: React.FC = () => {
+interface WooCommerceCarouselProps {
+    setActiveModule: (module: string) => void;
+}
+
+const WooCommerceCarousel: React.FC<WooCommerceCarouselProps> = ({ setActiveModule }) => {
   const { products, loading, error } = useWooCommerceProducts();
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -86,6 +96,10 @@ const WooCommerceCarousel: React.FC = () => {
 
   const handlePrev = () => {
     setCurrentIndex(prevIndex => (prevIndex - 1 + totalProducts) % totalProducts);
+  };
+  
+  const handleCardClick = () => {
+      setActiveModule('product-db');
   };
 
   if (loading) {
@@ -116,7 +130,7 @@ const WooCommerceCarousel: React.FC = () => {
       
       <div className="flex-1 relative min-h-[150px]">
         {/* O Card do Produto - Usando a chave do produto para forçar a animação de transição */}
-        <CarouselCard key={currentProduct.id} product={currentProduct} />
+        <CarouselCard key={currentProduct.id} product={currentProduct} onClick={handleCardClick} />
       </div>
       
       {/* Controles de Navegação */}
