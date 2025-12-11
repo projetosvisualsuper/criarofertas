@@ -5,14 +5,8 @@ import { WooProduct } from '../../types';
 
 const ROTATION_INTERVAL_MS = 5000; // 5 segundos por produto
 
-// Função auxiliar para randomizar um array
-const shuffleArray = (array: WooProduct[]) => {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-};
+// Função auxiliar para randomizar um array (REMOVIDA)
+// const shuffleArray = (array: WooProduct[]) => { ... };
 
 interface CarouselCardProps {
     product: WooProduct;
@@ -21,7 +15,7 @@ interface CarouselCardProps {
 
 const CarouselCard: React.FC<CarouselCardProps> = ({ product, onClick }) => {
     // Garante que o preço seja um número e formatado para 2 casas decimais
-    const rawPrice = parseFloat(product.sale_price || product.regular_price || product.price);
+    const rawPrice = parseFloat(product.sale_sale_price || product.regular_price || product.price);
     const priceFormatted = isNaN(rawPrice) ? '0.00' : rawPrice.toFixed(2).replace('.', ',');
     
     const rawRegularPrice = parseFloat(product.regular_price || product.price);
@@ -71,11 +65,11 @@ const WooCommerceCarousel: React.FC<WooCommerceCarouselProps> = ({ setActiveModu
   const { products, loading, error } = useWooCommerceProducts();
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // 1. Filtra produtos válidos e randomiza a lista
+  // 1. Filtra produtos válidos e usa a ordem retornada pela API (mais recentes)
   const carouselProducts = useMemo(() => {
     const validProducts = products.filter(p => p.price && p.name);
-    // Randomiza a lista de produtos válidos
-    return shuffleArray([...validProducts]); 
+    // Não randomiza mais: retorna a lista na ordem de 'orderby=date&order=desc'
+    return validProducts; 
   }, [products]);
   
   const totalProducts = carouselProducts.length;
