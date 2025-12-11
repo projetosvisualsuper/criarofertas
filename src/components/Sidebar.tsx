@@ -906,6 +906,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                                                         <p className="text-sm font-medium text-gray-800 leading-tight truncate max-w-[120px]">{p.name}</p>
                                                         <p className="text-xs text-green-600 font-bold leading-tight">R$ {p.defaultPrice} / {p.defaultUnit}</p>
                                                     </div>
+                                                </div> {/* <-- CORREÇÃO: Fechando o div flex items-center gap-3 */}
                                                 <button 
                                                     onClick={() => addProduct(p)}
                                                     className="flex items-center gap-1 text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full transition-colors"
