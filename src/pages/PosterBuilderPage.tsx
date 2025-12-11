@@ -245,7 +245,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
             <div className="flex flex-col flex-shrink-0 w-48 h-full"> {/* Adicionado h-full para ocupar a altura total */}
                 
                 {/* Área de Salvamento */}
-                <div className="flex flex-col gap-2 flex-shrink-0 mb-4 p-3 bg-white rounded-xl shadow-md border border-gray-200">
+                <div className="flex flex-col gap-2 flex-shrink-0 mb-2 p-2 bg-white rounded-xl shadow-md border border-gray-200">
                     <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
                         <ImageIcon size={14} /> Salvar Formato:
                     </label>
@@ -265,27 +265,27 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
                     <button
                       onClick={handleSaveToGallery}
                       disabled={isSaving || isDownloading}
-                      className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition-all disabled:opacity-50 w-full mt-2"
+                      className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow-md transition-all disabled:opacity-50 w-full"
                     >
-                      <Save size={16} />
+                      <Save size={14} />
                       {isSaving ? 'Salvando...' : `Salvar Arte`}
                     </button>
                 </div>
                 
                 {/* Botão de Download */}
-                <div className="flex flex-col gap-4 flex-shrink-0 mb-4">
+                <div className="flex flex-col gap-4 flex-shrink-0 mb-2">
                     <button
                       onClick={handleDownload}
                       disabled={isSaving || isDownloading}
-                      className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-full"
+                      className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-full text-sm"
                     >
-                      <Download size={20} />
+                      <Download size={16} />
                       Baixar {theme.format.label}
                     </button>
                 </div>
                 
                 {/* Área Amarela: Banner do WooCommerce (flex-shrink-0 para não crescer) */}
-                <div className="flex-shrink-0 mb-4">
+                <div className="flex-shrink-0 mb-2">
                     <WooCommerceBanner />
                 </div>
                 
