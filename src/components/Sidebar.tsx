@@ -15,6 +15,7 @@ import { useCustomThemes } from '../hooks/useCustomThemes';
 import { supabase } from '@/src/integrations/supabase/client';
 import ConfirmationModal from './ConfirmationModal';
 import { FRAME_STYLE_PRESETS } from '../config/frameStylePresets'; // NOVO IMPORT
+import SharedImageProductList from './SharedImageProductList'; // NOVO IMPORT
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -154,6 +155,12 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     if (baseProduct) {
         showSuccess(`Produto "${baseProduct.name}" adicionado ao cartaz.`);
     }
+  };
+  
+  // NOVO: Função para adicionar um produto RegisteredProduct ao cartaz
+  const handleAddRegisteredProductToPoster = (registeredProduct: RegisteredProduct) => {
+    const newProduct = createNewProduct(products.length, registeredProduct);
+    setProducts(prev => [...prev, newProduct]);
   };
 
   const handleLogoLayoutChange = (property: keyof LogoLayout, value: number) => {
@@ -516,8 +523,10 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         // Filtra apenas produtos do usuário logado
         filteredByScope = registeredProducts.filter(p => p.user_id === userId);
     } else if (searchScope === 'shared') {
-        // Filtra apenas produtos compartilhados (user_id nulo)
-        filteredByScope = registeredProducts.filter(p => p.user_id === null);
+        // Se o escopo for 'shared', não filtramos por produtos da tabela 'products' aqui,
+        // pois usaremos o SharedImageProductList.
+        // Retornamos uma lista vazia para que o bloco de renderização abaixo seja ignorado.
+        return [];
     }
     
     // Aplica o filtro de busca por termo
@@ -888,70 +897,78 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                     {/* SELETOR DE ESCOPO */}
                     <div className="flex border rounded-lg overflow-hidden">
                         <button
-                            onClick={() => setSearchScope('my')}
+                            onClick={() => { setSearchScope('my'); setSearchTerm(''); }}
                             className={`flex-1 py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1 ${searchScope === 'my' ? 'bg-green-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
                         >
                             <List size={14} /> Meus Produtos
                         </button>
                         <button
-                            onClick={() => setSearchScope('shared')}
+                            onClick={() => { setSearchScope('shared'); setSearchTerm(''); }}
                             className={`flex-1 py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1 ${searchScope === 'shared' ? 'bg-green-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
                         >
                             <GalleryThumbnails size={14} /> Banco Compartilhado
                         </button>
                     </div>
                     
-                    <div className="relative">
-                        <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Buscar produto cadastrado..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full border rounded-lg px-10 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none"
-                        />
-                    </div>
-                    
-                    {loadingRegisteredProducts ? (
-                        <div className="flex justify-center items-center p-4">
-                            <Loader2 className="w-6 h-6 text-green-600 animate-spin" />
-                        </div>
-                    ) : (
-                        <div className="max-h-60 overflow-y-auto space-y-2">
-                            {filteredRegisteredProducts.length > 0 ? (
-                                filteredRegisteredProducts.map(p => (
-                                    <div key={p.id} className="flex items-center justify-between p-2 bg-white rounded-md border shadow-sm">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-gray-100 border border-gray-300 rounded flex items-center justify-center shrink-0 overflow-hidden">
-                                                {p.image ? (
-                                                    <img src={p.image} alt={p.name} className="w-full h-full object-contain" />
-                                                ) : (
-                                                    <ImageIcon size={16} className="text-gray-400" />
-                                                )}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-800 leading-tight truncate max-w-[120px]">{p.name}</p>
-                                                <p className="text-xs text-green-600 font-bold leading-tight">R$ {p.defaultPrice} / {p.defaultUnit}</p>
-                                            </div>
-                                        </div>
-                                        <button 
-                                            onClick={() => addProduct(p)}
-                                            className="flex items-center gap-1 text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full transition-colors"
-                                        >
-                                            <Plus size={12} /> Adicionar
-                                        </button>
-                                    </div>
-                                ))
+                    {searchScope === 'my' && (
+                        <>
+                            <div className="relative">
+                                <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar produto cadastrado..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full border rounded-lg px-10 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none"
+                                />
+                            </div>
+                            
+                            {loadingRegisteredProducts ? (
+                                <div className="flex justify-center items-center p-4">
+                                    <Loader2 className="w-6 h-6 text-green-600 animate-spin" />
+                                </div>
                             ) : (
-                                <p className="text-xs text-gray-500 text-center p-4">
-                                    {searchTerm 
-                                        ? 'Nenhum resultado encontrado para sua busca.' 
-                                        : searchScope === 'my' 
-                                            ? 'Nenhum produto cadastrado por você. Use o módulo "Banco de Produtos" para cadastrar.'
-                                            : 'Nenhum produto compartilhado encontrado. Peça ao administrador para cadastrar produtos públicos.'}
-                                </p>
+                                <div className="max-h-60 overflow-y-auto space-y-2">
+                                    {filteredRegisteredProducts.length > 0 ? (
+                                        filteredRegisteredProducts.map(p => (
+                                            <div key={p.id} className="flex items-center justify-between p-2 bg-white rounded-md border shadow-sm">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-gray-100 border border-gray-300 rounded flex items-center justify-center shrink-0 overflow-hidden">
+                                                        {p.image ? (
+                                                            <img src={p.image} alt={p.name} className="w-full h-full object-contain" />
+                                                        ) : (
+                                                            <ImageIcon size={16} className="text-gray-400" />
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-800 leading-tight truncate max-w-[120px]">{p.name}</p>
+                                                        <p className="text-xs text-green-600 font-bold leading-tight">R$ {p.defaultPrice} / {p.defaultUnit}</p>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    onClick={() => addProduct(p)}
+                                                    className="flex items-center gap-1 text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full transition-colors"
+                                                >
+                                                    <Plus size={12} /> Adicionar
+                                                </button>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-xs text-gray-500 text-center p-4">
+                                            {searchTerm 
+                                                ? 'Nenhum resultado encontrado para sua busca.' 
+                                                : 'Nenhum produto cadastrado por você. Use o módulo "Banco de Produtos" para cadastrar.'}
+                                        </p>
+                                    )}
+                                </div>
                             )}
-                        </div>
+                        </>
+                    )}
+                    
+                    {searchScope === 'shared' && (
+                        <SharedImageProductList 
+                            onProductAddedToPoster={handleAddRegisteredProductToPoster}
+                        />
                     )}
                     
                     <p className="text-xs text-gray-600 text-center border-t pt-2">
