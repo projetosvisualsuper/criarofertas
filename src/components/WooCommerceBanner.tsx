@@ -46,8 +46,8 @@ const ProductCard: React.FC<{ product: WooProduct }> = React.memo(({ product }) 
 const WooCommerceBanner: React.FC = () => {
   const { products, loading, error } = useWooCommerceProducts();
   
-  // Limita a lista de produtos a 5 (os mais recentes)
-  const recentProducts = products.slice(0, 5);
+  // Limita a lista de produtos a 4 (os mais recentes)
+  const recentProducts = products.slice(0, 4);
 
   if (loading) {
     return (
