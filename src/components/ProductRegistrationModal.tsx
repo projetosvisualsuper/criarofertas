@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RegisteredProduct } from '../../types';
 import { Plus, Save, Loader2, Image as ImageIcon, Database } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose, DialogFooter } from './ui/dialog';
 import { showSuccess, showError } from '../utils/toast';
 import { useProductDatabase } from '../hooks/useProductDatabase';
 import { useAuth } from '../context/AuthContext';
