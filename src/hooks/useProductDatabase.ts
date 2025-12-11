@@ -30,6 +30,7 @@ const mapFromDB = (item: ProductDB): RegisteredProduct => ({
   wholesalePrice: item.wholesalePrice, // Mapeamento de atacado
   wholesaleUnit: item.wholesaleUnit,   // Mapeamento de atacado
   image: item.image,
+  user_id: item.user_id, // ADICIONADO
 });
 
 // Função auxiliar para mapear do App para o DB (para INSERT/UPDATE)

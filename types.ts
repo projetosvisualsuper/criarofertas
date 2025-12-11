@@ -35,6 +35,7 @@ export interface RegisteredProduct {
   wholesalePrice?: string; // NOVO
   wholesaleUnit?: string; // NOVO
   image?: string;
+  user_id?: string; // ADICIONADO: ID do usuário para filtragem de escopo
 }
 
 export interface PosterFormat {
