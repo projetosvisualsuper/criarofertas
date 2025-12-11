@@ -24,7 +24,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
   const layout = product.layouts?.[theme.format.id] || defaultLayout;
   const isCompact = layoutCols >= 3;
 
-  const baseNameSize = isCompact ? 0.8 : 1; // in rem
+  // Aumentando o tamanho base da fonte: 0.9rem para compacto, 1.1rem para padrão
+  const baseNameSize = isCompact ? 0.9 : 1.1; // in rem
 
   useLayoutEffect(() => {
     const nameEl = nameRef.current;
@@ -33,6 +34,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
     if (nameEl) {
       nameEl.style.fontSize = `${baseNameSize}rem`;
       let currentFontSize = baseNameSize;
+      // Reduz o tamanho da fonte se o texto for muito longo (max 2 linhas)
       while (nameEl.scrollHeight > nameEl.clientHeight && currentFontSize > 0.5) {
         currentFontSize -= 0.05;
         nameEl.style.fontSize = `${currentFontSize}rem`;

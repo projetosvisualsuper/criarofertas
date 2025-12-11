@@ -15,7 +15,7 @@ interface CarouselCardProps {
 
 const CarouselCard: React.FC<CarouselCardProps> = ({ product, onClick }) => {
     // Garante que o preço seja um número e formatado para 2 casas decimais
-    const rawPrice = parseFloat(product.sale_sale_price || product.regular_price || product.price);
+    const rawPrice = parseFloat(product.sale_price || product.regular_price || product.price);
     const priceFormatted = isNaN(rawPrice) ? '0.00' : rawPrice.toFixed(2).replace('.', ',');
     
     const rawRegularPrice = parseFloat(product.regular_price || product.price);
@@ -45,7 +45,8 @@ const CarouselCard: React.FC<CarouselCardProps> = ({ product, onClick }) => {
                 )}
             </div>
             
-            <p className="text-sm font-bold text-gray-800 line-clamp-2 leading-tight">{product.name}</p>
+            {/* Aumentando o tamanho da fonte para text-base (16px) */}
+            <p className="text-base font-bold text-gray-800 line-clamp-2 leading-tight">{product.name}</p>
             
             <div className="mt-auto w-full"> 
                 {isSale && (
