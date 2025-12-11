@@ -28,14 +28,14 @@ const ProductCard: React.FC<{ product: WooProduct }> = React.memo(({ product }) 
                 )}
             </div>
             <div className="flex-1 min-w-0">
-                {/* Aumentando o tamanho da fonte para text-sm (14px) e adicionando font-bold */}
-                <p className="text-sm font-bold text-gray-800 truncate leading-tight">{product.name}</p>
+                {/* Revertendo para text-xs (12px) e removendo font-bold extra */}
+                <p className="text-xs font-medium text-gray-800 truncate leading-tight">{product.name}</p>
                 <div className="flex items-center mt-0.5 leading-none">
                     {isSale && (
                         <span className="text-[10px] text-red-500 line-through mr-1">R$ {regularPriceFormatted}</span>
                     )}
-                    {/* Preço principal em destaque */}
-                    <span className="text-sm font-bold text-green-600 whitespace-nowrap">R$ {priceFormatted}</span>
+                    {/* Aumentando o preço principal para text-lg (18px) */}
+                    <span className="text-lg font-black text-green-600 whitespace-nowrap">R$ {priceFormatted}</span>
                 </div>
             </div>
             <ExternalLink size={12} className="text-gray-400 ml-1 shrink-0" />

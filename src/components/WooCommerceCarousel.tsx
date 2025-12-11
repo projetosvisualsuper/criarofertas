@@ -45,13 +45,14 @@ const CarouselCard: React.FC<CarouselCardProps> = ({ product, onClick }) => {
                 )}
             </div>
             
-            {/* Aumentando o tamanho da fonte para text-base (16px) */}
-            <p className="text-base font-bold text-gray-800 line-clamp-2 leading-tight">{product.name}</p>
+            {/* Revertendo para text-sm (14px) e font-semibold */}
+            <p className="text-sm font-semibold text-gray-800 line-clamp-2 leading-tight">{product.name}</p>
             
             <div className="mt-auto w-full"> 
                 {isSale && (
                     <p className="text-xs text-gray-500 line-through leading-none">De R$ {regularPriceFormatted}</p>
                 )}
+                {/* Mantendo o preço em destaque (text-xl font-black) */}
                 <p className="text-xl font-black text-green-600 leading-tight">R$ {priceFormatted}</p>
             </div>
         </button>
