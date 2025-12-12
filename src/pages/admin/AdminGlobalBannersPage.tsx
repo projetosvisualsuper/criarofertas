@@ -281,8 +281,43 @@ const AdminGlobalBannersPage: React.FC = () => {
                                     </div>
                                 </div>
                                 
-                                {/* Conteúdo do Banner (Texto/Cor) */}
-                                {!isImageMode && (
+                                {/* CONTEÚDO CONDICIONAL */}
+                                {isImageMode ? (
+                                    /* Conteúdo do Banner (Imagem) */
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2">
+                                            <input 
+                                                type="file" 
+                                                id={`banner-img-upload-${pkg.id}`} 
+                                                accept="image/*" 
+                                                className="hidden" 
+                                                onChange={(e) => {
+                                                    if (e.target.files?.[0]) handleImageUpload(pkg.id, e.target.files[0]);
+                                                }} 
+                                                disabled={isSaving || isUploading} 
+                                            />
+                                            <label htmlFor={`banner-img-upload-${pkg.id}`} className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors flex items-center justify-center gap-2 ${isSaving || isUploading ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
+                                                <Upload size={16} />
+                                                {isUploading ? 'Enviando...' : pkg.image_url ? 'Trocar Imagem' : 'Selecionar Imagem'}
+                                            </label>
+                                            {pkg.image_url && (
+                                                <button 
+                                                    onClick={() => handleFieldChange(pkg.id, 'image_url', null)}
+                                                    className="p-2 text-red-500 hover:bg-red-100 rounded-full"
+                                                    disabled={isSaving || isUploading}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
+                                        </div>
+                                        {pkg.image_url && (
+                                            <div className="mt-2 relative w-full h-24 rounded-md overflow-hidden border flex items-center justify-center bg-gray-100">
+                                                <img src={pkg.image_url} alt="Preview" className="max-w-full max-h-full object-contain" />
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    /* Conteúdo do Banner (Texto/Cor) */
                                     <div className="space-y-3">
                                         <div>
                                             <label className="text-xs font-medium text-gray-700 block mb-1">Conteúdo do Banner (Texto)</label>
@@ -320,42 +355,6 @@ const AdminGlobalBannersPage: React.FC = () => {
                                                 />
                                             </div>
                                         </div>
-                                    </div>
-                                )}
-                                
-                                {/* Conteúdo do Banner (Imagem) */}
-                                {isImageMode && (
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-2">
-                                            <input 
-                                                type="file" 
-                                                id={`banner-img-upload-${pkg.id}`} 
-                                                accept="image/*" 
-                                                className="hidden" 
-                                                onChange={(e) => {
-                                                    if (e.target.files?.[0]) handleImageUpload(pkg.id, e.target.files[0]);
-                                                }} 
-                                                disabled={isSaving || isUploading} 
-                                            />
-                                            <label htmlFor={`banner-img-upload-${pkg.id}`} className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors flex items-center justify-center gap-2 ${isSaving || isUploading ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
-                                                <Upload size={16} />
-                                                {isUploading ? 'Enviando...' : pkg.image_url ? 'Trocar Imagem' : 'Selecionar Imagem'}
-                                            </label>
-                                            {pkg.image_url && (
-                                                <button 
-                                                    onClick={() => handleFieldChange(pkg.id, 'image_url', null)}
-                                                    className="p-2 text-red-500 hover:bg-red-100 rounded-full"
-                                                    disabled={isSaving || isUploading}
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            )}
-                                        </div>
-                                        {pkg.image_url && (
-                                            <div className="mt-2 relative w-full h-24 rounded-md overflow-hidden border flex items-center justify-center bg-gray-100">
-                                                <img src={pkg.image_url} alt="Preview" className="max-w-full max-h-full object-contain" />
-                                            </div>
-                                        )}
                                     </div>
                                 )}
                             </div>
