@@ -19,6 +19,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
     ? theme.headerLayoutId 
     : 'text-only';
 
+  // Usa as propriedades de imagem do tema (que podem ser sobrescritas pelo SlidePreview)
   const isHeroImageMode = theme.headerImage && theme.headerImageMode === 'hero';
   const isBackgroundMode = theme.headerImage && theme.headerImageMode === 'background';
   

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Users, Zap, Settings, ArrowLeft, BarChart3, Image, LayoutTemplate, LogIn } from 'lucide-react';
+import { Home, Users, Zap, Settings, ArrowLeft, BarChart3, Image, LayoutTemplate, LogIn, Layout } from 'lucide-react';
 import AdminDashboardPage from './AdminDashboardPage';
 import AdminUserManagementPage from './AdminUserManagementPage';
 import AdminPlanManagementPage from './AdminPlanManagementPage';
@@ -8,9 +8,9 @@ import AdminReportsPage from './AdminReportsPage';
 import AdminImageUploadPage from './AdminImageUploadPage';
 import AdminGlobalTemplatesPage from './AdminGlobalTemplatesPage';
 import AdminLoginBannerSettingsPage from './AdminLoginBannerSettingsPage';
-// AdminAICostsPage removido
+import AdminGlobalBannersPage from './AdminGlobalBannersPage'; // NOVO IMPORT
 
-type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'images' | 'global-templates' | 'login-banner';
+type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'images' | 'global-templates' | 'banners'; // 'login-banner' -> 'banners'
 
 interface AdminPageProps {
   setActiveHubModule: (module: string) => void;
@@ -27,7 +27,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
     { id: 'global-templates', name: 'Templates Globais', icon: LayoutTemplate },
     { id: 'reports', name: 'Relatórios SaaS', icon: BarChart3 },
     { id: 'settings', name: 'Configurações', icon: Settings },
-    { id: 'login-banner', name: 'Banner de Login', icon: LogIn },
+    { id: 'banners', name: 'Banners', icon: Layout }, // NOVO NOME E ÍCONE
   ];
 
   const renderContent = () => {
@@ -39,7 +39,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
       case 'global-templates': return <AdminGlobalTemplatesPage />;
       case 'reports': return <AdminReportsPage />;
       case 'settings': return <AdminSettingsPage />;
-      case 'login-banner': return <AdminLoginBannerSettingsPage />;
+      case 'banners': return <AdminGlobalBannersPage />; // NOVO COMPONENTE
       default: return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;
     }
   };

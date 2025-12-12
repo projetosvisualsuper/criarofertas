@@ -13,6 +13,8 @@ interface SlidePreviewProps {
 
 const SlidePreview = React.forwardRef<HTMLDivElement, SlidePreviewProps>(({ product, theme }, ref) => {
   const tvFormat = POSTER_FORMATS.find(f => f.id === 'tv') || POSTER_FORMATS[0];
+  
+  // Cria um tema temporário que usa o formato TV, mas herda as configurações globais
   const slideTheme = { ...theme, format: tvFormat };
   const isLandscape = true;
   const fontScale = 1;
@@ -21,6 +23,17 @@ const SlidePreview = React.forwardRef<HTMLDivElement, SlidePreviewProps>(({ prod
   const tvHeaderElements = (theme.headerElements && theme.headerElements['tv']) 
     ? theme.headerElements['tv'] 
     : INITIAL_THEME.headerElements['tv'];
+    
+  // Obtém a imagem de cabeçalho específica para o formato 'tv'
+  const tvHeaderImage = (theme.headerElements['tv'] as any)?.headerImage;
+  const tvHeaderImageMode = (theme.headerElements['tv'] as any)?.headerImageMode || 'none';
+  
+  // Cria um tema de cabeçalho que prioriza a imagem específica da TV
+  const headerThemeOverride = {
+      ...slideTheme,
+      headerImage: tvHeaderImage || slideTheme.headerImage, // Usa a imagem da TV se existir
+      headerImageMode: tvHeaderImage ? tvHeaderImageMode : slideTheme.headerImageMode, // Usa o modo da TV se a imagem existir
+  };
     
   // Encontrar a classe de transição
   const transitionPreset = SLIDE_TRANSITION_PRESETS.find(p => p.id === theme.slideTransitionId);
@@ -49,7 +62,7 @@ const SlidePreview = React.forwardRef<HTMLDivElement, SlidePreviewProps>(({ prod
       {slideTheme.backgroundImage && (<div className="absolute inset-0 z-0 opacity-40 bg-cover bg-center" style={{ backgroundImage: `url(${slideTheme.backgroundImage})` }}/>)}
       <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: `radial-gradient(circle at center, transparent 0%, ${slideTheme.backgroundColor} 100%)` }}/>
       <PosterHeader 
-        theme={slideTheme} 
+        theme={headerThemeOverride} // Usando o tema com override de imagem
         headerTitle={tvHeaderElements.headerTitle}
         headerSubtitle={tvHeaderElements.headerSubtitle}
         isLandscape={isLandscape} 
