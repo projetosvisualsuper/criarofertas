@@ -305,13 +305,19 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
                 banners.slice(0, 3).map((banner) => (
                     <div 
                         key={banner.id} 
-                        className="p-4 rounded-xl shadow-md flex items-center justify-center text-center h-24 overflow-hidden"
+                        // Removendo o padding 'p-4' e ajustando a altura para ser mais flexível
+                        className="rounded-xl shadow-md flex items-center justify-center text-center h-24 overflow-hidden"
                         style={{ backgroundColor: banner.background_color, color: banner.text_color }}
                     >
                         {banner.image_url ? (
-                            <img src={banner.image_url} alt={banner.name} className="w-full h-full object-contain" />
+                            <img 
+                                src={banner.image_url} 
+                                alt={banner.name} 
+                                // Usando object-cover para preencher o espaço
+                                className="w-full h-full object-cover" 
+                            />
                         ) : (
-                            <p className="text-sm font-bold">{banner.content}</p>
+                            <p className="text-sm font-bold p-2">{banner.content}</p>
                         )}
                     </div>
                 ))
