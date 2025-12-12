@@ -7,8 +7,7 @@ import AudioVideoAdPage from './src/pages/AudioVideoAdPage';
 import SettingsPage from './src/pages/SettingsPage';
 import ProductManagerPage from './src/pages/ProductManagerPage';
 import CompanyInfoPage from './src/pages/CompanyInfoPage';
-import UserManagementPage from './src/pages/UserManagementPage';
-import ProfilePage from './src/pages/LoginPage';
+import UserProfilePage from './src/pages/UserProfilePage'; // CORRIGIDO: Importando a página de perfil correta
 import LoginPage from './src/pages/LoginPage';
 import AdminPage from './src/pages/AdminPage';
 import ReportsPage from './src/pages/ReportsPage';
@@ -208,7 +207,7 @@ const AppContent: React.FC = () => {
 
     switch (activeModule) {
       case 'profile':
-        return <ProfilePage />;
+        return <UserProfilePage />; // CORRIGIDO: Usando UserProfilePage
       case 'poster':
         return <PosterBuilderPage {...commonProps} addSavedImage={addSavedImage} setActiveModule={setActiveModule} />;
       case 'product-db':

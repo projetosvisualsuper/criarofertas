@@ -8,9 +8,9 @@ import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SocialMediaIntegration from '../components/SocialMediaIntegration';
 import { useUserCredits } from '../hooks/useUserCredits';
-import CreditPurchaseModal from '../components/CreditPurchaseModal'; // NOVO IMPORT
+import CreditPurchaseModal from '../components/CreditPurchaseModal';
 
-const ProfilePage: React.FC = () => {
+const UserProfilePage: React.FC = () => {
   const { profile, session, refreshProfile } = useAuth();
   const { credits, loading: loadingCredits, fetchCredits } = useUserCredits(session?.user?.id); // Usando o hook de créditos
   
@@ -114,8 +114,6 @@ const ProfilePage: React.FC = () => {
     }
   };
   
-  // A função handleBuyCredits foi substituída pelo modal
-
   // --- Componentes de Seção ---
 
   const PlanSection = () => (
@@ -301,4 +299,4 @@ const ProfilePage: React.FC = () => {
   );
 };
 
-export default ProfilePage;
+export default UserProfilePage;
