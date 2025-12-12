@@ -1,3 +1,4 @@
+' por '&gt;' no texto do banner.">
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Monitor, ChevronLeft, ChevronRight, Play, Pause, Loader2, Download, Zap, Image as ImageIcon, Trash2, Save, XCircle, Layout } from 'lucide-react';
 import { PosterTheme, Product, PosterFormat, ProductLayout } from '../types';
@@ -241,7 +242,7 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
         <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
           <Monitor size={32} className="text-indigo-600" />
           TV Digital (Slides)
-        </h2>
+        </h2 >
         <div className="flex-1 border-4 border-dashed border-red-300 rounded-xl flex items-center justify-center text-center bg-white/50">
           <p className="text-xl font-semibold text-red-600">Erro: Formato TV (16:9) não encontrado.</p>
         </div>
@@ -313,7 +314,7 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
                 ))
             ) : (
                 <div className="md:col-span-3 p-4 bg-gray-200 rounded-xl shadow-inner text-center">
-                    <p className="text-sm text-gray-600">Nenhum banner de anúncio ativo. Adicione no Painel Admin > Banners.</p>
+                    <p className="text-sm text-gray-600">Nenhum banner de anúncio ativo. Adicione no Painel Admin &gt; Banners.</p>
                 </div>
             )}
           </div>
