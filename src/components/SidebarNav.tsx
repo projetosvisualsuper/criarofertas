@@ -44,8 +44,7 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
       // 2. Limpa o armazenamento local do Supabase (chave de fallback)
       localStorage.removeItem('supabase.auth.token');
       
-      // 3. Recarrega a página para forçar o App.tsx a reavaliar a sessão nula
-      window.location.reload();
+      // REMOVIDO: window.location.reload();
       
     } else {
       showSuccess('Sessão encerrada com sucesso.');
