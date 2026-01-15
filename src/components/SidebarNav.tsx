@@ -49,9 +49,11 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
       
     } else {
       showSuccess('Sessão encerrada com sucesso.');
-      // Redireciona para o link desejado
-      window.location.href = 'https://criarofertas.com.br';
     }
+    
+    // Redireciona para o link desejado, independentemente do sucesso do signOut,
+    // pois a limpeza da sessão local já foi tentada.
+    window.location.href = 'https://criarofertas.com.br';
   };
   
   return (
