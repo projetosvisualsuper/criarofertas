@@ -49,7 +49,8 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
       
     } else {
       showSuccess('Sessão encerrada com sucesso.');
-      // Se o logout for bem-sucedido, o onAuthStateChange no AuthContext deve lidar com o redirecionamento.
+      // Redireciona para o link desejado
+      window.location.href = 'https://criarofertas.com.br';
     }
   };
   
