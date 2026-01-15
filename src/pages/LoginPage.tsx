@@ -2,7 +2,7 @@ import React from 'react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/src/integrations/supabase/client';
-import { Zap, Check, Loader2 } from 'lucide-react';
+import { Zap, Check, Loader2, Monitor, Smartphone } from 'lucide-react';
 import { useLoginBannerSettings } from '../hooks/useLoginBannerSettings';
 
 const LoginPage: React.FC = () => {
@@ -36,21 +36,21 @@ const LoginPage: React.FC = () => {
     },
   };
 
-  const BannerContent = () => (
-    <div className="p-10 text-white h-full flex flex-col justify-center" style={backgroundStyle}>
-      <h2 className="text-4xl font-black mb-4 leading-tight">
+  const BannerContent: React.FC<{ isCompact: boolean }> = ({ isCompact }) => (
+    <div className={`p-6 text-white flex flex-col justify-center ${isCompact ? 'py-8' : 'p-10 h-full'}`} style={backgroundStyle}>
+      <h2 className={`font-black mb-2 leading-tight ${isCompact ? 'text-2xl' : 'text-4xl'}`}>
         {settings.title.split(' ').map((word, index) => (
           <span key={index} className={index === 0 ? 'text-white' : 'text-green-300'}>
             {word}{' '}
           </span>
         ))}
       </h2>
-      <p className="text-lg text-gray-200 mb-8">{settings.subtitle}</p>
+      <p className={`text-gray-200 mb-4 ${isCompact ? 'text-sm' : 'text-lg'}`}>{settings.subtitle}</p>
       
-      <ul className="space-y-3">
+      <ul className={`space-y-2 ${isCompact ? 'text-sm' : 'text-lg'}`}>
         {settings.features.map((feature, index) => (
-          <li key={index} className="flex items-start gap-3 text-lg">
-            <Check size={20} className="text-green-300 mt-1 shrink-0" />
+          <li key={index} className="flex items-start gap-3">
+            <Check size={isCompact ? 16 : 20} className="text-green-300 mt-1 shrink-0" />
             {feature}
           </li>
         ))}
@@ -59,11 +59,42 @@ const LoginPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden flex">
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
+      
+      {/* Aviso de Uso em Desktop (Visível apenas em telas pequenas) */}
+      <div className="lg:hidden w-full max-w-5xl mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded-lg text-center">
+        <p className="text-sm font-semibold text-yellow-800 flex items-center justify-center gap-2">
+          <Monitor size={16} className="shrink-0" />
+          Para uma melhor experiência de criação, recomendamos acessar pelo computador.
+        </p>
+      </div>
+      
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
         
-        {/* Coluna Esquerda: Formulário de Login */}
-        <div className="w-full lg:w-1/2 p-12 flex flex-col justify-center">
+        {/* Coluna de Destaque (Visível no topo em mobile, na lateral em desktop) */}
+        <div className="w-full lg:w-1/2 relative hidden sm:block lg:block">
+          {loading ? (
+            <div className="h-full flex items-center justify-center" style={{ backgroundColor: BANNER_COLOR }}>
+              <Loader2 className="w-8 h-8 text-white animate-spin" />
+            </div>
+          ) : (
+            <BannerContent isCompact={false} />
+          )}
+        </div>
+        
+        {/* Coluna de Destaque (Versão Compacta para Mobile) */}
+        <div className="w-full lg:hidden relative block">
+          {loading ? (
+            <div className="h-48 flex items-center justify-center" style={{ backgroundColor: BANNER_COLOR }}>
+              <Loader2 className="w-8 h-8 text-white animate-spin" />
+            </div>
+          ) : (
+            <BannerContent isCompact={true} />
+          )}
+        </div>
+        
+        {/* Coluna de Login */}
+        <div className="w-full lg:w-1/2 p-6 sm:p-12 flex flex-col justify-center">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mt-2">Criar Ofertas</h1>
             <p className="text-gray-600">Entre com suas credenciais para acessar o sistema</p>
@@ -103,17 +134,6 @@ const LoginPage: React.FC = () => {
               },
             }}
           />
-        </div>
-        
-        {/* Coluna Direita: Banner de Destaque */}
-        <div className="hidden lg:block lg:w-1/2 relative">
-          {loading ? (
-            <div className="h-full flex items-center justify-center" style={{ backgroundColor: BANNER_COLOR }}>
-              <Loader2 className="w-8 h-8 text-white animate-spin" />
-            </div>
-          ) : (
-            <BannerContent />
-          )}
         </div>
       </div>
     </div>
