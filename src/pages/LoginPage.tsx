@@ -59,7 +59,7 @@ const LoginPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
+    <div className="bg-gray-100 flex flex-col items-center justify-start p-4 min-h-screen"> {/* Removendo min-h-screen e ajustando justify-start */}
       
       {/* Aviso de Uso em Desktop (Visível apenas em telas pequenas) */}
       <div className="lg:hidden w-full max-w-5xl mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded-lg text-center">
