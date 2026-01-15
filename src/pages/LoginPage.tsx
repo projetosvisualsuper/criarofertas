@@ -71,8 +71,8 @@ const LoginPage: React.FC = () => {
       
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
         
-        {/* Coluna de Destaque (Visível no topo em mobile, na lateral em desktop) */}
-        <div className="w-full lg:w-1/2 relative hidden sm:block lg:block">
+        {/* Coluna de Destaque (Versão Lateral - Apenas em Desktop/lg) */}
+        <div className="w-full lg:w-1/2 relative hidden lg:block">
           {loading ? (
             <div className="h-full flex items-center justify-center" style={{ backgroundColor: BANNER_COLOR }}>
               <Loader2 className="w-8 h-8 text-white animate-spin" />
@@ -82,8 +82,8 @@ const LoginPage: React.FC = () => {
           )}
         </div>
         
-        {/* Coluna de Destaque (Versão Compacta para Mobile) */}
-        <div className="w-full lg:hidden relative block">
+        {/* Coluna de Destaque (Versão Compacta - Apenas em Mobile/sm e Tablet/md) */}
+        <div className="w-full lg:w-1/2 relative block lg:hidden">
           {loading ? (
             <div className="h-48 flex items-center justify-center" style={{ backgroundColor: BANNER_COLOR }}>
               <Loader2 className="w-8 h-8 text-white animate-spin" />
